@@ -22,7 +22,7 @@ const WoodCase = {
         });
         document.getElementById('case-file-input').addEventListener('change', (e) => this.handleUpload(e));
         document.getElementById('case-clear-btn').addEventListener('click', () => this.clearLogo());
-        
+
         this.render();
     },
 
@@ -44,7 +44,7 @@ const WoodCase = {
         }
         document.getElementById('wood-case-loader').style.display = 'block';
         this.currentCase = caseId;
-        
+
         if (this.userImgSrc && this.history[caseId].scale === 0.5 && this.history[caseId].x === 0) {
             this.applyStartConfig(caseId);
         }
@@ -188,7 +188,7 @@ const WoodCase = {
         }
         container.style.width = bW + 'px'; container.style.height = bH + 'px';
         container.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
-        
+
         setState('case.logoTransform', { x: state.x, y: state.y, scale: state.scale });
         const pxPerMM = this.getPixelsPerMM(this.currentCase);
         const width_mm = Math.round((bW * state.scale) / pxPerMM);
@@ -288,13 +288,13 @@ const WoodCase = {
         const pW = parseFloat(plane.style.width), pH = parseFloat(plane.style.height);
         const iTLx = (pW/2 + state.x) - cW/2, iTLy = (pH/2 + state.y) - cH/2;
         const pxPerMM = this.getPixelsPerMM(this.currentCase);
-        
+
         const top_mm = Math.round(iTLy / pxPerMM);
         const left_mm = Math.round(iTLx / pxPerMM);
 
         document.getElementById('info-top-tag').textContent = top_mm + ' мм';
         document.getElementById('info-left-tag').textContent = left_mm + ' мм';
-        
+
         setState('case.logoOffsetMM', { top: top_mm, left: left_mm });
 
         const sCorners = [{x:iTLx,y:iTLy},{x:iTLx+cW,y:iTLy},{x:iTLx+cW,y:iTLy+cH},{x:iTLx,y:iTLy+cH}].map(p => this.projectPoint(p.x, p.y, this.currentMatrix));
@@ -336,10 +336,10 @@ const WoodCase = {
     },
 
     clearLogo() {
-        this.userImgSrc = null; 
+        this.userImgSrc = null;
         const c = document.getElementById('user-logo-container');
-        c.style.display = 'none'; 
-        c.innerHTML = ''; 
+        c.style.display = 'none';
+        c.innerHTML = '';
         document.getElementById('wood-case-rulers-group').innerHTML = '';
         ['info-top-tag', 'info-left-tag', 'info-res-tag'].forEach(id => {
             const el = document.getElementById(id);

@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initLogo();
     initializeWoodCase();
     initShockmount();
-    
+
     // All inline event handlers have been replaced.
     // The window object is no longer needed.
 
