@@ -1,0 +1,45 @@
+/* Styles for wood case customizer */
+#wood-case-workspace {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+#wood-case-svg { width: 100%; height: 100%; display: block; cursor: crosshair; }
+
+#wood-case-rulers-group { opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+#wood-case-rulers-group.visible { opacity: 1; }
+.ruler-line { stroke: var(--accent, #fff); stroke-width: 1.5; vector-effect: non-scaling-stroke; stroke-dasharray: 4 2; }
+.ruler-tick { stroke: var(--accent, #fff); stroke-width: 1.5; }
+.r-text { 
+    fill: #fff; font-weight: bold; font-family: 'Consolas', monospace; font-size: 24px; 
+    paint-order: stroke; stroke: #000; stroke-width: 3px; stroke-linecap: round; stroke-linejoin: round;
+}
+
+#wood-case-perspective-fo { pointer-events: none; overflow: visible; }
+#wood-case-perspective-plane { transform-origin: 0 0; position: absolute; top: 0; left: 0; pointer-events: none; }
+#wood-case-logo-wrapper {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: auto; cursor: grab; overflow: hidden;
+}
+#wood-case-logo-wrapper:active { cursor: grabbing; }
+
+#user-logo-container {
+    display: block; position: absolute; transform-origin: center center;
+    mix-blend-mode: multiply; will-change: transform;
+}
+
+#user-logo-container img, #user-logo-container svg { width: 100%; height: 100%; display: block; }
+
+#wood-case-loader {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    color: var(--accent, #fff); font-family: monospace; font-size: 16px; background: rgba(0,0,0,0.8);
+    padding: 10px 20px; border-radius: 4px; display: none; z-index: 200; pointer-events: none;
+}
+.info .highlight { color: var(--accent); font-weight: bold; }
