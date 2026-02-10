@@ -23,11 +23,31 @@ class MicrophoneCustomizerComponent extends CBitrixComponent
                 throw new Exception("Module iblock not found");
             }
 
+            // Получаем данные текущего пользователя
+            global $USER;
+            $this->arResult["USER_DATA"] = [
+                "AUTHORIZED" => $USER->IsAuthorized(),
+                "ID" => $USER->GetID(),
+                "NAME" => $USER->GetFirstName(),
+                "LAST_NAME" => $USER->GetLastName(),
+                "EMAIL" => $USER->GetEmail(),
+                "LOGIN" => $USER->GetLogin()
+            ];
+
+            // Если ELEMENT_ID не передан или равен 0, инициализируем значения по умолчанию
             if ($this->arParams["ELEMENT_ID"] > 0) {
                 $this->arResult["ELEMENT"] = $this->getElement($this->arParams["ELEMENT_ID"]);
+            } else {
+                // Значения по умолчанию для автономной работы
+                $this->arResult["ELEMENT"] = [
+                    "ID" => 0,
+                    "IBLOCK_ID" => 0,
+                    "NAME" => "Custom Microphone",
+                    "CUSTOM_CONFIG" => ""
+                ];
             }
 
-            $this->includeComponentTemplate();
+            $this->IncludeComponentTemplate();
         } catch (Exception $e) {
             ShowError($e->getMessage());
         }
