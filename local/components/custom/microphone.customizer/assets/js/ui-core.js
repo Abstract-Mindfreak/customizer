@@ -44,8 +44,11 @@ export function updateUI() {
         'black': 'Глубокий черный'
     };
     let shockmountText = shockmountColorNames[currentState.shockmount.variant] || 'Белый';
+    
     if (currentState.shockmount.variant === 'custom' && currentState.shockmount.color) {
-        shockmountText = currentState.shockmount.color;
+        // Извлекаем чистый RAL номер из строки типа "RAL 9003"
+        const ralMatch = currentState.shockmount.color.match(/RAL\s*(\d+)/);
+        shockmountText = ralMatch ? ralMatch[1] : currentState.shockmount.color;
     }
     document.getElementById('shockmount-subtitle').textContent = shockmountText;
 
@@ -255,23 +258,37 @@ export function initEventListeners() {
 
     document.getElementById('order-form').addEventListener('submit', (e) => {
         e.preventDefault();
+        console.log('📝 Начинаю валидацию формы');
+        
         const inputs = e.target.querySelectorAll('input');
         let isValid = true;
+        
         inputs.forEach(input => {
-            if (!validateField(input)) isValid = false;
+            try {
+                if (!validateField(input)) isValid = false;
+            } catch (error) {
+                console.error('❌ Ошибка валидации поля:', error);
+                // Продолжаем проверку других полей даже если одно упало
+            }
         });
 
         if (!isValid) {
+            console.log('❌ Валидация не пройдена');
             showNotification('Пожалуйста, исправьте ошибки в форме', 'error');
             return;
         }
 
+        console.log('✅ Валидация пройдена');
         const formData = new FormData(e.target);
         const clientData = Object.fromEntries(formData.entries());
 
-        closeOrderModal();
-        showNotification('Конфигурация сохранена. Заказ успешно сформирован!', 'success');
-        generateReport(clientData);
+        // Импортируем и вызываем sendOrder
+        import('./services/report.js').then(({ sendOrder }) => {
+            sendOrder(clientData);
+        }).catch(error => {
+            console.error('❌ Ошибка импорта sendOrder:', error);
+            alert('Ошибка при отправке заявки. Пожалуйста, попробуйте еще раз.');
+        });
     });
 
     document.querySelector('.print-btn').addEventListener('click', () => {

@@ -26,14 +26,31 @@ export function updateSVG() {
     }
 }
 
-export async function loadSVG(svgPath = 'assets/mic-017.svg') {
+export async function loadSVG(svgPath = null) {
     try {
+        // Используем путь, установленный в template.php
+        if (!svgPath && window.CUSTOMIZER_SVG_PATH) {
+            svgPath = window.CUSTOMIZER_SVG_PATH;
+        } else if (!svgPath) {
+            // Fallback для автономной работы
+            svgPath = 'assets/mic-017.svg';
+        }
+        
         const response = await fetch(svgPath);
+        if (!response.ok) {
+            throw new Error(`Failed to load SVG: ${response.status}`);
+        }
         const svgText = await response.text();
         document.getElementById('svg-wrapper').innerHTML = svgText;
     } catch (e) {
         console.error("Failed to load SVG:", e);
-        // Fallback or error UI
+        // Fallback - создаем базовый SVG если загрузка не удалась
+        document.getElementById('svg-wrapper').innerHTML = `
+            <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+                <rect width="800" height="600" fill="#f0f0f0"/>
+                <text x="400" y="300" text-anchor="middle" fill="#666">SVG загрузка не удалась</text>
+            </svg>
+        `;
     }
 
     document.getElementById('theme-toggle').innerHTML = SVG_STORAGE.THEME_TOGGLE;

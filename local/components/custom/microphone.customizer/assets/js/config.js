@@ -4,64 +4,6 @@ export const CONFIG = {
     scaleFactor: 0.8584,
     shockmountPrice: 10000,
     pxPerMm: 3.2909
-    // cases: {
-    //     '017-tube': {
-    //         image: 'https://i.imgur.com/5wV54OG.png',
-    //         clipPath: 'M0 0C710.035 0 1103.97 8.48338 1814 8.48338L1811.99 947.644L22.5809 1021L0 0Z',
-    //         corners: [
-    //             { x: 163.6, y: 201.4 },  // TL
-    //             { x: 1069.9, y: 256.8 }, // TR
-    //             { x: 1069.9, y: 1176.9 },// BR
-    //             { x: 163.6, y: 1252.2 }  // BL
-    //         ],
-    //         width: 1810,
-    //         height: 938,
-    //         realWidth: 550,
-    //         realHeight: 285
-    //     },
-    //     '017-fet': {
-    //         image: 'https://i.imgur.com/I4kOALU.png',
-    //         clipPath: 'M0.999283 0L0 787L670.519 734.768L675 33.5854L0.999283 0Z',
-    //         corners: [
-    //             { x: 163.6, y: 201.4 },  // TL
-    //             { x: 1069.9, y: 256.8 }, // TR
-    //             { x: 1069.9, y: 1176.9 },// BR
-    //             { x: 163.6, y: 1252.2 }  // BL
-    //         ],
-    //         width: 935,
-    //         height: 889,
-    //         realWidth: 284,
-    //         realHeight: 270
-    //     },
-    //     '023-dlx': {
-    //         image: 'https://i.imgur.com/gErOPnd.png',
-    //         clipPath: 'M0 19L5 772.5L377 787L370.5 0L0 19Z',
-    //         corners: [
-    //             { x: 163.6, y: 201.4 },  // TL
-    //             { x: 1069.9, y: 256.8 }, // TR
-    //             { x: 1069.9, y: 1176.9 },// BR
-    //             { x: 163.6, y: 1252.2 }  // BL
-    //         ],
-    //         width: 842,
-    //         height: 783,
-    //         realWidth: 256,
-    //         realHeight: 238
-    //     },
-    //     '023-the-bomblet': {
-    //         image: 'https://i.imgur.com/VUnnOg7.png',
-    //         clipPath: 'M0 0L457 0L457 787L0 787Z',
-    //         corners: [
-    //             { x: 163.6, y: 201.4 },  // TL
-    //             { x: 1069.9, y: 256.8 }, // TR
-    //             { x: 1069.9, y: 1176.9 },// BR
-    //             { x: 163.6, y: 1252.2 }  // BL
-    //         ],
-    //         width: 457,
-    //         height: 787,
-    //         realWidth: 139,
-    //         realHeight: 239
-    //     }
-    // }
 };
 
 export const MALFA_SILVER_RAL = '9006'; // White Aluminium
@@ -177,17 +119,57 @@ export const DEFAULT_MIC_CONFIGS = {
 };
 
 export const variantNames = {
-    '1': 'Классическая латунь',
-    '2': 'Сатинированная сталь',
-    '3': 'Матовый антрацит'
+    '1': 'Матовый антрацит',
+    '2': 'Классическая латунь',
+    '3': 'Сатинированная сталь'
 };
 
+// Функция для получения базового пути к изображениям
+function getAssetsBasePath() {
+    // Используем глобальную переменную из template.php
+    if (window.CUSTOMIZER_ASSETS_PATH) {
+        return window.CUSTOMIZER_ASSETS_PATH + '/image/';
+    }
+    
+    // Fallback: определяем путь относительно текущего JS файла
+    const currentPath = new URL(import.meta.url).pathname;
+    const basePath = currentPath.replace(/\/assets\/js\/[^\/]+$/, '/assets/image/');
+    return basePath;
+}
+
+const assetsPath = getAssetsBasePath();
+
 export const CASE_IMAGES = {
-    '017-tube': { mobile: 'https://soyuzmicrophones.ru/image/custom/case_017_tube_mobile.png', tablet: 'https://soyuzmicrophones.ru/image/custom/case_017_tube_tablet.png', desktop: 'https://soyuzmicrophones.ru/image/custom/case_017_tube_desktop.png', _4k: 'https://soyuzmicrophones.ru/image/custom/case_017_tube_4k.png' },
-    '017-fet': { mobile: 'https://soyuzmicrophones.ru/image/custom/case_017_fet-023_dlx_mobile.png', tablet: 'https://soyuzmicrophones.ru/image/custom/case_017_fet-023_dlx_tablet.png', desktop: 'https://soyuzmicrophones.ru/image/custom/case_017_fet-023_dlx_desktop.png', _4k: 'https://soyuzmicrophones.ru/image/custom/case_017_fet-023_dlx_4k.png' },
-    '023-deluxe': { mobile: 'https://soyuzmicrophones.ru/image/custom/case_017_fet-023_dlx_mobile.png', tablet: 'https://soyuzmicrophones.ru/image/custom/case_017_fet-023_dlx_tablet.png', desktop: 'https://soyuzmicrophones.ru/image/custom/case_017_fet-023_dlx_desktop.png', _4k: 'https://soyuzmicrophones.ru/image/custom/case_017_fet-023_dlx_4k.png' },
-    '023-bomblet': { mobile: 'https://soyuzmicrophones.ru/image/custom/case_023thebomblet-23_malfa_mobile.png', tablet: 'https://soyuzmicrophones.ru/image/custom/case_023thebomblet-23_malfa_tablet.png', desktop: 'https://soyuzmicrophones.ru/image/custom/case_023thebomblet-23_malfa_desktop.png', _4k: 'https://soyuzmicrophones.ru/image/custom/case_023thebomblet-23_malfa_4k.png' },
-    '023-malfa': { mobile: 'https://soyuzmicrophones.ru/image/custom/case_023thebomblet-23_malfa_mobile.png', tablet: 'https://soyuzmicrophones.ru/image/custom/case_023thebomblet-23_malfa_tablet.png', desktop: 'https://soyuzmicrophones.ru/image/custom/case_023thebomblet-23_malfa_desktop.png', _4k: 'https://soyuzmicrophones.ru/image/custom/case_023thebomblet-23_malfa_4k.png' }
+    '017-tube': { 
+        mobile: assetsPath + 'case_017_tube_mobile.png', 
+        tablet: assetsPath + 'case_017_tube_tablet.png', 
+        desktop: assetsPath + 'case_017_tube_desktop.png', 
+        _4k: assetsPath + 'case_017_tube_4k.png' 
+    },
+    '017-fet': { 
+        mobile: assetsPath + 'case_017_fet-023_dlx_mobile.png', 
+        tablet: assetsPath + 'case_017_fet-023_dlx_tablet.png', 
+        desktop: assetsPath + 'case_017_fet-023_dlx_desktop.png', 
+        _4k: assetsPath + 'case_017_fet-023_dlx_4k.png' 
+    },
+    '023-deluxe': { 
+        mobile: assetsPath + 'case_017_fet-023_dlx_mobile.png', 
+        tablet: assetsPath + 'case_017_fet-023_dlx_tablet.png', 
+        desktop: assetsPath + 'case_017_fet-023_dlx_desktop.png', 
+        _4k: assetsPath + 'case_017_fet-023_dlx_4k.png' 
+    },
+    '023-bomblet': { 
+        mobile: assetsPath + 'case_023thebomblet-23_malfa_mobile.png', 
+        tablet: assetsPath + 'case_023thebomblet-23_malfa_tablet.png', 
+        desktop: assetsPath + 'case_023thebomblet-23_malfa_desktop.png', 
+        _4k: assetsPath + 'case_023thebomblet-23_malfa_4k.png' 
+    },
+    '023-malfa': { 
+        mobile: assetsPath + 'case_023thebomblet-23_malfa_mobile.png', 
+        tablet: assetsPath + 'case_023thebomblet-23_malfa_tablet.png', 
+        desktop: assetsPath + 'case_023thebomblet-23_malfa_desktop.png', 
+        _4k: assetsPath + 'case_023thebomblet-23_malfa_4k.png' 
+    }
 };
 
 export const CASE_GEOMETRY = {

@@ -7,7 +7,7 @@ export let currentState = {
     body: { variant: '3', color: null, colorValue: '#a1a1a0' },
     logo: { variant: 'gold', bgColor: '9005', bgColorValue: '#131516', customLogo: null },
     case: { variant: 'standard', customLogo: null, logoTransform: { x: 40, y: 26, scale: 1.2 }, logoWidthMM: 0, logoOffsetMM: { top: 0, left: 0 } },
-    shockmount: { enabled: true, variant: 'white', color: null, colorValue: '#ffffff', pins: { variant: 'RAL9003', colorValue: '#F4F4F4', material: null } },
+    shockmount: { enabled: false, variant: 'white', color: null, colorValue: '#ffffff', pins: { variant: 'RAL9003', colorValue: '#F4F4F4', material: null } },
     prices: { base: CONFIG.basePrice, spheres: 0, body: 0, logo: 0, case: 0, shockmount: 0 },
 
     // For tracking changes and reset functionality
