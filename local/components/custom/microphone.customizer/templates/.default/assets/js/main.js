@@ -1,97 +1,79 @@
-import { initEventListeners, updateUI } from './ui-core.js';
-import { initPalettes } from './modules/appearance.js';
-import { initCaseAndShockmount } from './modules/accessories.js';
-import { init as initLogo } from './modules/logo.js';
-import { initializeWoodCase } from './modules/wood-case.js';
-import { initShockmount } from './modules/shockmount.js';
+import { dispatch } from './state-reducer.js';
+import { getState } from './state.js';
+import { initSvgComposition } from './layer-composition.js';
+import { switchMicrophone, toggleFullscreen, toggleTheme, resetMicrophoneConfig } from './microphone-selector.js';
 import { loadSVG } from './engine.js';
-import { initValidation } from './services/validation.js';
-import { preloadImages, getDevice } from './utils.js';
-import { CASE_IMAGES, CASE_GEOMETRY } from './config.js';
-import { currentState, setInitialConfig } from './state.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Проверяем, есть ли data-element-id и загружаем конфигурацию
-    const appRoot = document.getElementById('customizer-app-root');
-    const elementId = appRoot ? parseInt(appRoot.dataset.elementId) : 0;
-    
-    // Автозаполнение полей формы данными пользователя
-    if (window.BX_USER_DATA && window.BX_USER_DATA.AUTHORIZED) {
-        const userData = window.BX_USER_DATA;
-        
-        // Заполняем поля формы
-        const nameField = document.getElementById('input-name');
-        const emailField = document.getElementById('input-email');
-        const phoneField = document.getElementById('input-phone');
-        const countryField = document.getElementById('input-country');
-        const cityField = document.getElementById('input-city');
-        
-        if (nameField && userData.NAME) nameField.value = userData.NAME;
-        if (emailField && userData.EMAIL) emailField.value = userData.EMAIL;
-        if (phoneField) {
-            // Телефон нужно получить из профиля пользователя
-            // Это поле может отсутствовать в стандартных данных
-            const userPhone = userData.PERSONAL_PHONE || userData.PHONE || '';
-            phoneField.value = userPhone;
-        }
-        if (countryField && userData.PERSONAL_COUNTRY) countryField.value = userData.PERSONAL_COUNTRY;
-        if (cityField && userData.PERSONAL_CITY) cityField.value = userData.PERSONAL_CITY;
-    }
-    
-    if (elementId > 0) {
-        // Если есть ID товара, пытаемся загрузить его конфигурацию
-        try {
-            const ajaxPath = appRoot.dataset.ajaxPath;
-            const sessid = appRoot.dataset.sessid;
-            const response = await fetch(ajaxPath, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `action=loadConfig&element_id=${elementId}&sessid=${sessid}`
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                if (data.config) {
-                    // Загружаем конфигурацию товара
-                    Object.assign(currentState, data.config);
-                    setInitialConfig(data.config);
-                }
-            }
-        } catch (e) {
-            console.warn("Failed to load element config, using defaults:", e);
-        }
-    } else {
-        // Автономный режим - используем конфигурацию по умолчанию
-        setInitialConfig(currentState);
-    }
+    console.log('🚀 Customizer Overhaul Initializing...');
 
-    // Preload essential images
-    const device = getDevice(CASE_GEOMETRY.res);
-    const imagesToPreload = Object.values(CASE_IMAGES).map(imgSet => imgSet[device]);
-    preloadImages(imagesToPreload);
+    // Initialize SVG composition
+    initSvgComposition();
 
+    // Load SVG
     await loadSVG();
-    console.log('🖼️ SVG загружен');
-    initPalettes();
-    initEventListeners();
-    initCaseAndShockmount();
-    initValidation();
-    initLogo();
-    initializeWoodCase();
-    initShockmount();
 
-    // All inline event handlers have been replaced.
-    // The window object is no longer needed.
+    // Initial render
+    dispatch({ type: 'INIT' }); // Trigger first render
 
-    // Initial UI update
-    updateUI();
+    // Event Delegation
+    document.addEventListener('click', (e) => {
+        const target = e.target;
 
-    // Initial animation
-    setTimeout(() => {
-        document.querySelectorAll('.menu-item').forEach((item, i) => {
-            setTimeout(() => item.classList.add('animate-in'), i * 100);
-        });
-    }, 300);
+        // Microphone Selector
+        const micBtn = target.closest('.mic-selector-btn');
+        if (micBtn) {
+            switchMicrophone(micBtn.dataset.mic);
+            return;
+        }
+
+        // Sidebar Actions
+        const optionItem = target.closest('.option-item');
+        if (optionItem) {
+            const action = optionItem.dataset.action;
+            const state = getState();
+
+            switch(action) {
+                case 'set-spheres':
+                    dispatch({ type: 'SET_SPHERES_CONFIG', payload: { ...state.singleMic.spheres, variant: optionItem.dataset.variant, color: null } });
+                    break;
+                case 'set-body':
+                    dispatch({ type: 'SET_BODY_CONFIG', payload: { ...state.singleMic.body, variant: optionItem.dataset.variant, color: null } });
+                    break;
+                case 'set-logo':
+                    dispatch({ type: 'SET_LOGO_CONFIG', payload: { ...state.singleMic.logo, type: optionItem.dataset.type } });
+                    break;
+                case 'set-shockmount-color':
+                    dispatch({ type: 'SET_SHOCKMOUNT_CONFIG', payload: { ...state.singleMic.shockmount, color: optionItem.dataset.color } });
+                    break;
+                case 'set-pins-color':
+                    dispatch({ type: 'SET_SHOCKMOUNT_CONFIG', payload: { ...state.singleMic.shockmount, pins: optionItem.dataset.color } });
+                    break;
+            }
+            return;
+        }
+
+        // Controls
+        if (target.closest('#sidebar-collapse-toggle')) {
+            dispatch({ type: 'TOGGLE_SIDEBAR' });
+        } else if (target.closest('#sidebar-expand-toggle')) {
+            dispatch({ type: 'EXPAND_SIDEBAR' });
+        } else if (target.closest('#sidebar-mode-toggle')) {
+            const modes = ['sidebar', 'sticky', 'embedded', 'adaptive'];
+            const currentMode = getState().ui.sidebar.mode;
+            const nextMode = modes[(modes.indexOf(currentMode) + 1) % modes.length];
+            dispatch({ type: 'CHANGE_SIDEBAR_MODE', payload: nextMode });
+        } else if (target.closest('#reset-config-btn')) {
+            resetMicrophoneConfig();
+        } else if (target.closest('#fullscreen-toggle-btn')) {
+            toggleFullscreen();
+        } else if (target.closest('#theme-toggle-btn')) {
+            toggleTheme();
+        } else if (target.closest('#shockmount-toggle')) {
+            const state = getState();
+            dispatch({ type: 'SET_SHOCKMOUNT_CONFIG', payload: { ...state.singleMic.shockmount, enabled: target.checked } });
+        }
+    });
+
+    console.log('✅ Customizer Overhaul Initialized.');
 });

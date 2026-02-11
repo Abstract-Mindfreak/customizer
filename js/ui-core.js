@@ -13,7 +13,7 @@ export function updateUI() {
     updateMalfaLogoOptionsVisibility(); // Call the new function here
     document.getElementById('spheres-color-display').style.backgroundColor = currentState.spheres.color ? currentState.spheres.colorValue : '#000000';
     document.getElementById('body-color-display').style.backgroundColor = currentState.body.color ? currentState.body.colorValue : '#000000';
-    
+
     const logoColor = currentState.logo.customLogo ? '#000' : (currentState.logo.bgColor === 'black' ? '#000' : currentState.logo.bgColorValue);
     document.getElementById('logo-color-display').style.backgroundColor = logoColor;
 
@@ -24,28 +24,31 @@ export function updateUI() {
     // Task 1: Update labels
     document.getElementById('spheres-subtitle').textContent = currentState.spheres.color ? currentState.spheres.color : variantNames[currentState.spheres.variant];
     document.getElementById('body-subtitle').textContent = currentState.body.color ? currentState.body.color : variantNames[currentState.body.variant];
-    document.getElementById('logo-subtitle').textContent = currentState.logo.customLogo 
-        ? 'Кастомный' 
-        : (currentState.logo.variant === 'malfa' 
-            ? (currentState.logo.bgColor === MALFA_SILVER_RAL ? 'MALFA Edition (Серебро)' 
-                : (currentState.logo.bgColor === MALFA_GOLD_RAL ? 'MALFA Edition (Золото)' 
-                    : 'MALFA Edition')) 
-            : (FREE_LOGO_RALS.includes(currentState.logo.bgColor) 
-                ? `RAL ${currentState.logo.bgColor}` 
+    document.getElementById('logo-subtitle').textContent = currentState.logo.customLogo
+        ? 'Кастомный'
+        : (currentState.logo.variant === 'malfa'
+            ? (currentState.logo.bgColor === MALFA_SILVER_RAL ? 'MALFA Edition (Серебро)'
+                : (currentState.logo.bgColor === MALFA_GOLD_RAL ? 'MALFA Edition (Золото)'
+                    : 'MALFA Edition'))
+            : (FREE_LOGO_RALS.includes(currentState.logo.bgColor)
+                ? `RAL ${currentState.logo.bgColor}`
                 : (currentState.logo.variant === 'silver' ? 'Холодный хром' : 'Классическая латунь')));
-    
+
     // Update case and shockmount subtitles
     const caseSubtitle = currentState.case.variant === 'custom' ? 'Собственное изображение' : 'Стандартный (Логотип Soyuz)';
     document.getElementById('case-subtitle').textContent = caseSubtitle;
-    
+
     const shockmountColorNames = {
         'white': 'Белый',
         'cream': 'Слоновая кость',
         'black': 'Глубокий черный'
     };
     let shockmountText = shockmountColorNames[currentState.shockmount.variant] || 'Белый';
+
     if (currentState.shockmount.variant === 'custom' && currentState.shockmount.color) {
-        shockmountText = currentState.shockmount.color;
+        // Извлекаем чистый RAL номер из строки типа "RAL 9003"
+        const ralMatch = currentState.shockmount.color.match(/RAL\s*(\d+)/);
+        shockmountText = ralMatch ? ralMatch[1] : currentState.shockmount.color;
     }
     document.getElementById('shockmount-subtitle').textContent = shockmountText;
 
@@ -96,13 +99,13 @@ export function initEventListeners() {
             document.querySelectorAll('.model-button').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             setState('model', this.dataset.model);
-            
+
             // Show/hide variant options based on model
             document.querySelectorAll('.variant-options').forEach(options => {
                 options.style.display = 'none';
             });
             document.getElementById(`variants-${this.dataset.model}`).style.display = 'flex';
-            
+
             // Reset to first variant of new model and apply preset
             const firstVariant = document.querySelector(`#variants-${this.dataset.model} .variant-button`);
             if (firstVariant) {
@@ -111,7 +114,7 @@ export function initEventListeners() {
                 setState('variant', firstVariant.dataset.variant);
                 applyVariantPreset(firstVariant.dataset.variant);
             }
-            
+
             updateShockmountLayers();
             updateSVG();
         });
@@ -124,11 +127,11 @@ export function initEventListeners() {
             this.classList.add('active');
             setState('variant', this.dataset.variant);
             applyVariantPreset(this.dataset.variant);
-            
+
             // Update shockmount visibility immediately
             updateShockmountVisibility();
         });
-        
+
         // Add keyboard support
         btn.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -137,7 +140,7 @@ export function initEventListeners() {
                 this.classList.add('active');
                 setState('variant', this.dataset.variant);
                 applyVariantPreset(this.dataset.variant);
-                
+
                 // Update shockmount visibility immediately
                 updateShockmountVisibility();
             }
@@ -200,7 +203,7 @@ export function initEventListeners() {
 
                     // Explicitly reset prices to 0 for configurable options
                     currentState.prices = { base: CONFIG.basePrice, spheres: 0, body: 0, logo: 0, case: 0, shockmount: 0 };
-                    
+
                     // Re-set initial config
                     setInitialConfig(defaultConfig);
 
@@ -220,10 +223,10 @@ export function initEventListeners() {
 
     document.querySelectorAll('.submenu .variant-item').forEach(item => {
         const handler = function() {
-            if(this.onclick) return; 
+            if(this.onclick) return;
             const section = this.closest('.submenu').id.replace('submenu-', '');
             handleStyleSelection(section, this.dataset.variant);
-            
+
             // Switch to microphone preview when spheres or body options are selected
             if (section === 'spheres' || section === 'body') {
                 switchPreview('microphone');
@@ -237,12 +240,12 @@ export function initEventListeners() {
                 switchPreview('microphone');
             }
         };
-        
+
         item.addEventListener('click', handler);
         item.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                if(this.onclick) { this.click(); return; } 
+                if(this.onclick) { this.click(); return; }
                 handler.call(this);
             }
         });
@@ -252,26 +255,40 @@ export function initEventListeners() {
     document.querySelector('.order-button').addEventListener('click', () => {
         modal.style.display = 'flex';
     });
-    
+
     document.getElementById('order-form').addEventListener('submit', (e) => {
         e.preventDefault();
+        console.log('📝 Начинаю валидацию формы');
+
         const inputs = e.target.querySelectorAll('input');
         let isValid = true;
+
         inputs.forEach(input => {
-            if (!validateField(input)) isValid = false;
+            try {
+                if (!validateField(input)) isValid = false;
+            } catch (error) {
+                console.error('❌ Ошибка валидации поля:', error);
+                // Продолжаем проверку других полей даже если одно упало
+            }
         });
 
         if (!isValid) {
+            console.log('❌ Валидация не пройдена');
             showNotification('Пожалуйста, исправьте ошибки в форме', 'error');
             return;
         }
 
+        console.log('✅ Валидация пройдена');
         const formData = new FormData(e.target);
         const clientData = Object.fromEntries(formData.entries());
-        
-        closeOrderModal();
-        showNotification('Конфигурация сохранена. Заказ успешно сформирован!', 'success');
-        generateReport(clientData);
+
+        // Импортируем и вызываем sendOrder
+        import('./services/report.js').then(({ sendOrder }) => {
+            sendOrder(clientData);
+        }).catch(error => {
+            console.error('❌ Ошибка импорта sendOrder:', error);
+            alert('Ошибка при отправке заявки. Пожалуйста, попробуйте еще раз.');
+        });
     });
 
     document.querySelector('.print-btn').addEventListener('click', () => {
@@ -323,18 +340,18 @@ export function closeReportModal() {
 export function toggleSubmenu(section) {
     const menuItem = document.querySelector(`[data-section="${section}"]`);
     const submenu = document.getElementById(`submenu-${section}`);
-    
+
     if (!menuItem || !submenu) return;
-    
+
     const isExpanded = menuItem.classList.contains('expanded');
-    
+
     document.querySelectorAll('.submenu').forEach(m => m.classList.remove('active'));
     document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('expanded'));
-    
+
     if (!isExpanded) {
         submenu.classList.add('active');
         menuItem.classList.add('expanded');
-        
+
         // Auto-preview switching logic
         if (['spheres', 'body', 'logo'].includes(section)) {
             const currentPreview = document.querySelector('.preview-switch-btn.active')?.dataset.preview;
@@ -352,11 +369,11 @@ export function toggleSubmenu(section) {
                 switchPreview('shockmount');
             }
         }
-        
+
         setTimeout(() => {
             const backBtn = submenu.querySelector('.submenu-back');
             if (backBtn) backBtn.focus();
-        }, 400); 
+        }, 400);
     }
 }
 

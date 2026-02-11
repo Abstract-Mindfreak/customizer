@@ -1,39 +1,36 @@
-import { initEventListeners, updateUI } from './ui-core.js';
-import { initPalettes } from './modules/appearance.js';
-import { initCaseAndShockmount } from './modules/accessories.js';
-import { init as initLogo } from './modules/logo.js';
-import { initializeWoodCase } from './modules/wood-case.js';
-import { initShockmount } from './modules/shockmount.js';
-import { loadSVG } from './engine.js';
-import { initValidation } from './services/validation.js';
-import { preloadImages, getDevice } from './utils.js';
-import { CASE_IMAGES, CASE_GEOMETRY } from './config.js';
+import { dispatch, getState } from './state-reducer.js';
+import { initSvgComposition } from './layer-composition.js';
+import { switchMicrophone, toggleFullscreen, toggleTheme } from './microphone-selector.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Preload essential images
-    const device = getDevice(CASE_GEOMETRY.res);
-    const imagesToPreload = Object.values(CASE_IMAGES).map(imgSet => imgSet[device]);
-    preloadImages(imagesToPreload);
+    console.log('🚀 Customizer Overhaul Initializing...');
 
-    await loadSVG();
-    initPalettes();
-    initEventListeners();
-    initCaseAndShockmount();
-    initValidation();
-    initLogo();
-    initializeWoodCase();
-    initShockmount();
-    
-    // All inline event handlers have been replaced.
-    // The window object is no longer needed.
+    // Initialize SVG composition
+    initSvgComposition();
 
-    // Initial UI update
-    updateUI();
+    // Initial render
+    dispatch({ type: 'INIT' }); // Trigger first render
 
-    // Initial animation
-    setTimeout(() => {
-        document.querySelectorAll('.menu-item').forEach((item, i) => {
-            setTimeout(() => item.classList.add('animate-in'), i * 100);
-        });
-    }, 300);
+    // Event Delegation for Microphone Selector (outside sidebar)
+    document.addEventListener('click', (e) => {
+        const micBtn = e.target.closest('.mic-selector-btn');
+        if (micBtn) {
+            const micId = micBtn.dataset.mic;
+            switchMicrophone(micId);
+        }
+
+        if (e.target.id === 'reset-config-btn') {
+            // Implementation in microphone-selector.js
+        }
+
+        if (e.target.id === 'fullscreen-toggle-btn') {
+            toggleFullscreen();
+        }
+
+        if (e.target.id === 'theme-toggle-btn') {
+            toggleTheme();
+        }
+    });
+
+    console.log('✅ Customizer Overhaul Initialized.');
 });

@@ -1,0 +1,19 @@
+.svg-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#woodcase-preview-container {
+    z-index: 1;
+}
+
+#shockmount-preview-container {
+    z-index: 2;
+}
+
+#mic-preview-container {
+    z-index: 3;
+}
