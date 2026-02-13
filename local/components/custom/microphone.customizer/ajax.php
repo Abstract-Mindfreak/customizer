@@ -1,231 +1,72 @@
 <?php
 define("NO_KEEP_STATISTIC", true);
 define("NOT_CHECK_PERMISSIONS", true);
-require_once($_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/main/include/prolog_before.php");
+
+require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_before.php");
 
 use Bitrix\Main\Loader;
 use Bitrix\Main\Context;
-use Bitrix\Main\Web\Json;
+
+// Полная очистка буфера, чтобы убрать любой текст/ошибки до этого момента
+while (ob_get_level()) {
+    ob_end_clean();
+}
 
 header('Content-Type: application/json');
 
-global $USER;
-
-if (!check_bitrix_sessid()) {
-    // Проверяем, не является ли это автономным режимом
-    $request = Context::getCurrent()->getRequest();
-    $element_id = (int)$request->getPost("element_id");
-    if ($element_id !== 0) {
-        echo Json::encode(["error" => "Session expired"]);
-        die();
-    }
-}
-
-if (!$USER->IsAuthorized()) {
-    // Проверяем, не является ли это автономным режимом
-    $element_id = (int)$request->getPost("element_id");
-    if ($element_id !== 0) {
-        echo Json::encode(["error" => "Authorization required"]);
-        die();
-    }
+if (!Loader::includeModule("form")) {
+    echo json_encode(["success" => false, "error" => "Module Form not found"]);
+    die();
 }
 
 $request = Context::getCurrent()->getRequest();
 $action = $request->getPost("action");
-$elementId = (int)$request->getPost("elementId");
-$element_id = (int)$request->getPost("element_id"); // для loadConfig
 
-if (!Loader::includeModule("iblock")) {
-    echo Json::encode(["error" => "Iblock module not found"]);
+if ($action === "createOrder") {
+    $FORM_ID = 1;
+
+    // Только те поля, которые мы реально хотим сохранить (без USER_FORM)
+    $fields = [
+        "NAME_FORM" => 6,
+        "LAST_NAME_FORM" => 7,
+        "CITY_FORM" => 8,
+        "COUNTRY_FORM" => 9,
+        "EMAIL_FORM" => 10,
+        "PHONE_FORM" => 11,
+        "COMMENT_FORM" => 12,
+        "MIC_MODEL_FORM" => 13,
+        "MIC_SPHERES_FORM" => 14,
+        "MIC_BODY_FORM" => 15,
+        "MIC_LOGO_TYPE_FORM" => 16,
+        "MIC_LOGO_BG_FORM" => 17,
+        "WOODCASE_IMAGE_DESK_FORM" => 18,
+        "SHOCKMOUNT_COLOR_FORM" => 19,
+        "SHOCKMOUNT_PINS_FORM" => 20,
+        "PRICE_FORM" => 21
+    ];
+
+    $arValues = [];
+    foreach ($fields as $postKey => $questionId) {
+        $val = $request->getPost($postKey);
+        if ($val !== null) {
+            $rsAnswer = CAnswer::GetList($questionId, $by="s_id", $order="asc", [], $fv=null);
+            if ($arAnswer = $rsAnswer->Fetch()) {
+                $bitrixKey = "form_" . $arAnswer["FIELD_TYPE"] . "_" . $arAnswer["ID"];
+                $arValues[$bitrixKey] = $val;
+            }
+        }
+    }
+
+    // Добавляем результат. "N" - не проверять права доступа.
+    $RESULT_ID = CFormResult::Add($FORM_ID, $arValues, "N", "Y");
+
+    if ($RESULT_ID) {
+        echo json_encode(["success" => true, "orderId" => $RESULT_ID]);
+    } else {
+        global $strError;
+        echo json_encode(["success" => false, "error" => strip_tags($strError) ?: "CFormResult::Add failed"]);
+    }
     die();
 }
 
-// Для автономного режима (element_id = 0) пропускаем проверку прав
-if ($elementId > 0 || $element_id > 0) {
-    $actualElementId = $elementId > 0 ? $elementId : $element_id;
-    
-    // Check if user has permission to edit the element
-    $res = CIBlockElement::GetByID($actualElementId);
-    if ($arElement = $res->GetNext()) {
-        // Check if user has edit rights on the iblock
-        $permission = CIBlock::GetPermission($arElement["IBLOCK_ID"]);
-        if ($permission < "W") { // W = Write
-            echo Json::encode(["error" => "Access denied"]);
-            die();
-        }
-    } else {
-        echo Json::encode(["error" => "Element not found"]);
-        die();
-    }
-}
-
-switch ($action) {
-    case "save":
-        $config = $request->getPost("config");
-        if (!$elementId || !$config) {
-            echo Json::encode(["error" => "Invalid data"]);
-            break;
-        }
-
-        // В автономном режиме сохранение не поддерживается
-        if ($elementId === 0) {
-            echo Json::encode(["error" => "Save not available in standalone mode"]);
-            break;
-        }
-
-        // Validate configuration format
-        $decodedConfig = json_decode($config, true);
-        if (!$decodedConfig) {
-            echo Json::encode(["error" => "Invalid JSON configuration"]);
-            break;
-        }
-
-        $el = new CIBlockElement;
-        $res = $el->SetPropertyValuesEx($elementId, false, [
-            "CUSTOM_CONFIG" => $config
-        ]);
-
-        echo Json::encode(["success" => true]);
-        break;
-
-    case "load":
-        if (!$elementId) {
-            echo Json::encode(["error" => "Invalid element ID"]);
-            break;
-        }
-
-        $dbRes = CIBlockElement::GetProperty(
-            $arElement["IBLOCK_ID"],
-            $elementId,
-            [],
-            ["CODE" => "CUSTOM_CONFIG"]
-        );
-        if ($ob = $dbRes->Fetch()) {
-            echo Json::encode(["success" => true, "config" => $ob["VALUE"]]);
-        } else {
-            echo Json::encode(["error" => "Config not found"]);
-        }
-        break;
-
-    case "loadConfig":
-        // Поддержка автономного режима
-        if ($element_id === 0) {
-            // В автономном режиме возвращаем пустую конфигурацию
-            echo Json::encode([
-                "success" => true, 
-                "config" => null
-            ]);
-        } else {
-            // Загрузка конфигурации товара
-            $dbRes = CIBlockElement::GetProperty(
-                $arElement["IBLOCK_ID"],
-                $element_id,
-                [],
-                ["CODE" => "CUSTOM_CONFIG"]
-            );
-            if ($ob = $dbRes->Fetch()) {
-                $config = $ob["VALUE"] ? json_decode($ob["VALUE"], true) : null;
-                echo Json::encode([
-                    "success" => true, 
-                    "config" => $config
-                ]);
-            } else {
-                echo Json::encode([
-                    "success" => true, 
-                    "config" => null
-                ]);
-            }
-        }
-        break;
-
-    case "createOrder":
-        // Создание заявки в инфоблоке №16
-        try {
-            if (!Loader::includeModule("iblock")) {
-                throw new Exception("Iblock module not found");
-            }
-
-            // Подготовка полей элемента
-            $arFields = Array(
-                "IBLOCK_ID" => 16,
-                "NAME" => "Заявка " . ($request->getPost("MIC_MODEL") ?: "Не указано") . " от " . ($request->getPost("NAME") ?: "Не указано"),
-                "ACTIVE" => "Y",
-                "PROPERTY_VALUES" => Array()
-            );
-
-            // Личные данные
-            $arFields["PROPERTY_VALUES"]["USER"] = $request->getPost("USER");
-            $arFields["PROPERTY_VALUES"]["NAME"] = $request->getPost("NAME");
-            $arFields["PROPERTY_VALUES"]["LAST_NAME"] = $request->getPost("LAST_NAME");
-            $arFields["PROPERTY_VALUES"]["CITY"] = $request->getPost("CITY");
-            $arFields["PROPERTY_VALUES"]["COUNTRY"] = $request->getPost("COUNTRY");
-            $arFields["PROPERTY_VALUES"]["EMAIL"] = $request->getPost("EMAIL");
-            $arFields["PROPERTY_VALUES"]["PHONE"] = $request->getPost("PHONE");
-            $arFields["PROPERTY_VALUES"]["COMMENT"] = $request->getPost("COMMENT");
-
-            // Микрофон
-            $arFields["PROPERTY_VALUES"]["MIC_MODEL"] = $request->getPost("MIC_MODEL");
-            $arFields["PROPERTY_VALUES"]["MIC_SPHERES"] = $request->getPost("MIC_SPHERES");
-            $arFields["PROPERTY_VALUES"]["MIC_BODY"] = $request->getPost("MIC_BODY");
-            $arFields["PROPERTY_VALUES"]["MIC_LOGO_TYPE"] = $request->getPost("MIC_LOGO_TYPE");
-            $arFields["PROPERTY_VALUES"]["MIC_LOGO_BG"] = $request->getPost("MIC_LOGO_BG");
-
-            // Кейс параметры
-            $arFields["PROPERTY_VALUES"]["WOODCASE_IMAGE_DESK"] = $request->getPost("WOODCASE_IMAGE_DESK");
-
-            // Подвес
-            $arFields["PROPERTY_VALUES"]["SHOCKMOUNT_COLOR"] = $request->getPost("SHOCKMOUNT_COLOR");
-            $arFields["PROPERTY_VALUES"]["SHOCKMOUNT_PINS"] = $request->getPost("SHOCKMOUNT_PINS");
-
-            // Финансы
-            $arFields["PROPERTY_VALUES"]["PRICE"] = $request->getPost("PRICE");
-
-            // Обработка файлов
-            $arFiles = Array();
-            
-            // Логотип микрофона
-            if ($_FILES["MIC_LOGO_CUSTOM"]["error"] == 0) {
-                $arFiles["MIC_LOGO_CUSTOM"] = $_FILES["MIC_LOGO_CUSTOM"];
-            }
-            
-            // Логотип кейса
-            if ($_FILES["WOODCASE_IMAGE"]["error"] == 0) {
-                $arFiles["WOODCASE_IMAGE"] = $_FILES["WOODCASE_IMAGE"];
-            }
-            
-            // Превью микрофона
-            if ($_FILES["PREVIEW_MIC_CUSTOM"]["error"] == 0) {
-                $arFiles["PREVIEW_MIC_CUSTOM"] = $_FILES["PREVIEW_MIC_CUSTOM"];
-            }
-
-            // Создание элемента
-            $obElement = new CIBlockElement();
-            $elementId = $obElement->Add($arFields, false, true, true);
-
-            if ($elementId > 0) {
-                echo Json::encode([
-                    "success" => true,
-                    "orderId" => $elementId,
-                    "message" => "Заявка успешно создана"
-                ]);
-            } else {
-                echo Json::encode([
-                    "success" => false,
-                    "error" => "Ошибка при создании заявки: " . $obElement->LAST_ERROR
-                ]);
-            }
-
-        } catch (Exception $e) {
-            echo Json::encode([
-                "success" => false,
-                "error" => $e->getMessage()
-            ]);
-        }
-        break;
-
-    default:
-        echo Json::encode(["error" => "Unknown action"]);
-        break;
-}
-
-require_once($_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/main/include/epilog_after.php");
+echo json_encode(["success" => false, "error" => "Action mismatch"]);
