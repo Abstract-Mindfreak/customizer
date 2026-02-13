@@ -2,32 +2,33 @@ import { currentState } from '../state.js';
 import { CONFIG, variantNames } from '../config.js';
 
 // Функция для конвертации Base64 в Blob
-function base64ToBlob(base64Data, contentType = 'image/png') {
+function base64ToBlob(base64String) {
     try {
-        // Проверяем на наличие данных и Base64 формат
-        if (!base64Data || typeof base64Data !== 'string' || !base64Data.includes('base64')) {
-            console.warn('⚠️ Некорректные Base64 данные:', base64Data);
-            return null;
+        // Регулярка теперь понимает svg+xml и другие форматы
+        const parts = base64String.split(';base64,');
+        const contentType = parts[0].split(':')[1];
+        const raw = window.atob(parts[1]);
+        const rawLength = raw.length;
+        const uInt8Array = new Uint8Array(rawLength);
+
+        for (let i = 0; i < rawLength; ++i) {
+            uInt8Array[i] = raw.charCodeAt(i);
         }
-        
-        // Удаляем префикс data:image/...;base64,
-        const base64 = base64Data.replace(/^data:image\/[a-z]+;base64,/, '');
-        if (!base64) {
-            console.warn('⚠️ Пустые Base64 данные после очистки');
-            return null;
-        }
-        
-        const byteCharacters = atob(base64);
-        const byteNumbers = new Array(byteCharacters.length);
-        
-        for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        
-        const byteArray = new Uint8Array(byteNumbers);
-        return new Blob([byteArray], { type: contentType });
+
+        return new Blob([uInt8Array], { type: contentType });
     } catch (e) {
         console.error('Error converting base64 to blob:', e);
+        return null;
+    }
+}
+
+// Функция для конвертации SVG в Blob
+function svgToBlob(svgString) {
+    try {
+        const blob = new Blob([svgString], { type: 'image/svg+xml' });
+        return blob;
+    } catch (e) {
+        console.error('Error converting SVG to blob:', e);
         return null;
     }
 }
@@ -47,158 +48,151 @@ function createMicrophonePreview() {
 }
 
 export async function sendOrder(clientData) {
-    console.log('🚀 Функция sendOrder вызвана!', clientData);
+    const bitrixForm = document.querySelector('form[name="SIMPLE_FORM_1"]');
+    const formData = new FormData(bitrixForm); // Берем все скрытые поля и токены сразу
+
+    // 1. Добавляем текстовые данные (используем те же ID, что сработали)
+    formData.set('form_text_24', clientData.name || '');
+    formData.set('form_text_25', clientData.lastname || '');
+    formData.set('form_text_26', clientData.city || '');
+    formData.set('form_text_27', clientData.country || '');
+    formData.set('form_text_28', clientData.email || '');
+    formData.set('form_text_29', clientData.phone || '');
+    formData.set('form_text_30', clientData.comment || '');
+    formData.set('form_text_31', `Модель: ${currentState.model} (${currentState.variant})`);
     
-    // Инициализация pins если отсутствует
-    if (!currentState.shockmount.pins) {
-        currentState.shockmount.pins = { variant: 'pins-RAL9003' };
-    }
+    // Сферы - правильные названия
+    const sphereNames = {
+        '1': 'Глубокий черный',
+        '2': 'Классическая латунь', 
+        '3': 'Сатинированная сталь'
+    };
+    const sphereValue = sphereNames[currentState.spheres.variant] || currentState.spheres.variant;
+    formData.set('form_text_32', sphereValue);
     
-    console.log('🚀 Начинаю отправку заказа');
+    // Корпус - правильные названия
+    const bodyNames = {
+        '1': 'Глубокий черный',
+        '2': 'Классическая латунь',
+        '3': 'Сатинированная сталь'
+    };
+    const bodyValue = bodyNames[currentState.body.variant] || currentState.body.variant;
+    formData.set('form_text_33', bodyValue);
     
-    const appRoot = document.getElementById('customizer-app-root');
-    const ajaxPath = appRoot.dataset.ajaxPath;
-    const sessid = appRoot.dataset.sessid;
+    // Логотип тип
+    const logoTypeText = currentState.logo.customLogo ? 'Кастомный логотип микрофона' : 'STANDARD';
+    formData.set('form_text_34', logoTypeText);
     
-    // Создаем FormData
-    const formData = new FormData();
-    formData.append('action', 'createOrder'); // Добавляем action!
-    formData.append('sessid', sessid);
-    console.log('📋 FormData создана');
+    // Логотип фон - прочерк если кастомный логотип
+    const logoBgText = currentState.logo.customLogo ? '-' : (currentState.logo.bgColor || '');
+    formData.set('form_text_35', logoBgText);
     
-    // Личные данные
-    formData.append('USER', window.BX_USER_DATA?.ID || '');
-    formData.append('LAST_NAME', clientData.lastname || '');
-    formData.append('NAME', clientData.name || '');
-    formData.append('CITY', clientData.city || '');
-    formData.append('COUNTRY', clientData.country || '');
-    formData.append('EMAIL', clientData.email || '');
-    formData.append('PHONE', clientData.phone || '');
-    formData.append('COMMENT', clientData.comment || '');
+    // Кейс - добавляем отступ слева
+    const woodcaseDesk = `Ш:${currentState.case.logoWidthMM}мм, Сверху:${currentState.case.logoOffsetMM.top}мм, Слева:${currentState.case.logoOffsetMM.left}мм`;
+    formData.set('form_text_36', woodcaseDesk);
     
-    // Данные микрофона
-    formData.append('MIC_MODEL', `Союз ${currentState.model.toUpperCase()} - ${currentState.variant.toUpperCase()}`);
-    formData.append('MIC_SPHERES', currentState.spheres.color || variantNames[currentState.spheres.variant]);
-    formData.append('MIC_BODY', currentState.body.color || variantNames[currentState.body.variant]);
-    formData.append('MIC_LOGO_TYPE', currentState.logo.customLogo ? 'CUSTOM' : 'STANDARD');
-    formData.append('MIC_LOGO_BG', currentState.logo.bgColor || 'black');
-    
-    // Логотипы и файлы
-    if (currentState.logo.customLogo && currentState.logo.customLogo.includes('base64')) {
-        const logoBlob = base64ToBlob(currentState.logo.customLogo);
-        if (logoBlob) {
-            formData.append('MIC_LOGO_CUSTOM', logoBlob, 'custom_logo.png');
-            console.log('🖼️ Логотип микрофона добавлен');
-        }
-    }
-    
-    // Данные подвеса
-    formData.append('SHOCKMOUNT_ENABLED', currentState.shockmount.enabled ? 'Y' : 'N');
-    formData.append('SHOCKMOUNT_COLOR', currentState.shockmount.color || currentState.shockmount.variant || 'Standard');
-    formData.append('SHOCKMOUNT_PINS', currentState.shockmount.pins?.variant || 'pins-RAL9003');
-    
-    // Данные кейса
-    formData.append('WOODCASE_VARIANT', currentState.case.variant);
-    if (currentState.case.customLogo && currentState.case.customLogo.includes('base64')) {
-        const caseBlob = base64ToBlob(currentState.case.customLogo);
-        if (caseBlob) {
-            formData.append('WOODCASE_IMAGE', caseBlob, 'wood_case_logo.png');
-            console.log('🖼️ Логотип кейса добавлен');
-        }
-    }
-    
-    // Превью микрофона
-    const previewBlob = createMicrophonePreview();
-    if (previewBlob) {
-        formData.append('PREVIEW_MIC_CUSTOM', previewBlob, 'microphone_preview.svg');
-        console.log('📄 Превью микрофона добавлено');
-    }
-    
-    // Подвес
-    if (currentState.shockmount.enabled) {
-        formData.append('SHOCKMOUNT_COLOR', currentState.shockmount.color || currentState.shockmount.variant);
-        formData.append('SHOCKMOUNT_PINS', currentState.shockmount.pins.variant || 'RAL9003');
-    }
-    
-    // Кейс параметры
-    const { logoWidthMM, logoOffsetMM } = currentState.case;
-    const woodcaseDesk = `Ш:${logoWidthMM}мм, Сверху:${logoOffsetMM.top}мм, Слева:${logoOffsetMM.left}мм`;
-    formData.append('WOODCASE_IMAGE_DESK', woodcaseDesk);
-    
-    // Финансы
-    const totalPrice = CONFIG.basePrice + currentState.prices.spheres + currentState.prices.body + 
-                      currentState.prices.logo + currentState.prices.case + currentState.prices.shockmount;
-    const priceDetails = [];
-    if (currentState.prices.spheres > 0) priceDetails.push('Цвет силуэта');
-    if (currentState.prices.body > 0) priceDetails.push('Цвет корпуса');
-    if (currentState.prices.logo > 0) priceDetails.push('Кастом лого');
-    if (currentState.prices.case > 0) priceDetails.push('Кейс');
-    if (currentState.prices.shockmount > 0) priceDetails.push('Подвес');
-    
-    const priceString = priceDetails.length > 0 ? 
-        `${totalPrice}р (База + ${priceDetails.join(' + ')})` : 
-        `${totalPrice}р`;
-    console.log('💰 Final Price:', priceString);
-    formData.append('PRICE', priceString);
-    
-    // Выводим весь FormData для отладки
-    console.log('📋 FormData содержимое:');
-    for (var pair of formData.entries()) {
-        console.log(pair[0] + ':', pair[1]);
-    }
-    
-    console.log('📤 Отправляю запрос в ajax.php');
-    
-    // Отправляем запрос
-    fetch(ajaxPath, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('📨 Ответ от Битрикса получен:', data);
+    // Шокмаунт - проверяем выбран ли он
+    if (currentState.shockmount.variant === 'none' || !currentState.shockmount.variant) {
+        formData.set('form_text_37', 'Шокмаунт не добавлен в комплект');
+        formData.set('form_text_38', 'Шокмаунт не добавлен в комплект');
+    } else {
+        const shockmountColor = currentState.shockmount.color || 'Standard';
+        const pinsColor = currentState.shockmount.pins?.color || 'Standard';
+        const pinsPaid = currentState.shockmount.pins?.paid ? '(платный)' : '(бесплатный)';
         
-        if (data.success) {
-            // Показываем простое сообщение об успехе
-            const message = `Спасибо! Ваша конфигурация сохранена. В ближайшее время мы с Вами свяжемся. Номер вашей заявки: ${data.orderId}`;
-            alert(message);
-            
-            // Закрываем модальное окно заказа
-            const orderModal = document.getElementById('order-modal');
-            if (orderModal) {
-                orderModal.style.display = 'none';
-            }
-            
-            // Очищаем и блокируем форму для избежания дублей
-            const orderForm = document.getElementById('order-form');
-            const submitBtn = orderForm ? orderForm.querySelector('button[type="submit"]') : null;
-            
-            if (orderForm) {
-                // Очищаем все поля формы
-                orderForm.reset();
-                
-                // Удаляем классы ошибок
-                orderForm.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
-            }
-            
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Отправлено';
-            }
-            
-        } else {
-            console.error('❌ Ошибка сервера:', data.error);
-            alert('Ошибка при отправке заявки: ' + (data.error || 'Неизвестная ошибка'));
+        formData.set('form_text_37', shockmountColor);
+        formData.set('form_text_38', `${pinsColor} ${pinsPaid}`);
+    }
+    
+    // Цена с детализацией
+    const basePrice = CONFIG.basePrice;
+    const spheresPrice = currentState.prices.spheres || 0;
+    const bodyPrice = currentState.prices.body || 0;
+    const logoPrice = currentState.prices.logo || 0;
+    const casePrice = currentState.prices.case || 0;
+    const shockmountPrice = currentState.prices.shockmount || 0;
+    const totalPrice = basePrice + spheresPrice + bodyPrice + logoPrice + casePrice + shockmountPrice;
+    
+    let priceDetails = `База: ${basePrice}р`;
+    if (spheresPrice > 0) priceDetails += ` + Сферы: ${spheresPrice}р`;
+    if (bodyPrice > 0) priceDetails += ` + Корпус: ${bodyPrice}р`;
+    if (logoPrice > 0) priceDetails += ` + Лого: ${logoPrice}р`;
+    if (casePrice > 0) priceDetails += ` + Кейс: ${casePrice}р`;
+    if (shockmountPrice > 0) priceDetails += ` + Подвес: ${shockmountPrice}р`;
+    
+    priceDetails += ` = Итого: ${totalPrice}р`;
+    formData.set('form_text_39', priceDetails);
+
+    // 2. Добавляем ФАЙЛЫ
+    // Поле 47 - PREVIEW_MIC_CUSTOM_FORM
+    const svgElement = document.getElementById('svg-wrapper')?.innerHTML;
+    if (svgElement) {
+        const previewBlob = svgToBlob(svgElement);
+        if (previewBlob) {
+            formData.append('form_file_47', previewBlob, 'preview.svg');
+            console.log('SVG превью добавлено');
         }
-    })
-    .catch(error => {
-        console.error('❌ Ошибка сети:', error);
-        alert('Ошибка при отправке заявки. Пожалуйста, попробуйте еще раз.');
-    });
+    }
+
+    // Поле 43 - WOODCASE_IMAGE_FORM (Проверка типа данных)
+    if (currentState.case.customLogo) {
+        let caseBlob;
+        if (currentState.case.customLogo.includes('<svg')) {
+            caseBlob = svgToBlob(currentState.case.customLogo);
+        } else {
+            caseBlob = base64ToBlob(currentState.case.customLogo);
+        }
+        if (caseBlob) formData.append('form_file_43', caseBlob, 'case_logo.svg');
+    }
+
+    // Поле 44 - MIC_LOGO_CUSTOM_FORM
+    if (currentState.logo.customLogo) {
+        let logoBlob;
+        const data = currentState.logo.customLogo;
+
+        if (typeof data === 'string' && data.includes(';base64,')) {
+            // Это Base64 (неважно, SVG это внутри или PNG)
+            logoBlob = base64ToBlob(data);
+            console.log('Логотип микрофона обработан как Base64 (универсально)');
+        } else if (typeof data === 'string' && data.trim().startsWith('<svg')) {
+            // Это чистый код SVG
+            logoBlob = svgToBlob(data);
+            console.log('Логотип микрофона обработан как чистый SVG');
+        }
+
+        if (logoBlob) {
+            // Если внутри SVG, даем расширение .svg, иначе .png
+            const extension = logoBlob.type.includes('svg') ? 'svg' : 'png';
+            formData.append('form_file_44', logoBlob, `mic_logo.${extension}`);
+            console.log(`Логотип микрофона добавлен в форму как mic_logo.${extension}`);
+        } else {
+            console.error('Не удалось создать Blob для логотипа микрофона');
+        }
+    }
+
+    console.log('Отправляем форму с файлами...');
+
+    // 3. Отправляем всё это на сервер
+    try {
+        const response = await fetch(bitrixForm.action, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            alert('Заказ с файлами успешно отправлен!');
+            document.getElementById('order-modal').style.display = 'none';
+        } else {
+            alert('Ошибка при отправке файлов.');
+        }
+    } catch (e) {
+        console.error('Ошибка:', e);
+        alert('Ошибка при отправке: ' + e.message);
+    }
 }
 
 export function generateReport(clientData) {
     // Функция больше не генерирует визуальное превью
     // Все данные передаются через sendOrder
-    console.log('📊 generateReport вызван, но визуальная генерация отключена');
+    console.log('generateReport вызван, но визуальная генерация отключена');
 }

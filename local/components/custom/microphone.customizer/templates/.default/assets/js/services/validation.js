@@ -1,13 +1,9 @@
 export function initValidation() {
     const fields = {
-        'input-last-name': (val) => val.length >= 2,
+        'input-lastname': (val) => val.length >= 2,
         'input-name': (val) => val.length >= 2,
         'input-phone': (val) => /^[\d\+\-\(\)\s]{6,}$/.test(val),
         'input-email': (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
-        'lastname': (val) => val.length >= 2,
-        'name': (val) => val.length >= 2,
-        'phone': (val) => /^[\d\+\-\(\)\s]{6,}$/.test(val),
-        'email': (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)
     };
 
     Object.keys(fields).forEach(id => {
