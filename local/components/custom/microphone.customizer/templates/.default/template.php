@@ -8,7 +8,6 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
 use Bitrix\Main\Page\Asset;
 
 Asset::getInstance()->addCss($templateFolder . "/assets/css/style.css");
-// Add required external libraries
 Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/interactjs@1.10.19/dist/interact.min.js");
 ?>
 
@@ -928,5 +927,25 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/interactjs@1.10.19/dis
     </div>
 
 
+
+    <!-- Скрытая форма Битрикса для надежной отправки заказа -->
+    <div style="display:none;">
+        <?$APPLICATION->IncludeComponent(
+            "bitrix:form.result.new",
+            "",
+            Array(
+                "WEB_FORM_ID" => "1",
+                "IGNORE_CUSTOM_TEMPLATE" => "Y",
+                "USE_EXTENDED_ERRORS" => "Y",
+                "SEF_MODE" => "N",
+                "CACHE_TYPE" => "N",
+                "LIST_URL" => "",
+                "EDIT_URL" => "",
+                "SUCCESS_URL" => "",
+                "CHAIN_ITEM_TEXT" => "",
+                "CHAIN_ITEM_LINK" => ""
+            )
+        );?>
+    </div>
 
     <script type="module" src="<?= $templateFolder ?>/assets/js/main.js"></script>
