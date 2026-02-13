@@ -11,15 +11,12 @@ import { CASE_IMAGES, CASE_GEOMETRY } from './config.js';
 import { currentState, setInitialConfig } from './state.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Проверяем, есть ли data-element-id и загружаем конфигурацию
     const appRoot = document.getElementById('customizer-app-root');
     const elementId = appRoot ? parseInt(appRoot.dataset.elementId) : 0;
     
-    // Автозаполнение полей формы данными пользователя
     if (window.BX_USER_DATA && window.BX_USER_DATA.AUTHORIZED) {
         const userData = window.BX_USER_DATA;
         
-        // Заполняем поля формы
         const nameField = document.getElementById('input-name');
         const emailField = document.getElementById('input-email');
         const phoneField = document.getElementById('input-phone');
@@ -73,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     preloadImages(imagesToPreload);
 
     await loadSVG();
-    console.log('🖼️ SVG загружен');
+    console.log('SVG загружен');
     initPalettes();
     initEventListeners();
     initCaseAndShockmount();
@@ -82,10 +79,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     initializeWoodCase();
     initShockmount();
 
-    // All inline event handlers have been replaced.
-    // The window object is no longer needed.
-
-    // Initial UI update
     updateUI();
 
     // Initial animation

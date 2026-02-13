@@ -46,7 +46,7 @@ export function updateUI() {
     let shockmountText = shockmountColorNames[currentState.shockmount.variant] || 'Белый';
     
     if (currentState.shockmount.variant === 'custom' && currentState.shockmount.color) {
-        // Извлекаем чистый RAL номер из строки типа "RAL 9003"
+    
         const ralMatch = currentState.shockmount.color.match(/RAL\s*(\d+)/);
         shockmountText = ralMatch ? ralMatch[1] : currentState.shockmount.color;
     }
@@ -258,7 +258,7 @@ export function initEventListeners() {
 
     document.getElementById('order-form').addEventListener('submit', (e) => {
         e.preventDefault();
-        console.log('📝 Начинаю валидацию формы');
+        console.log('Начинаю валидацию формы');
         
         const inputs = e.target.querySelectorAll('input');
         let isValid = true;
@@ -267,26 +267,23 @@ export function initEventListeners() {
             try {
                 if (!validateField(input)) isValid = false;
             } catch (error) {
-                console.error('❌ Ошибка валидации поля:', error);
-                // Продолжаем проверку других полей даже если одно упало
+                console.error('Ошибка валидации поля:', error);
             }
         });
 
         if (!isValid) {
-            console.log('❌ Валидация не пройдена');
+            console.log('Валидация не пройдена');
             showNotification('Пожалуйста, исправьте ошибки в форме', 'error');
             return;
         }
 
-        console.log('✅ Валидация пройдена');
+        console.log('Валидация пройдена');
         const formData = new FormData(e.target);
         const clientData = Object.fromEntries(formData.entries());
-
-        // Импортируем и вызываем sendOrder
         import('./services/report.js').then(({ sendOrder }) => {
             sendOrder(clientData);
         }).catch(error => {
-            console.error('❌ Ошибка импорта sendOrder:', error);
+            console.error('Ошибка импорта sendOrder:', error);
             alert('Ошибка при отправке заявки. Пожалуйста, попробуйте еще раз.');
         });
     });
@@ -321,11 +318,9 @@ function updateFullscreenIcon() {
     if (!icon) return;
 
     if (document.fullscreenElement) {
-        // Change icon to exit fullscreen (two arrows pointing inwards)
         icon.innerHTML = '<path d="M15 3h2a2 2 0 0 1 2 2v2m0 10v2a2 2 0 0 1-2 2h-2m-7 0H5a2 2 0 0 1-2-2v-2m0-10V5a2 2 0 0 1 2-2h2"></path>';
     } else {
-        // Change icon to enter fullscreen (two arrows pointing outwards)
-        icon.innerHTML = '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3m-18 0v3a2 2 0 0 0 2 2h3"></path>';
+       icon.innerHTML = '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3m-18 0v3a2 2 0 0 0 2 2h3"></path>';
     }
 }
 
