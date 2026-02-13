@@ -1,3 +1,4 @@
+<!-- < ? ini_set('display_errors', 1); error_reporting(E_ALL); ? > -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -6,18 +7,15 @@
 <body>
 	<?$APPLICATION->ShowPanel();?>
 	<?include_once($_SERVER["DOCUMENT_ROOT"]."/local/templates/.default/include/header.php");?>
-	  
-<?
-// Проверка на админа, чтобы никто другой не видел
-global $USER;
+	
+<?global $USER;
 if ($USER->IsAdmin()):
-
- <?$APPLICATION->IncludeComponent(
+ $APPLICATION->IncludeComponent(
     "custom:microphone.customizer",
     "",
     Array(
-        "IBLOCK_ID" => 0,        // 0 для автономного режима
-        "ELEMENT_ID" => 0,       // 0 для автономного режима
+        "IBLOCK_ID" => 0,
+        "ELEMENT_ID" => 0,
         "PROPERTY_CODE" => "CUSTOM_CONFIG"
     )
 );
