@@ -36,6 +36,7 @@ export function initShockmount() {
 
 export function updateShockmountVisibility() {
     const shockmountMenuItem = document.getElementById('shockmount-menu-item');
+    const shockmountPinsMenuItem = document.getElementById('shockmount-pins-menu-item');
     const shockmountOptionsSection = document.getElementById('shockmount-options-section');
     const switchContainer = document.getElementById('shockmount-switch-container');
     const includedText = document.getElementById('shockmount-included-text');
@@ -44,6 +45,9 @@ export function updateShockmountVisibility() {
 
     const isBomblet = currentState.variant === '023-the-bomblet';
     shockmountMenuItem.style.display = 'flex';
+    if (shockmountPinsMenuItem) {
+        shockmountPinsMenuItem.style.display = currentState.shockmount.enabled ? 'flex' : 'none';
+    }
 
     if (isBomblet) {
         if(switchContainer) switchContainer.style.display = 'block';

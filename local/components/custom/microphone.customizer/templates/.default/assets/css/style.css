@@ -132,6 +132,29 @@
             transform: rotate(15deg);
         }
 
+        .sidebar-icon-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 8px;
+            border-radius: 50%;
+            transition: var(--transition-bounce);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-icon-button:hover {
+            background: var(--item-hover);
+            color: var(--text-primary);
+        }
+
+        .sidebar-icon-button svg {
+            width: 20px;
+            height: 20px;
+        }
+
         /* Model Switch */
         .model-switch {
             display: flex;
@@ -184,6 +207,29 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.02);
         }
 
+        .variant-options.single-row {
+            flex-wrap: wrap;
+            gap: 8px;
+            background: none;
+            padding: 0;
+            box-shadow: none;
+        }
+
+        .variant-options.single-row .variant-button {
+            flex: none;
+            background: var(--item-bg);
+            border: 2px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            min-width: 100px;
+        }
+
+        .variant-options.single-row .variant-button.active {
+            border-color: var(--accent);
+            background: var(--item-active);
+        }
+
         .variant-button {
             flex: 1;
             background: transparent;
@@ -209,7 +255,9 @@
         .menu-item {
             background-color: var(--item-bg);
             min-height: 84px;
-            border-top: 2px solid var(--border-color);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 12px;
             padding: 15px 20px;
             display: flex;
             align-items: center;
@@ -251,12 +299,7 @@
         }
 
         .color-circle {
-            width: 85%;
-            height: 85%;
-            border-radius: 50%;
-            background-color: #e2d5c5;
-            transform: scale(0.8);
-            transition: transform 0.3s ease;
+            display: none;
         }
 
         .menu-item:hover .color-circle {
@@ -1155,21 +1198,21 @@ font-size: 2rem;
         }
 .z-91{width:100%}
 
-.toggle-color{     border-radius: 50%;
-    width: 3em;
-    height: 3em;
-    padding: 0;
-    display: flex;
-
-    background: var(--sidebar-bg);
-    justify-content: center;
-    align-items: center;
-	position:absolute;bottom:2em;left:2em;z-index:10;
-	box-shadow: inset #0d0e0d4d 0px 1px 14px;
-    padding: 12px;
-    border-radius: 50%;
-
-	}
+        .toggle-color {
+            border-radius: 24px;
+            padding: 6px;
+            display: flex;
+            gap: 8px;
+            background: var(--sidebar-bg);
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            bottom: 2em;
+            left: 2em;
+            z-index: 100;
+            box-shadow: var(--shadow-soft);
+            border: 2px solid var(--border-color);
+        }
 .toggle-color{}/* Styles for wood case customizer */
 #wood-case-workspace {
     width: 100%;
@@ -1215,3 +1258,48 @@ font-size: 2rem;
     padding: 10px 20px; border-radius: 4px; display: none; z-index: 200; pointer-events: none;
 }
 .info .highlight { color: var(--accent); font-weight: bold; }
+
+/* Manual Positioning Controls */
+.manual-positioning-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.pos-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.pos-input-group label {
+    font-size: 10px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.pos-input-group input {
+    width: 100%;
+    padding: 8px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--item-bg);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 13px;
+    text-align: center;
+}
+
+.pos-input-group input:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+/* Drag & Drop Visual State */
+.submenu.drag-over {
+    background-color: var(--item-active);
+    border: 2px dashed var(--accent);
+}

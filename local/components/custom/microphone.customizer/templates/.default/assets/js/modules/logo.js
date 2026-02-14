@@ -66,20 +66,15 @@ export function updateLogoSVG() {
         if (malfaLogo) malfaLogo.style.display = 'inline';
 
         if (malfaLogoTextPath && clipLogoBgMalfa) {
-            clipLogoBgMalfa.style.fill = 'url(#grad-malfa-bg)'; // Always malfa background gradient
-            
-            // Синхронизация с цветом эмали из раздела "Цвет эмали логотипа"
-            if (currentState.logo.bgColor && currentState.logo.bgColor.startsWith('RAL')) {
-                // Если выбран RAL цвет, используем его для фона эмали
-                const ralColor = currentState.logo.bgColorValue || '#131516'; // Серебро по умолчанию
-                clipLogoBgMalfa.style.fill = ralColor;
+            // 1 & 2: Set text path fill based on Silver/Gold Edition
+            const isGold = (currentState.logo.variant === 'gold' || currentState.logo.variant === '1036');
+            malfaLogoTextPath.style.fill = isGold ? 'url(#grad-malfa-gold)' : 'url(#grad-malfa-silver)';
+
+            // 3: Update Enamel Background dynamically
+            if (currentState.logo.bgColorValue) {
+                clipLogoBgMalfa.style.fill = currentState.logo.bgColorValue;
             } else {
-                // Стандартная логика для silver/gold
-                if (currentState.logo.variant === 'malfa' || currentState.logo.variant === '9006') { // Default or Silver
-                    malfaLogoTextPath.style.fill = 'url(#grad-malfa-silver)';
-                } else if (currentState.logo.variant === '1036') { // Gold
-                    malfaLogoTextPath.style.fill = 'url(#grad-malfa-gold)';
-                }
+                clipLogoBgMalfa.style.fill = 'url(#grad-malfa-bg)';
             }
         }
     } else {
