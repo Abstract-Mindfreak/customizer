@@ -23,7 +23,54 @@ const WoodCase = {
         document.getElementById('case-file-input').addEventListener('change', (e) => this.handleUpload(e));
         document.getElementById('case-clear-btn').addEventListener('click', () => this.clearLogo());
 
+        this.setupManualInputs();
         this.render();
+    },
+
+    setupManualInputs() {
+        const topInput = document.getElementById('input-case-top');
+        const leftInput = document.getElementById('input-case-left');
+        const widthInput = document.getElementById('input-case-width');
+
+        if (!topInput || !leftInput || !widthInput) return;
+
+        const updateFromInputs = () => {
+            if (!this.userImgSrc) return;
+            const state = this.history[this.currentCase];
+            const pxPerMM = this.getPixelsPerMM(this.currentCase);
+
+            const plane = document.getElementById('wood-case-perspective-plane');
+            const pH = parseFloat(plane.style.height) || 0;
+            const pW = parseFloat(plane.style.width) || 0;
+
+            const container = document.getElementById('user-logo-container');
+            let bW, bH;
+            if (this.isSvg) {
+                bW = 550; bH = 550 / this.svgRatio;
+            } else {
+                const img = container.querySelector('img');
+                bW = img ? img.naturalWidth : 100;
+                bH = img ? img.naturalHeight : 100;
+            }
+
+            const targetWidthPx = parseFloat(widthInput.value) * pxPerMM;
+            state.scale = targetWidthPx / bW;
+
+            const cH = bH * state.scale;
+            const cW = bW * state.scale;
+
+            const targetTopPx = parseFloat(topInput.value) * pxPerMM;
+            const targetLeftPx = parseFloat(leftInput.value) * pxPerMM;
+
+            state.y = targetTopPx - pH/2 + cH/2;
+            state.x = targetLeftPx - pW/2 + cW/2;
+
+            this.updateTransform();
+        };
+
+        [topInput, leftInput, widthInput].forEach(input => {
+            input.addEventListener('input', updateFromInputs);
+        });
     },
 
     getDevice() {
@@ -53,10 +100,11 @@ const WoodCase = {
     },
 
     handleUpload(e) {
-        const file = e.target.files[0];
+        const file = (e.target && e.target.files) ? e.target.files[0] : (e.files ? e.files[0] : null);
         if (!file) return;
         document.getElementById('wood-case-loader').style.display = 'block';
         document.getElementById('case-clear-btn').style.display = 'block';
+        document.getElementById('case-positioning-controls').style.display = 'block';
 
         const reader = new FileReader();
         reader.onload = (ev) => {
@@ -211,17 +259,26 @@ const WoodCase = {
     },
 
     setupInteract() {
+        const isMobile = window.innerWidth <= 768;
+        const sensitivity = isMobile ? 1.5 : 1;
+
         interact('#wood-case-logo-wrapper').gesturable({
             onmove: (e) => {
                 const state = this.history[this.currentCase];
-                state.scale *= (1 + e.ds);
+                // Increase pinch-zoom range/sensitivity
+                const ds = e.ds * sensitivity * 2;
+                state.scale *= (1 + ds);
+                // Clamp scale
+                state.scale = Math.max(0.01, Math.min(5, state.scale));
                 this.updateTransform();
                 this.showRulers();
             }
         }).draggable({
             onmove: (e) => {
                 const state = this.history[this.currentCase];
-                state.x += e.dx; state.y += e.dy;
+                // Increase sensitivity for touch dragging
+                state.x += e.dx * sensitivity;
+                state.y += e.dy * sensitivity;
                 this.updateTransform();
                 this.showRulers();
             }
@@ -308,6 +365,14 @@ const WoodCase = {
         document.getElementById('info-top-tag').textContent = top_mm + ' мм';
         document.getElementById('info-left-tag').textContent = left_mm + ' мм';
 
+        // Update manual inputs
+        const topInput = document.getElementById('input-case-top');
+        const leftInput = document.getElementById('input-case-left');
+        const widthInput = document.getElementById('input-case-width');
+        if (topInput && document.activeElement !== topInput) topInput.value = top_mm;
+        if (leftInput && document.activeElement !== leftInput) leftInput.value = left_mm;
+        if (widthInput && document.activeElement !== widthInput) widthInput.value = Math.round(cW / pxPerMM);
+
         setState('case.logoOffsetMM', { top: top_mm, left: left_mm });
 
         const sCorners = [{x:iTLx,y:iTLy},{x:iTLx+cW,y:iTLy},{x:iTLx+cW,y:iTLy+cH},{x:iTLx,y:iTLy+cH}].map(p => this.projectPoint(p.x, p.y, this.currentMatrix));
@@ -359,6 +424,7 @@ const WoodCase = {
             if(el) el.textContent = '-';
         });
         document.getElementById('case-clear-btn').style.display = 'none';
+        document.getElementById('case-positioning-controls').style.display = 'none';
         document.getElementById('case-file-input').value = '';
 
         setState('case.variant', 'standard');

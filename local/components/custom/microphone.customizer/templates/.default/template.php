@@ -25,6 +25,13 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/interactjs@1.10.19/dis
     </div>
 
     <div class="toggle-color">
+        <button id="reset-settings-btn" class="sidebar-icon-button" title="Сбросить настройки">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+        </button>
         <button id="fullscreen-toggle" class="fullscreen-toggle" aria-label="Переключить полноэкранный режим">
             <svg class="fullscreen-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3m-18 0v3a2 2 0 0 0 2 2h3"></path>
@@ -241,25 +248,11 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/interactjs@1.10.19/dis
         </div>
 
         <div class="sidebar">
-            <div class="model-switch">
-                <button class="model-button active" data-model="023">
-                    <span>023</span>
-                    <small>серия</small>
-                </button>
-                <button class="model-button" data-model="017">
-                    <span>017</span>
-                    <small>серия</small>
-                </button>
-            </div>
-
-            <!-- Include actual controls from CUSTOMIZER.html -->
             <div class="variant-switch" id="variant-switch">
-                <div class="variant-options" id="variants-023">
-                    <button class="variant-button active" data-variant="023-the-bomblet">023 the BOMBLET</button>
+                <div class="variant-options single-row">
+                    <button class="variant-button active" data-variant="023-the-bomblet">023 THE BOMBLET</button>
                     <button class="variant-button" data-variant="malfa">023 MALFA</button>
                     <button class="variant-button" data-variant="023-dlx">023 DELUXE</button>
-                </div>
-                <div class="variant-options" id="variants-017" style="display: none;">
                     <button class="variant-button" data-variant="017-fet">017 FET</button>
                     <button class="variant-button" data-variant="017-tube">017 TUBE</button>
                 </div>
@@ -566,7 +559,24 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/interactjs@1.10.19/dis
                     <span class="variant-label" style="color: var(--accent);">Загрузить файл (PNG, SVG)</span>
                 </div>
                 <button id="case-clear-btn" class="remove-logo-btn" style="display:none; width:100%; margin-top:10px; padding:10px; border:1px solid #ef4444; color:#ef4444; background:none; border-radius:8px; cursor:pointer;">Удалить логотип</button>
+            </div>
 
+            <div class="submenu-section" id="case-positioning-controls" style="display: none;">
+                <h4 class="section-title">Позиционирование (мм)</h4>
+                <div class="manual-positioning-grid">
+                    <div class="pos-input-group">
+                        <label for="input-case-top">Сверху</label>
+                        <input type="number" id="input-case-top" value="0">
+                    </div>
+                    <div class="pos-input-group">
+                        <label for="input-case-left">Слева</label>
+                        <input type="number" id="input-case-left" value="0">
+                    </div>
+                    <div class="pos-input-group">
+                        <label for="input-case-width">Ширина</label>
+                        <input type="number" id="input-case-width" value="0">
+                    </div>
+                </div>
             </div>
 
             <div class="submenu-section">
@@ -580,13 +590,13 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/interactjs@1.10.19/dis
             </div>
         </div>
 
-        <!-- SHOCKMOUNT SECTION -->
+        <!-- SHOCKMOUNT SECTION (FRAME) -->
         <div class="menu-item" data-section="shockmount" tabindex="0" id="shockmount-menu-item" style="display: none;">
             <div class="item-icon">
                 <div class="color-circle" id="shockmount-color-display" style="background-color: #f5f5f5;"></div>
             </div>
             <div class="item-content">
-                <p class="item-label">Антивибрационный подвес</p>
+                <p class="item-label">Паук (Каркас)</p>
                 <p class="item-subtitle" id="shockmount-subtitle">Белый</p>
             </div>
             <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -596,12 +606,12 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/interactjs@1.10.19/dis
         
         <div class="submenu" id="submenu-shockmount">
             <div class="submenu-header">
-                <h3 class="submenu-title">Антивибрационный подвес</h3>
+                <h3 class="submenu-title">Цвет каркаса паука</h3>
                 <button class="submenu-back">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        </svg>
-                                        <span>Назад</span>
-                                    </button>            </div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"></svg>
+                    <span>Назад</span>
+                </button>
+            </div>
             
             <div class="submenu-section">
                 <h4 class="section-title">Добавить подвес</h4>
@@ -618,7 +628,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/interactjs@1.10.19/dis
             </div>
             
             <div class="submenu-section" id="shockmount-options-section">
-                <h4 class="section-title">Цвет каркаса</h4>
+                <h4 class="section-title">Стандартные цвета</h4>
                 <div class="variants">
                     <div class="variant-item selected" data-variant="shock-RAL9003" tabindex="0">
                         <div class="variant-info">
@@ -646,10 +656,8 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/interactjs@1.10.19/dis
             
             <div class="submenu-section">
                 <button class="palette-toggle-btn">
-                    <span>Цвет по палитре RAL</span>
-                    <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M6 9l6 6 6-6"></path>
-                    </svg>
+                    <span>Цвет каркаса — RAL K7</span>
+                    <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"></svg>
                 </button>
                 <div class="palette-wrapper" id="palette-wrapper-shockmount">
                     <div class="palette-content">
@@ -657,9 +665,33 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/interactjs@1.10.19/dis
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- SHOCKMOUNT PINS SECTION -->
+        <div class="menu-item" data-section="shockmount-pins" tabindex="0" id="shockmount-pins-menu-item" style="display: none;">
+            <div class="item-icon">
+                <div class="color-circle" id="shockmount-pins-color-display" style="background-color: #D4AF37;"></div>
+            </div>
+            <div class="item-content">
+                <p class="item-label">Паук (Пины)</p>
+                <p class="item-subtitle" id="shockmount-pins-subtitle">Латунь</p>
+            </div>
+            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            </svg>
+            <div class="option-price" id="shockmount-pins-price">+0₽</div>
+        </div>
+
+        <div class="submenu" id="submenu-shockmount-pins">
+            <div class="submenu-header">
+                <h3 class="submenu-title">Цвет пинов паука</h3>
+                <button class="submenu-back">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"></svg>
+                    <span>Назад</span>
+                </button>
+            </div>
 
             <div class="submenu-section" id="shockmount-pins-section">
-                <h4 class="section-title">Цвет пинов (Anchor Studs)</h4>
+                <h4 class="section-title">Стандартные варианты</h4>
                 <div class="variants">
                     <div class="variant-item selected" data-variant="pins-RAL9003" tabindex="0">
                         <div class="variant-info">
@@ -668,24 +700,21 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/interactjs@1.10.19/dis
                         </div>
                         <span class="variant-price">+0₽</span>
                     </div>
-                    
-                    <div class="variant-item" data-variant="RAL1013" tabindex="0">
+                    <div class="variant-item" data-variant="pins-RAL1013" tabindex="0">
                         <div class="variant-info">
                             <div class="variant-icon" style="background-color: #EAE0C8;"></div>
                             <span class="variant-label">RAL 1013</span>
                         </div>
                         <span class="variant-price">+0₽</span>
                     </div>
-
-                    <div class="variant-item" data-variant="pins-brass" tabindex="0">
+                    <div class="variant-item" data-variant="pins-RAL9005" tabindex="0">
                         <div class="variant-info">
                             <div class="variant-icon" style="background-color: #0E0E10;"></div>
                             <span class="variant-label">RAL 9005</span>
                         </div>
                         <span class="variant-price">+0₽</span>
                     </div>
-            
-                    <div class="variant-item" data-variant="brass" tabindex="0">
+                    <div class="variant-item" data-variant="pins-brass" tabindex="0">
                         <div class="variant-info">
                             <div class="variant-icon" style="background: linear-gradient(135deg, #D4AF37, #b89427);"></div>
                             <span class="variant-label">Полированная латунь</span>
@@ -698,9 +727,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/interactjs@1.10.19/dis
             <div class="submenu-section">
                 <button class="palette-toggle-btn">
                     <span>Цвет пинов — RAL K7</span>
-                    <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M6 9l6 6 6-6"></path>
-                    </svg>
+                    <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"></svg>
                 </button>
                 <div class="palette-wrapper" id="palette-wrapper-pins">
                     <div class="palette-content">
@@ -708,21 +735,6 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/interactjs@1.10.19/dis
                     </div>
                 </div>
             </div>
-        </div>
-                
-         <div class="menu-item" data-section="reset-settings" tabindex="0">
-                    <div class="item-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;">
-                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                            <line x1="12" y1="9" x2="12" y2="13"></line>
-                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                        </svg>
-                    </div>
-                    <div class="item-content">
-                        <p class="item-label">Сброс настроек</p>
-                        <p class="item-subtitle">Вернуть к стандартным</p>
-                    </div>
-                    <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"></svg>
         </div>
 
            <div class="total-price">

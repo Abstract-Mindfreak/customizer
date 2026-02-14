@@ -1,4 +1,6 @@
-import { CONFIG } from './config.js';
+import { CONFIG, DEFAULT_MIC_CONFIGS } from './config.js';
+
+export let micStates = {};
 
 export let currentState = {
     model: '023',
@@ -19,6 +21,29 @@ export let currentState = {
 export function setInitialConfig(config) {
     currentState.initialConfig = JSON.parse(JSON.stringify(config)); // Deep copy
     currentState.hasChanged = false;
+}
+
+export function restoreMicState(variant) {
+    if (!micStates[variant]) {
+        const defaultConfig = DEFAULT_MIC_CONFIGS[variant];
+        if (defaultConfig) {
+            micStates[variant] = JSON.parse(JSON.stringify(defaultConfig));
+            if (!micStates[variant].prices) {
+                micStates[variant].prices = { base: CONFIG.basePrice, spheres: 0, body: 0, logo: 0, case: 0, shockmount: 0 };
+            }
+        }
+    }
+
+    if (micStates[variant]) {
+        // Deep copy to currentState
+        const savedState = JSON.parse(JSON.stringify(micStates[variant]));
+        Object.keys(savedState).forEach(key => {
+            currentState[key] = savedState[key];
+        });
+        currentState.variant = variant;
+        currentState.model = variant.startsWith('017') ? '017' : '023';
+        setInitialConfig(DEFAULT_MIC_CONFIGS[variant]);
+    }
 }
 
 export function setState(path, value) {
@@ -56,6 +81,14 @@ export function setState(path, value) {
         current = current[keys[i]];
     }
     current[keys[keys.length - 1]] = value;
+
+    // Sync to micStates
+    if (currentState.variant) {
+        micStates[currentState.variant] = JSON.parse(JSON.stringify(currentState));
+        // Remove transient properties from saved state
+        delete micStates[currentState.variant].initialConfig;
+        delete micStates[currentState.variant].hasChanged;
+    }
 
     document.dispatchEvent(new CustomEvent('app:stateChanged', {
         detail: {

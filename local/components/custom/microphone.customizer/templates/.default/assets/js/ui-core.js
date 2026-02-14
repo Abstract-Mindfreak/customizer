@@ -1,8 +1,8 @@
-import { currentState, setState, setInitialConfig } from './state.js';
+import { currentState, setState, setInitialConfig, restoreMicState, micStates } from './state.js';
 import { variantNames, CONFIG, FREE_LOGO_RALS, MALFA_SILVER_RAL, MALFA_GOLD_RAL, DEFAULT_MIC_CONFIGS } from './config.js';
 import { handleCaseVariantSelection, switchPreview } from './modules/accessories.js';
 import { updateShockmountVisibility, updateShockmountLayers } from './modules/shockmount.js';
-import { togglePalette, handleStyleSelection } from './modules/appearance.js';
+import { togglePalette, handleStyleSelection, hexToRgbValues } from './modules/appearance.js';
 import { applyVariantPreset } from './modules/microphone.js';
 import { updateSVG } from './engine.js';
 import { validateField } from './services/validation.js';
@@ -11,6 +11,46 @@ import { updateMalfaLogoOptionsVisibility } from './modules/logo.js'; // Import 
 
 export function updateUI() {
     updateMalfaLogoOptionsVisibility(); // Call the new function here
+
+    const spheresColor = currentState.spheres.color ? currentState.spheres.colorValue : null;
+    const bodyColor = currentState.body.color ? currentState.body.colorValue : null;
+    const logoColor = currentState.logo.customLogo ? null : (currentState.logo.bgColor === 'black' ? '#000000' : currentState.logo.bgColorValue);
+    const shockmountColor = currentState.shockmount.colorValue;
+
+    // Apply dimmed background colors to menu items
+    const setMutedBg = (section, color) => {
+        const el = document.querySelector(`.menu-item[data-section="${section}"]`);
+        if (el) {
+            if (color) {
+                const rgb = hexToRgbValues(color);
+                if (rgb) {
+                    el.style.backgroundColor = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.15)`;
+                }
+            } else {
+                el.style.backgroundColor = '';
+            }
+        }
+    };
+
+    setMutedBg('spheres', spheresColor);
+    setMutedBg('body', bodyColor);
+    setMutedBg('logo', logoColor);
+    setMutedBg('shockmount', shockmountColor);
+    setMutedBg('shockmount-pins', currentState.shockmount.pins.colorValue);
+
+    // Conflict Resolution: RAL vs Satin Steel (Variant 3)
+    const spheresSatinSteel = document.querySelector('#submenu-spheres .variant-item[data-variant="3"]');
+    if (spheresSatinSteel) {
+        // If a custom RAL color is selected, hide the "Satin Steel" (Variant 3) button
+        spheresSatinSteel.style.display = currentState.spheres.color ? 'none' : 'flex';
+    }
+
+    const bodySatinSteel = document.querySelector('#submenu-body .variant-item[data-variant="3"]');
+    if (bodySatinSteel) {
+        // If a custom RAL color is selected, hide the "Satin Steel" (Variant 3) button
+        bodySatinSteel.style.display = currentState.body.color ? 'none' : 'flex';
+    }
+
     document.getElementById('spheres-color-display').style.backgroundColor = currentState.spheres.color ? currentState.spheres.colorValue : '#000000';
     document.getElementById('body-color-display').style.backgroundColor = currentState.body.color ? currentState.body.colorValue : '#000000';
 
@@ -20,6 +60,10 @@ export function updateUI() {
     // Update case and shockmount displays
     document.getElementById('case-color-display').style.backgroundColor = '#8B4513';
     document.getElementById('shockmount-color-display').style.backgroundColor = currentState.shockmount.colorValue;
+    const pinsDisplay = document.getElementById('shockmount-pins-color-display');
+    if (pinsDisplay) {
+        pinsDisplay.style.backgroundColor = currentState.shockmount.pins.colorValue || '#D4AF37';
+    }
 
     // Task 1: Update labels
     document.getElementById('spheres-subtitle').textContent = currentState.spheres.color ? currentState.spheres.color : variantNames[currentState.spheres.variant];
@@ -46,11 +90,15 @@ export function updateUI() {
     let shockmountText = shockmountColorNames[currentState.shockmount.variant] || 'Белый';
     
     if (currentState.shockmount.variant === 'custom' && currentState.shockmount.color) {
-    
         const ralMatch = currentState.shockmount.color.match(/RAL\s*(\d+)/);
         shockmountText = ralMatch ? ralMatch[1] : currentState.shockmount.color;
     }
     document.getElementById('shockmount-subtitle').textContent = shockmountText;
+
+    // Shockmount Pins Subtitle
+    let pinsText = currentState.shockmount.pins.variant === 'brass' ? 'Полированная латунь' : (currentState.shockmount.pins.colorName || 'RAL 9003');
+    const pinsSubtitle = document.getElementById('shockmount-pins-subtitle');
+    if (pinsSubtitle) pinsSubtitle.textContent = pinsText;
 
     // Update prices
     document.getElementById('spheres-price').textContent = `+${currentState.prices.spheres}₽`;
@@ -96,23 +144,28 @@ export function initEventListeners() {
 
     document.querySelectorAll('.model-button').forEach(btn => {
         btn.addEventListener('click', function() {
+            const model = this.dataset.model;
             document.querySelectorAll('.model-button').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            setState('model', this.dataset.model);
+            setState('model', model);
 
             // Show/hide variant options based on model
             document.querySelectorAll('.variant-options').forEach(options => {
                 options.style.display = 'none';
             });
-            document.getElementById(`variants-${this.dataset.model}`).style.display = 'flex';
+            document.getElementById(`variants-${model}`).style.display = 'flex';
 
-            // Reset to first variant of new model and apply preset
-            const firstVariant = document.querySelector(`#variants-${this.dataset.model} .variant-button`);
-            if (firstVariant) {
-                document.querySelectorAll('.variant-button').forEach(b => b.classList.remove('active'));
-                firstVariant.classList.add('active');
-                setState('variant', firstVariant.dataset.variant);
-                applyVariantPreset(firstVariant.dataset.variant);
+            // Find either previously saved variant or first one
+            let targetVariant = null;
+            if (model === '023') {
+                targetVariant = micStates['023-the-bomblet'] ? '023-the-bomblet' : (micStates['malfa'] ? 'malfa' : (micStates['023-dlx'] ? '023-dlx' : '023-the-bomblet'));
+            } else {
+                targetVariant = micStates['017-fet'] ? '017-fet' : (micStates['017-tube'] ? '017-tube' : '017-fet');
+            }
+
+            const variantBtn = document.querySelector(`.variant-button[data-variant="${targetVariant}"]`);
+            if (variantBtn) {
+                variantBtn.click();
             }
 
             updateShockmountLayers();
@@ -123,26 +176,30 @@ export function initEventListeners() {
     // Variant button handlers
     document.querySelectorAll('.variant-button').forEach(btn => {
         btn.addEventListener('click', function() {
+            const variant = this.dataset.variant;
             document.querySelectorAll('.variant-button').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            setState('variant', this.dataset.variant);
-            applyVariantPreset(this.dataset.variant);
 
-            // Update shockmount visibility immediately
+            // Persistent State: Restore or Apply Default
+            restoreMicState(variant);
+
+            // Update Case Preview
+            if (window.WoodCase) {
+                window.WoodCase.setCase(variant);
+            }
+
+            // Ensure UI matches restored state
             updateShockmountVisibility();
+            updateShockmountLayers();
+            updateSVG();
+            updateUI();
         });
 
         // Add keyboard support
         btn.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                document.querySelectorAll('.variant-button').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                setState('variant', this.dataset.variant);
-                applyVariantPreset(this.dataset.variant);
-
-                // Update shockmount visibility immediately
-                updateShockmountVisibility();
+                this.click();
             }
         });
     });
@@ -177,7 +234,7 @@ export function initEventListeners() {
     });
 
     // Reset settings button handler
-    const resetSettingsBtn = document.querySelector('.menu-item[data-section="reset-settings"]');
+    const resetSettingsBtn = document.getElementById('reset-settings-btn');
     if (resetSettingsBtn) {
         resetSettingsBtn.addEventListener('click', () => {
             let confirmReset = true;
@@ -186,30 +243,13 @@ export function initEventListeners() {
             }
 
             if (confirmReset) {
-                // Apply the default config for the current microphone model
-                // Note: The `model` in `currentState` refers to '023' or '017' series.
-                // We need to apply the default for the *currently selected variant*.
                 const currentVariant = currentState.variant;
                 if (DEFAULT_MIC_CONFIGS[currentVariant]) {
-                    // Temporarily set a flag to prevent setState from marking as changed during reset
-                    const tempHasChanged = currentState.hasChanged;
-                    currentState.hasChanged = false;
+                    // Clear saved state for this variant
+                    delete micStates[currentVariant];
 
-                    // Apply default values to currentState directly for each section
-                    const defaultConfig = DEFAULT_MIC_CONFIGS[currentVariant];
-                    Object.keys(defaultConfig).forEach(section => {
-                        Object.assign(currentState[section], defaultConfig[section]);
-                    });
-
-                    // Explicitly reset prices to 0 for configurable options
-                    currentState.prices = { base: CONFIG.basePrice, spheres: 0, body: 0, logo: 0, case: 0, shockmount: 0 };
-
-                    // Re-set initial config
-                    setInitialConfig(defaultConfig);
-
-                    // Restore hasChanged flag if it was true before reset and should reflect original changes
-                    // Or keep it false as it is a reset action
-                    currentState.hasChanged = false; // After reset, there are no changes
+                    // Re-restore from defaults
+                    restoreMicState(currentVariant);
 
                     updateSVG();
                     updateUI();
@@ -308,6 +348,64 @@ export function initEventListeners() {
             }
         });
     });
+
+    initDragAndDrop();
+}
+
+function initDragAndDrop() {
+    const dropZones = [
+        { id: 'submenu-logo', section: 'logo' },
+        { id: 'submenu-case', section: 'case' }
+    ];
+
+    dropZones.forEach(zone => {
+        const el = document.getElementById(zone.id);
+        if (!el) return;
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            el.addEventListener(eventName, e => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (eventName === 'dragenter' || eventName === 'dragover') {
+                    el.classList.add('drag-over');
+                } else {
+                    el.classList.remove('drag-over');
+                }
+            }, false);
+        });
+
+        el.addEventListener('drop', e => {
+            el.classList.remove('drag-over');
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files && files.length > 0) {
+                const file = files[0];
+                if (!file.type.startsWith('image/')) {
+                    showNotification('Пожалуйста, загрузите изображение', 'error');
+                    return;
+                }
+
+                if (zone.section === 'logo') {
+                    import('./modules/logo.js').then(m => {
+                        const reader = new FileReader();
+                        reader.onload = event => {
+                            setState('logo.customLogo', event.target.result);
+                            setState('prices.logo', CONFIG.optionPrice);
+                            document.querySelector('.remove-logo-btn').style.display = 'block';
+                            document.getElementById('logo-overlay')?.classList.add('active');
+                            updateSVG();
+                            updateUI();
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                } else if (zone.section === 'case') {
+                    if (window.WoodCase) {
+                        window.WoodCase.handleUpload({ target: { files: [file] } });
+                    }
+                }
+            }
+        });
+    });
 }
 
 function updateFullscreenIcon() {
@@ -358,7 +456,7 @@ export function toggleSubmenu(section) {
             if (currentPreview === 'microphone' || currentPreview === 'shockmount') {
                 switchPreview('case');
             }
-        } else if (section === 'shockmount' && currentState.shockmount.enabled) {
+        } else if ((section === 'shockmount' || section === 'shockmount-pins') && currentState.shockmount.enabled) {
             const currentPreview = document.querySelector('.preview-switch-btn.active')?.dataset.preview;
             if (currentPreview === 'microphone' || currentPreview === 'case') {
                 switchPreview('shockmount');

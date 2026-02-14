@@ -4,6 +4,24 @@ import { SVG_STORAGE } from './svg-assets.js';
 import { getCorrectiveFilters, calculateLuminance, updateFilter, hexToRgb, hexToRgbValues, updateSectionLayers } from './modules/appearance.js';
 import { showNotification } from './ui-core.js';
 import { updateLogoSVG } from './modules/logo.js';
+import { getAssetSuffix } from './utils.js';
+
+export function updateResponsiveAssets(svg) {
+    if (!svg) return;
+    const suffix = getAssetSuffix();
+    const images = svg.querySelectorAll('image');
+    images.forEach(img => {
+        let href = img.getAttribute('xlink:href') || img.getAttribute('href');
+        if (href && href.includes('/image/custom/')) {
+            // Replace existing suffix or add new one before extension
+            const newHref = href.replace(/(_4k|_tablet|_hdmob|_hd|_mobile|_desktop)?\.(png|jpg|webp|jpeg)$/i, `${suffix}.$2`);
+            if (href !== newHref) {
+                img.setAttribute('xlink:href', newHref);
+                img.setAttribute('href', newHref);
+            }
+        }
+    });
+}
 
 export function updateSVG() {
     try {
@@ -14,7 +32,12 @@ export function updateSVG() {
 
         for (let i = 1; i <= 3; i++) {
             const grill = svg.querySelector(`#img-grill-mic${i}`);
-            if (grill) grill.style.display = (currentState.spheres.variant === String(i)) ? 'inline' : 'none';
+            if (grill) {
+                // Show grill image only if spheres are set to a custom RAL color
+                // Standard variants 1, 2, 3 should have the grill hidden
+                const isCustomColor = !!currentState.spheres.color;
+                grill.style.display = (isCustomColor && currentState.spheres.variant === String(i)) ? 'inline' : 'none';
+            }
         }
 
         updateSectionLayers('spheres', currentState.spheres);
@@ -59,6 +82,15 @@ export async function loadSVG(svgPath = null) {
     document.querySelectorAll('.submenu-back > svg').forEach(el => el.innerHTML = SVG_STORAGE.SUBMENU_BACK);
     document.querySelectorAll('.palette-toggle-btn > svg').forEach(el => el.innerHTML = SVG_STORAGE.PALETTE_TOGGLE_CHEVRON);
     const svg = document.querySelector('#svg-wrapper svg');
-    if (svg) svg.style.transformOrigin = 'center bottom';
+    if (svg) {
+        svg.style.transformOrigin = 'center bottom';
+        updateResponsiveAssets(svg);
+    }
     updateSVG();
+
+    // Re-update assets on window resize
+    window.addEventListener('resize', () => {
+        const currentSvg = document.querySelector('#svg-wrapper svg');
+        if (currentSvg) updateResponsiveAssets(currentSvg);
+    });
 }
