@@ -2,11 +2,11 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-	<?include_once($_SERVER["DOCUMENT_ROOT"]."/local/templates/.default/include/head.php");?>	
+	<?include_once($_SERVER["DOCUMENT_ROOT"]."/local/templates/.default/include/head_customizer_simple.php");?>	
 </head> 
 <body>
 	<?$APPLICATION->ShowPanel();?>
-	<?include_once($_SERVER["DOCUMENT_ROOT"]."/local/templates/.default/include/header.php");?>
+	<?include_once($_SERVER["DOCUMENT_ROOT"]."/local/templates/.default/include/header_customizer.php");?>
 	
 <?global $USER;
 if ($USER->IsAdmin()):

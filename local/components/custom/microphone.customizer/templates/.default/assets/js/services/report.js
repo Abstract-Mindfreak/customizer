@@ -60,68 +60,20 @@ export async function sendOrder(clientData) {
     formData.set('form_text_29', clientData.phone || '');
     formData.set('form_text_30', clientData.comment || '');
     formData.set('form_text_31', `Модель: ${currentState.model} (${currentState.variant})`);
+    formData.set('form_text_32', currentState.spheres.color || currentState.spheres.variant);
+    formData.set('form_text_33', currentState.body.color || currentState.body.variant);
+    formData.set('form_text_34', currentState.logo.customLogo ? 'CUSTOM' : 'STANDARD');
+    formData.set('form_text_35', currentState.logo.bgColor || '');
     
-    // Сферы - правильные названия
-    const sphereNames = {
-        '1': 'Глубокий черный',
-        '2': 'Классическая латунь', 
-        '3': 'Сатинированная сталь'
-    };
-    const sphereValue = sphereNames[currentState.spheres.variant] || currentState.spheres.variant;
-    formData.set('form_text_32', sphereValue);
-    
-    // Корпус - правильные названия
-    const bodyNames = {
-        '1': 'Глубокий черный',
-        '2': 'Классическая латунь',
-        '3': 'Сатинированная сталь'
-    };
-    const bodyValue = bodyNames[currentState.body.variant] || currentState.body.variant;
-    formData.set('form_text_33', bodyValue);
-    
-    // Логотип тип
-    const logoTypeText = currentState.logo.customLogo ? 'Кастомный логотип микрофона' : 'STANDARD';
-    formData.set('form_text_34', logoTypeText);
-    
-    // Логотип фон - прочерк если кастомный логотип
-    const logoBgText = currentState.logo.customLogo ? '-' : (currentState.logo.bgColor || '');
-    formData.set('form_text_35', logoBgText);
-    
-    // Кейс - добавляем отступ слева
-    const woodcaseDesk = `Ш:${currentState.case.logoWidthMM}мм, Сверху:${currentState.case.logoOffsetMM.top}мм, Слева:${currentState.case.logoOffsetMM.left}мм`;
+    // Кейс и подвес
+    const woodcaseDesk = `Ш:${currentState.case.logoWidthMM}мм, Сверху:${currentState.case.logoOffsetMM.top}мм`;
     formData.set('form_text_36', woodcaseDesk);
+    formData.set('form_text_37', currentState.shockmount.color || 'Standard');
+    formData.set('form_text_38', currentState.shockmount.pins?.variant || '');
     
-    // Шокмаунт - проверяем выбран ли он
-    if (currentState.shockmount.variant === 'none' || !currentState.shockmount.variant) {
-        formData.set('form_text_37', 'Шокмаунт не добавлен в комплект');
-        formData.set('form_text_38', 'Шокмаунт не добавлен в комплект');
-    } else {
-        const shockmountColor = currentState.shockmount.color || 'Standard';
-        const pinsColor = currentState.shockmount.pins?.color || 'Standard';
-        const pinsPaid = currentState.shockmount.pins?.paid ? '(платный)' : '(бесплатный)';
-        
-        formData.set('form_text_37', shockmountColor);
-        formData.set('form_text_38', `${pinsColor} ${pinsPaid}`);
-    }
-    
-    // Цена с детализацией
-    const basePrice = CONFIG.basePrice;
-    const spheresPrice = currentState.prices.spheres || 0;
-    const bodyPrice = currentState.prices.body || 0;
-    const logoPrice = currentState.prices.logo || 0;
-    const casePrice = currentState.prices.case || 0;
-    const shockmountPrice = currentState.prices.shockmount || 0;
-    const totalPrice = basePrice + spheresPrice + bodyPrice + logoPrice + casePrice + shockmountPrice;
-    
-    let priceDetails = `База: ${basePrice}р`;
-    if (spheresPrice > 0) priceDetails += ` + Сферы: ${spheresPrice}р`;
-    if (bodyPrice > 0) priceDetails += ` + Корпус: ${bodyPrice}р`;
-    if (logoPrice > 0) priceDetails += ` + Лого: ${logoPrice}р`;
-    if (casePrice > 0) priceDetails += ` + Кейс: ${casePrice}р`;
-    if (shockmountPrice > 0) priceDetails += ` + Подвес: ${shockmountPrice}р`;
-    
-    priceDetails += ` = Итого: ${totalPrice}р`;
-    formData.set('form_text_39', priceDetails);
+    // Цена
+    const totalPrice = CONFIG.basePrice + (currentState.prices.spheres || 0) + (currentState.prices.body || 0) + (currentState.prices.logo || 0) + (currentState.prices.case || 0) + (currentState.prices.shockmount || 0);
+    formData.set('form_text_39', totalPrice + ' руб.');
 
     // 2. Добавляем ФАЙЛЫ
     // Поле 47 - PREVIEW_MIC_CUSTOM_FORM

@@ -168,26 +168,16 @@ export function updateShockmountPreview() {
     const shockmountSvg = document.getElementById('shockmount-svg');
     if (!shockmountSvg) return;
 
-    const hasCustomColor = !!currentState.shockmount.colorValue;
+    // Check if a custom color is applied to the shockmount body
+    const hasBodyCustomColor = !!currentState.shockmount.colorValue;
 
-    const layers = {
-        main017: shockmountSvg.querySelector('#shockmount-017-pins-brass-group'),
-        colorize017: shockmountSvg.querySelector('#feFlood6'),
-        main023: shockmountSvg.querySelector('#shockmount-023-pins-brass-group'),
-        colorize023: shockmountSvg.querySelector('#feFlood8'),
-    };
-
-    // Toggle 017 layers
-    if (layers.main017) layers.main017.style.display = hasCustomColor ? 'none' : 'inline';
-    // if (layers.colorize017) layers.colorize017.style.display = hasCustomColor ? 'inline' : 'none';
-
-    // Toggle 023 layers
-    if (layers.main023) layers.main023.style.display = hasCustomColor ? 'none' : 'inline';
-    // if (layers.colorize023) layers.colorize023.style.display = hasCustomColor ? 'inline' : 'none';
-
-    if (hasCustomColor) {
+    // Apply the flood color for the body if a custom color is selected
+    if (hasBodyCustomColor) {
         updateShockmountColor('body', currentState.shockmount.colorValue);
     }
+    // Note: The visibility of the body colorization (through filter) is managed implicitly
+    // by whether a colorValue is set and then passed to updateShockmountColor.
+    // Brass pin groups visibility is handled by updateShockmountPinsPreview.
 }
 
 export function updateShockmountPinsPreview() {
@@ -196,24 +186,22 @@ export function updateShockmountPinsPreview() {
 
     const isBrass = currentState.shockmount.pins.variant === 'brass';
 
-    const layers = {
-        brass017: shockmountSvg.querySelector('#shockmount-017-pins-brass-group'),
-        colorize017: shockmountSvg.querySelector('#feFlood6'),
-        brass023: shockmountSvg.querySelector('#shockmount-023-pins-brass-group'),
-        colorize023: shockmountSvg.querySelector('#feFlood8'),
-    };
+    const brass017Group = shockmountSvg.querySelector('#shockmount-017-pins-brass-group');
+    const brass023Group = shockmountSvg.querySelector('#shockmount-023-pins-brass-group');
 
-    // Toggle 017 layers
-    if (layers.brass017) layers.brass017.style.display = isBrass ? 'inline' : 'none';
-    // if (layers.colorize017) layers.colorize017.style.display = isBrass ? 'none' : 'inline';
+    // Toggle brass groups visibility based on current model and brass selection
+    if (brass017Group) {
+        brass017Group.style.display = (currentState.model === '017' && isBrass) ? 'inline' : 'none';
+    }
+    if (brass023Group) {
+        brass023Group.style.display = (currentState.model === '023' && isBrass) ? 'inline' : 'none';
+    }
 
-    // Toggle 023 layers
-    if (layers.brass023) layers.brass023.style.display = isBrass ? 'inline' : 'none';
-    // if (layers.colorize023) layers.colorize023.style.display = isBrass ? 'none' : 'inline';
-
-    if (!isBrass) {
+    // If pins are not brass, apply the selected color
+    if (!isBrass && currentState.shockmount.pins.colorValue) {
         updateShockmountColor('pins', currentState.shockmount.pins.colorValue);
     }
+    // No need to hide/show feFlood elements directly here; updateShockmountColor manages their flood-color.
 }
 
 function initShockmountEventListeners() {

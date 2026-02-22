@@ -8,7 +8,10 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
 use Bitrix\Main\Page\Asset;
 
 Asset::getInstance()->addCss($templateFolder . "/assets/css/style.css");
+
 Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/interactjs@1.10.19/dist/interact.min.js");
+// NEW: Add global anime.js library
+Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js");
 ?>
 
 <div class="microphone-customizer-app" id="customizer-app-root"
@@ -17,12 +20,12 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/interactjs@1.10.19/dis
      data-ajax-path="<?= $componentPath ?>/ajax.php"
      data-sessid="<?= bitrix_sessid() ?>">
 
-    <div class="z-9">
+    <!-- <div class="z-9">
         <div class="z-91">
             <h1 class="z-10">Custom Shop</h1>
             <div class="z-11">by SOYUZ</div>
         </div>
-    </div>
+    </div> -->
 
     <div class="toggle-color">
         <button id="fullscreen-toggle" class="fullscreen-toggle" aria-label="Переключить полноэкранный режим">
@@ -669,7 +672,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/interactjs@1.10.19/dis
                         <span class="variant-price">+0₽</span>
                     </div>
                     
-                    <div class="variant-item" data-variant="RAL1013" tabindex="0">
+                    <div class="variant-item" data-variant="pins-RAL1013" tabindex="0">
                         <div class="variant-info">
                             <div class="variant-icon" style="background-color: #EAE0C8;"></div>
                             <span class="variant-label">RAL 1013</span>
@@ -677,7 +680,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/interactjs@1.10.19/dis
                         <span class="variant-price">+0₽</span>
                     </div>
 
-                    <div class="variant-item" data-variant="pins-brass" tabindex="0">
+                    <div class="variant-item" data-variant="pins-RAL9005" tabindex="0">
                         <div class="variant-info">
                             <div class="variant-icon" style="background-color: #0E0E10;"></div>
                             <span class="variant-label">RAL 9005</span>

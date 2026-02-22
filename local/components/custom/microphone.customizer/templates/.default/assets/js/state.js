@@ -12,7 +12,8 @@ export let currentState = {
 
     // For tracking changes and reset functionality
     initialConfig: null, // Will store the default config when a mic is selected
-    hasChanged: false
+    hasChanged: false,
+    savedMicConfigs: {} // Store configurations for each microphone variant
 };
 
 // Function to set the initial configurable state and reset the hasChanged flag
