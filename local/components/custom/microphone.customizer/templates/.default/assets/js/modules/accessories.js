@@ -1,6 +1,7 @@
 import { currentState, setState } from '../state.js';
 import { updateUI } from '../ui-core.js';
 import { initShockmount } from './shockmount.js';
+import * as cameraAnimation from './camera-animation.js'; // NEW IMPORT
 
 // --- CORE INITIALIZATION ---
 export function initCaseAndShockmount() {
@@ -27,32 +28,23 @@ export function initPreviewSwitching() {
 
     switchContainer.querySelectorAll('.preview-switch-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            switchPreview(this.dataset.preview);
+            switchPreview(this.dataset.preview); // Call switchPreview, which now handles button active state
         });
     });
 }
 
 export function switchPreview(previewType) {
+    // Update active class on buttons
     document.querySelectorAll('.preview-switch-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    document.querySelector(`[data-preview="${previewType}"]`).classList.add('active');
-
-    document.getElementById('svg-wrapper').style.display = 'none';
-    document.getElementById('case-preview-container').style.display = 'none';
-    document.getElementById('shockmount-preview-container').style.display = 'none';
-
-    switch(previewType) {
-        case 'microphone':
-            document.getElementById('svg-wrapper').style.display = 'flex';
-            break;
-        case 'case':
-            document.getElementById('case-preview-container').style.display = 'flex';
-            break;
-        case 'shockmount':
-            document.getElementById('shockmount-preview-container').style.display = 'flex';
-            break;
+    const targetButton = document.querySelector(`[data-preview="${previewType}"]`);
+    if (targetButton) {
+        targetButton.classList.add('active');
     }
+
+    // Call cameraAnimation to switch layers, replacing display manipulation
+    cameraAnimation.switchLayer(previewType);
 }
 
 // Legacy functions - больше не используются

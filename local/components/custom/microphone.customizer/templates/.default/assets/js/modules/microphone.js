@@ -3,9 +3,28 @@ import { CONFIG, FREE_LOGO_RALS, RAL_PALETTE, variantNames, MALFA_SILVER_RAL, MA
 import { updateSVG } from '../engine.js';
 import { updateUI } from '../ui-core.js';
 import { updateShockmountVisibility } from './shockmount.js';
+import * as cameraAnimation from './camera-animation.js'; // NEW IMPORT
 
-export function applyVariantPreset(variant) {
-    // Reset all selections first
+export function applyVariantPreset(newVariant) {
+    // Store the previous variant before currentState.variant is potentially changed
+    const previousVariant = currentState.variant;
+
+    // Save the current configuration of the previous microphone variant, if it was valid
+    // and we are actually switching to a different variant.
+    if (previousVariant && previousVariant !== newVariant) {
+        // Create a deep copy of the current customizable state for the previous variant
+        const configToSave = JSON.parse(JSON.stringify({
+            spheres: currentState.spheres,
+            body: currentState.body,
+            logo: currentState.logo,
+            case: currentState.case,
+            shockmount: currentState.shockmount,
+            prices: currentState.prices
+        }));
+        currentState.savedMicConfigs[previousVariant] = configToSave;
+    }
+    
+    // Reset all selections first (UI elements)
     document.querySelectorAll('.variant-item').forEach(item => {
         item.classList.remove('selected');
         item.setAttribute('aria-selected', 'false');
@@ -21,189 +40,85 @@ export function applyVariantPreset(variant) {
     const logoSubmenu = document.getElementById('submenu-logo');
     const colorSection = logoSubmenu.querySelector('.submenu-section:nth-child(2)');
 
-    if (variant === 'malfa') {
+    if (newVariant === 'malfa') {
         malfaLogoOptions.forEach(option => option.style.display = 'flex');
-        // Ensure the malfa-logo itself is visible
         document.getElementById('malfa-logo').style.display = 'inline';
-        // Ensure the logo overlay is visible
         document.getElementById('logo-overlay').style.display = 'block';
-        // Ensure all submenu sections within submenu-logo are visible
         logoSubmenu.querySelectorAll('.submenu-section').forEach(section => section.style.display = 'block');
     } else {
         malfaLogoOptions.forEach(option => option.style.display = 'none');
-        // Hide the malfa-logo itself
         document.getElementById('malfa-logo').style.display = 'none';
-        // Hide the logo overlay
         document.getElementById('logo-overlay').style.display = 'none';
-        // Restore default visibility for submenu sections (e.g., if a custom logo is active, only show the relevant sections)
-        if (colorSection) colorSection.style.display = 'block'; // Re-enable if it was hidden for MALFA
+        if (colorSection) colorSection.style.display = 'block';
     }
 
-    switch(variant) {
-        case '023-the-bomblet':
-            // Полусферы - Сатинированная сталь
-            setState('spheres', { variant: '3', color: null, colorValue: '#a1a1a0' });
-            selectVariant('spheres', '3');
+    // Update current variant in state immediately
+    setState('variant', newVariant);
 
-            // Корпус - Матовый антрацит
-            setState('body', { variant: '3', color: null, colorValue: '#a1a1a0' });
-            selectVariant('body', '3');
+    let configToApply = {};
 
-            // Тип логотипа Холодный хром
-            setState('logo', { variant: 'silver', bgColor: '3001', bgColorValue: '#8F1E24', customLogo: null });
-            selectVariant('logo', 'silver');
-            selectRALVariant('logo', '3001');
-
-            // Кейс - сохраняем текущие настройки кейса
-            const bombletCustomLogo = currentState.case.customLogo;
-            const bombletLogoTransform = currentState.case.logoTransform;
-            setState('case', {
-                variant: 'standard',
-                customLogo: bombletCustomLogo,
-                logoTransform: bombletLogoTransform || { x: 40, y: 26, scale: 1.2 }
-            });
-            selectVariant('case', 'standard');
-
-            // Shockmount - выключен по умолчанию для 023 THE BOMBLET
-            setState('shockmount', { enabled: false, variant: 'white', color: null, colorValue: '#ffffff' });
-            setState('prices.shockmount', 0);
-
-            setState('prices', { base: CONFIG.basePrice, spheres: 0, body: 0, logo: 0, case: 0, shockmount: 0 });
-            break;
-
-        case 'malfa':
-            // Полусферы - Сатинированная сталь
-            setState('spheres', { variant: '3', color: null, colorValue: '#a1a1a0' });
-            selectVariant('spheres', '3');
-
-            // Корпус - Матовый антрацит
-            setState('body', { variant: '1', color: null, colorValue: '#000000' });
-            selectVariant('body', '1');
-
-            // Тип логотипа MALFA (Серебро по умолчанию)
-            setState('logo', { variant: 'malfa', bgColor: MALFA_SILVER_RAL, bgColorValue: RAL_PALETTE[MALFA_SILVER_RAL], customLogo: null });
-            selectVariant('logo', 'malfa');
-            selectRALVariant('logo', MALFA_SILVER_RAL); // Select the RAL variant as well
-
-            // Кейс - сохраняем текущие настройки кейса
-            const malfaCustomLogo = currentState.case.customLogo;
-            const malfaLogoTransform = currentState.case.logoTransform;
-            setState('case', {
-                variant: 'standard',
-                customLogo: malfaCustomLogo,
-                logoTransform: malfaLogoTransform || { x: 40, y: 26, scale: 1.2 }
-            });
-            selectVariant('case', 'standard');
-
-            // Shockmount - включен в комплекте
-            setState('shockmount', { enabled: true, variant: 'white', color: null, colorValue: '#ffffff' });
-            setState('prices.shockmount', 0);
-
-            setState('prices', { base: CONFIG.basePrice, spheres: 0, body: 0, logo: 0, case: 0, shockmount: 0 });
-            break;
-
-        case '023-dlx':
-            // Полусферы - Сатинированная сталь
-            setState('spheres', { variant: '3', color: null, colorValue: '#a1a1a0' });
-            selectVariant('spheres', '3');
-
-            // Корпус - Сатинированная сталь
-            setState('body', { variant: '3', color: null, colorValue: '#a1a1a0' });
-            selectVariant('body', '3');
-
-            // Тип логотипа Холодный хром
-            setState('logo', { variant: 'silver', bgColor: '3001', bgColorValue: '#8F1E24', customLogo: null });
-            selectVariant('logo', 'silver');
-            selectRALVariant('logo', '3001');
-
-            // Кейс - сохраняем текущие настройки кейса
-            const dlxCustomLogo = currentState.case.customLogo;
-            const dlxLogoTransform = currentState.case.logoTransform;
-            setState('case', {
-                variant: 'standard',
-                customLogo: dlxCustomLogo,
-                logoTransform: dlxLogoTransform || { x: 40, y: 26, scale: 1.2 }
-            });
-            selectVariant('case', 'standard');
-
-            // Shockmount - включен в комплекте
-            setState('shockmount', { enabled: true, variant: 'white', color: null, colorValue: '#ffffff' });
-            setState('prices.shockmount', 0);
-
-            setState('prices', { base: CONFIG.basePrice, spheres: 0, body: 0, logo: 0, case: 0, shockmount: 0 });
-            break;
-
-        case '017-fet':
-            // Полусферы - Классическая латунь
-            setState('spheres', { variant: '2', color: null, colorValue: '#d4af37' });
-            selectVariant('spheres', '2');
-
-            // Корпус - Слоновая кость
-            setState('body', { variant: '2', color: 'RAL 1013', colorValue: '#dfdbc7' });
-            selectVariant('body', '2');
-            selectRALVariant('body', '1013');
-
-            // Тип логотипа Классическая латунь
-            setState('logo', { variant: 'gold', bgColor: '6001', bgColorValue: '#40693A', customLogo: null });
-            selectVariant('logo', 'gold');
-            selectRALVariant('logo', '6001');
-
-            // Кейс - сохраняем текущие настройки кейса
-            const fetCustomLogo = currentState.case.customLogo;
-            const fetLogoTransform = currentState.case.logoTransform;
-            setState('case', {
-                variant: 'standard',
-                customLogo: fetCustomLogo,
-                logoTransform: fetLogoTransform || { x: 40, y: 26, scale: 1.2 }
-            });
-            selectVariant('case', 'standard');
-
-            // Shockmount - включен в комплекте
-            setState('shockmount', { enabled: true, variant: 'white', color: null, colorValue: '#ffffff' });
-            setState('prices.shockmount', 0);
-
-            setState('prices', { base: CONFIG.basePrice, spheres: 0, body: CONFIG.optionPrice, logo: 0, case: 0, shockmount: 0 });
-            break;
-
-        case '017-tube':
-            // Полусферы - Классическая латунь
-            setState('spheres', { variant: '2', color: null, colorValue: '#d4af37' });
-            selectVariant('spheres', '2');
-
-            // Корпус - Слоновая кость
-            setState('body', { variant: '2', color: 'RAL 1013', colorValue: '#dfdbc7' });
-            selectVariant('body', '2');
-            selectRALVariant('body', '1013');
-
-            // Тип логотипа Золотистый
-            setState('logo', { variant: 'gold', bgColor: '5017', bgColorValue: '#0F518A', customLogo: null });
-            selectVariant('logo', 'gold');
-            selectRALVariant('logo', '5017');
-
-            // Кейс - сохраняем текущие настройки кейса
-            const tubeCustomLogo = currentState.case.customLogo;
-            const tubeLogoTransform = currentState.case.logoTransform;
-            setState('case', {
-                variant: 'standard',
-                customLogo: tubeCustomLogo,
-                logoTransform: tubeLogoTransform || { x: 40, y: 26, scale: 1.2 }
-            });
-            selectVariant('case', 'standard');
-
-            // Shockmount - включен в комплекте
-            setState('shockmount', { enabled: true, variant: 'white', color: null, colorValue: '#ffffff' });
-            setState('prices.shockmount', 0);
-
-            setState('prices', { base: CONFIG.basePrice, spheres: 0, body: CONFIG.optionPrice, logo: 0, case: 0, shockmount: 0 });
-            break;
+    // Check if a saved configuration exists for the new variant
+    if (currentState.savedMicConfigs[newVariant]) {
+        console.log(`Loading saved config for ${newVariant}`);
+        configToApply = currentState.savedMicConfigs[newVariant];
+    } else {
+        console.log(`Applying default config for ${newVariant}`);
+        // If no saved config, use the default from config.js
+        configToApply = DEFAULT_MIC_CONFIGS[newVariant];
     }
+    
+    // Apply the chosen configuration to currentState
+    Object.assign(currentState.spheres, configToApply.spheres);
+    Object.assign(currentState.body, configToApply.body);
+    Object.assign(currentState.logo, configToApply.logo);
+    Object.assign(currentState.case, configToApply.case);
+    Object.assign(currentState.shockmount, configToApply.shockmount);
+    Object.assign(currentState.prices, configToApply.prices);
+
+    const shockmountSwitch = document.getElementById('shockmount-switch');
+    if (shockmountSwitch) {
+        shockmountSwitch.checked = currentState.shockmount.enabled;
+    }
+
+    // Update UI selections based on the applied config
+    selectVariant('spheres', currentState.spheres.variant);
+    if (currentState.spheres.color) selectRALVariant('spheres', currentState.spheres.color);
+
+    selectVariant('body', currentState.body.variant);
+    if (currentState.body.color) selectRALVariant('body', currentState.body.color);
+
+    selectVariant('logo', currentState.logo.variant);
+    if (currentState.logo.bgColor) selectRALVariant('logo', currentState.logo.bgColor);
+
+    selectVariant('case', currentState.case.variant);
+    
+    // Special handling for shockmount pins as its state is nested
+    selectVariant('shockmount', currentState.shockmount.variant);
+    if (currentState.shockmount.color) selectRALVariant('shockmount', currentState.shockmount.color);
+    selectVariant('shockmount-pins', currentState.shockmount.pins.variant);
+    if (currentState.shockmount.pins.colorName && currentState.shockmount.pins.material === 'custom') {
+        // If it's a custom RAL, we need to mark the swatch as selected
+        const palettePins = document.getElementById('pal-pins');
+        if (palettePins) {
+            const swatch = palettePins.querySelector(`[data-ral="${currentState.shockmount.pins.colorName.replace('RAL ', '')}"]`);
+            if (swatch) swatch.classList.add('selected');
+        }
+    }
+
 
     updateShockmountVisibility();
     if (window.WoodCase) {
-        window.WoodCase.setCase(variant);
+        // Assume WoodCase is initialized globally and has a method to set the case based on variant
+        // or a method to apply existing case state directly.
+        // For now, we'll just set the variant which might trigger its internal logic.
+        window.WoodCase.setCase(newVariant);
     }
-    // Set initial config after applying preset for reset functionality
-    setInitialConfig(DEFAULT_MIC_CONFIGS[variant]);
+    
+    // Set initial config for reset functionality based on the loaded/default config
+    setInitialConfig(configToApply);
+
+    // Ensure the camera view switches to the microphone when a new model is applied
+    cameraAnimation.switchLayer('microphone'); 
 
     updateSVG();
     updateUI();
