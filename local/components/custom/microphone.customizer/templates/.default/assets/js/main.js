@@ -9,6 +9,7 @@ import { initValidation } from './services/validation.js';
 import { preloadImages, getDevice } from './utils.js';
 import { CASE_IMAGES, CASE_GEOMETRY } from './config.js';
 import { currentState, setInitialConfig } from './state.js';
+import * as cameraAnimation from './modules/camera-animation.js'; // NEW IMPORT
 
 document.addEventListener('DOMContentLoaded', async () => {
     const appRoot = document.getElementById('customizer-app-root');
@@ -71,13 +72,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadSVG();
     console.log('SVG загружен');
+
+    // NEW: Initialize camera animation after SVG is loaded
+    cameraAnimation.initCameraEffect('microphone'); // Set microphone as initial active layer
+    console.log('Camera effect initialized');
+
     initPalettes();
     initEventListeners();
     initCaseAndShockmount();
     initValidation();
     initLogo();
     initializeWoodCase();
-    initShockmount();
+    // initShockmount(); // This is called inside initCaseAndShockmount, no need to call again
 
     updateUI();
 
