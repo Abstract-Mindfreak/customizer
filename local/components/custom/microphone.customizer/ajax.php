@@ -7,7 +7,7 @@ require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_befo
 use Bitrix\Main\Loader;
 use Bitrix\Main\Context;
 
-// Полная очистка буфера, чтобы убрать любой текст/ошибки до этого момента
+// Полная очистка буфера
 while (ob_get_level()) {
     ob_end_clean();
 }
@@ -22,10 +22,21 @@ if (!Loader::includeModule("form")) {
 $request = Context::getCurrent()->getRequest();
 $action = $request->getPost("action");
 
+
+if ($action === "loadConfig") {
+    echo json_encode([
+        "success" => true,
+        "config" => null
+    ]);
+    die();
+}
+
+
+
 if ($action === "createOrder") {
+
     $FORM_ID = 1;
 
-    // Только те поля, которые мы реально хотим сохранить (без USER_FORM)
     $fields = [
         "NAME_FORM" => 6,
         "LAST_NAME_FORM" => 7,
@@ -46,10 +57,13 @@ if ($action === "createOrder") {
     ];
 
     $arValues = [];
+
     foreach ($fields as $postKey => $questionId) {
         $val = $request->getPost($postKey);
+
         if ($val !== null) {
             $rsAnswer = CAnswer::GetList($questionId, $by="s_id", $order="asc", [], $fv=null);
+
             if ($arAnswer = $rsAnswer->Fetch()) {
                 $bitrixKey = "form_" . $arAnswer["FIELD_TYPE"] . "_" . $arAnswer["ID"];
                 $arValues[$bitrixKey] = $val;
@@ -57,15 +71,18 @@ if ($action === "createOrder") {
         }
     }
 
-    // Добавляем результат. "N" - не проверять права доступа.
     $RESULT_ID = CFormResult::Add($FORM_ID, $arValues, "N", "Y");
 
     if ($RESULT_ID) {
         echo json_encode(["success" => true, "orderId" => $RESULT_ID]);
     } else {
         global $strError;
-        echo json_encode(["success" => false, "error" => strip_tags($strError) ?: "CFormResult::Add failed"]);
+        echo json_encode([
+            "success" => false,
+            "error" => strip_tags($strError) ?: "CFormResult::Add failed"
+        ]);
     }
+
     die();
 }
 
