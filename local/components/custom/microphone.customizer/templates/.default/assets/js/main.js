@@ -9,7 +9,7 @@ import { initValidation } from './services/validation.js';
 import { preloadImages, getDevice } from './utils.js';
 import { CASE_IMAGES, CASE_GEOMETRY } from './config.js';
 import { currentState, setInitialConfig } from './state.js';
-import * as cameraAnimation from './modules/camera-animation.js'; // NEW IMPORT
+import * as cameraEffect from './modules/camera-effect.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const appRoot = document.getElementById('customizer-app-root');
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('SVG загружен');
 
     // NEW: Initialize camera animation after SVG is loaded
-    cameraAnimation.initCameraEffect('microphone'); // Set microphone as initial active layer
+    cameraEffect.initCameraEffect(currentState.variant);
     console.log('Camera effect initialized');
 
     initPalettes();
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initValidation();
     initLogo();
     initializeWoodCase();
-    // initShockmount(); // This is called inside initCaseAndShockmount, no need to call again
+    initShockmount(); // This is called inside initCaseAndShockmount, no need to call again
 
     updateUI();
 
@@ -93,4 +93,39 @@ document.addEventListener('DOMContentLoaded', async () => {
             setTimeout(() => item.classList.add('animate-in'), i * 100);
         });
     }, 300);
+
+    // NEW HELPER FUNCTION FOR TASK 5
+    // The 'appRoot' variable is already defined at the top of the DOMContentLoaded listener.
+    if (appRoot) {
+        function sendCustomizerForm(dataJson, files) {
+            const formData = new FormData();
+            formData.append("sessid", appRoot.dataset.sessid);
+            formData.append("action", "createOrder");
+            formData.append("config_json", JSON.stringify(dataJson));
+
+            // Attach files
+            for (const [key, file] of Object.entries(files)) {
+                formData.append(key, file);
+            }
+
+            fetch(appRoot.dataset.ajaxPath, {
+                method: "POST",
+                body: formData
+            })
+            .then(r => r.json())
+            .then(resp => {
+                if (resp.success) {
+                    alert("Заказ успешно отправлен! ID: " + resp.orderId);
+                } else {
+                    console.error(resp.error);
+                    alert("Ошибка отправки: " + resp.error);
+                }
+            })
+            .catch(e => {
+                console.error(e);
+                alert("Ошибка сети при отправке");
+            });
+        }
+        window.sendCustomizerForm = sendCustomizerForm;
+    }
 });
