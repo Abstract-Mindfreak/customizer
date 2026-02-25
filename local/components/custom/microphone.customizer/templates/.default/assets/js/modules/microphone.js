@@ -2,8 +2,8 @@ import { currentState, setState, setInitialConfig } from '../state.js';
 import { CONFIG, FREE_LOGO_RALS, RAL_PALETTE, variantNames, MALFA_SILVER_RAL, MALFA_GOLD_RAL, DEFAULT_MIC_CONFIGS } from '../config.js';
 import { updateSVG } from '../engine.js';
 import { updateUI } from '../ui-core.js';
-import { updateShockmountVisibility } from './shockmount.js';
-import * as cameraAnimation from './camera-animation.js'; // NEW IMPORT
+import { updateShockmountVisibility, updateShockmountLayers } from './shockmount.js';
+import * as cameraEffect from './camera-effect.js';
 
 export function applyVariantPreset(newVariant) {
     // Store the previous variant before currentState.variant is potentially changed
@@ -107,6 +107,7 @@ export function applyVariantPreset(newVariant) {
 
 
     updateShockmountVisibility();
+    updateShockmountLayers();
     if (window.WoodCase) {
         // Assume WoodCase is initialized globally and has a method to set the case based on variant
         // or a method to apply existing case state directly.
@@ -118,7 +119,7 @@ export function applyVariantPreset(newVariant) {
     setInitialConfig(configToApply);
 
     // Ensure the camera view switches to the microphone when a new model is applied
-    cameraAnimation.switchLayer('microphone'); 
+    cameraEffect.switchLayer('microphone'); 
 
     updateSVG();
     updateUI();

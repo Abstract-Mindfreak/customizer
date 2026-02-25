@@ -3,7 +3,7 @@ import { getDevice } from '../utils.js';
 import { CASE_IMAGES, CASE_GEOMETRY } from '../config.js';
 
 const WoodCase = {
-    currentCase: '017-tube',
+    currentCase: '023-the-bomblet',
     userImgSrc: null,
     isSvg: false,
     svgRatio: 1,
@@ -34,7 +34,7 @@ const WoodCase = {
         const variantMap = {
             'malfa': '023-malfa',
             '023-dlx': '023-deluxe',
-            '023-the-bomblet': '023-bomblet'
+            // '023-the-bomblet': '023-bomblet'
         };
         const caseId = variantMap[id] || id;
 
