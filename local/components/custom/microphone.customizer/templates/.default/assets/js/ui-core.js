@@ -147,6 +147,37 @@ export function initEventListeners() {
         });
     });
 
+    // Bundle button handlers
+    document.querySelectorAll('.bundle-button').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.bundle-button').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const selectedBundle = this.dataset.bundle;
+            setState('variant', selectedBundle);
+            applyVariantPreset(selectedBundle);
+            
+            // Update shockmount visibility immediately
+            updateShockmountVisibility();
+        });
+
+        // Add keyboard support
+        btn.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                document.querySelectorAll('.bundle-button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const selectedBundle = this.dataset.bundle;
+                setState('variant', selectedBundle);
+                applyVariantPreset(selectedBundle);
+
+                // Update shockmount visibility immediately
+                updateShockmountVisibility();
+            }
+        });
+    });
+
     document.querySelectorAll('.palette-toggle-btn').forEach(item => {
         item.addEventListener('click', function() {
             const wrapper = this.nextElementSibling;

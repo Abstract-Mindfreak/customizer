@@ -8,6 +8,7 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
 use Bitrix\Main\Page\Asset;
 
 Asset::getInstance()->addCss($templateFolder . "/assets/css/style.css");
+Asset::getInstance()->addCss($templateFolder . "/assets/css/camera-effect.css");
 
 Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/interactjs@1.10.19/dist/interact.min.js");
 // NEW: Add global anime.js library
@@ -42,7 +43,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                 <div class="svg-wrapper" id="svg-wrapper"></div>
 
                 <!-- Shockmount Preview Container -->
-                <div class="shockmount-preview-container" id="shockmount-preview-container" style="display: none;">
+                <div class="shockmount-preview-container" id="shockmount-preview-container" style="">
                 <div class="shockmount-svg-container">
   <svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:xlink="http://www.w3.org/1999/xlink" inkscape:version="1.4.2 (f4327f4, 2025-05-13)" sodipodi:docname="finished-shockmount-023-017.svg" xml:space="preserve" id="shockmount-svg" x="0" y="0" style="enable-background:new 0 0 2048.2 2048.2;" version="1.1" viewBox="0 0 2048.2 2048.2">
                       <defs>
@@ -201,7 +202,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
             </div>
 
                 <!-- Case Preview Container -->
-                <div class="case-preview-container" id="case-preview-container" style="display: none; width:100%; height:100%;">
+                <div class="case-preview-container" id="case-preview-container" style=" width:100%; height:100%;">
                     <div id="wood-case-workspace">
                         <div class="loader" id="wood-case-loader">Загрузка...</div>
                         <svg id="wood-case-svg" preserveAspectRatio="xMidYMid meet">
@@ -244,27 +245,16 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
         </div>
 
         <div class="sidebar">
-            <div class="model-switch">
-                <button class="model-button active" data-model="023">
-                    <span>023</span>
-                    <small>серия</small>
-                </button>
-                <button class="model-button" data-model="017">
-                    <span>017</span>
-                    <small>серия</small>
-                </button>
-            </div>
+
 
             <!-- Include actual controls from CUSTOMIZER.html -->
-            <div class="variant-switch" id="variant-switch">
-                <div class="variant-options" id="variants-023">
-                    <button class="variant-button active" data-variant="023-the-bomblet">023 the BOMBLET</button>
-                    <button class="variant-button" data-variant="malfa">023 MALFA</button>
-                    <button class="variant-button" data-variant="023-dlx">023 DELUXE</button>
-                </div>
-                <div class="variant-options" id="variants-017" style="display: none;">
-                    <button class="variant-button" data-variant="017-fet">017 FET</button>
-                    <button class="variant-button" data-variant="017-tube">017 TUBE</button>
+            <div class="bundle-switch" id="variant-switch" style="display:flex">
+                <div class="bundle-options" style="display: flex;">
+                    <button class="bundle-button" data-bundle="023-the-bomblet">023 the BOMBLET</button>
+                    <button class="bundle-button" data-bundle="023-malfa">023 MALFA</button>
+                    <button class="bundle-button" data-bundle="023-deluxe">023 DELUXE</button>
+                    <button class="bundle-button" data-bundle="017-fet">017 FET</button>
+                    <button class="bundle-button" data-bundle="017-tube">017 TUBE</button>
                 </div>
             </div>
 
@@ -277,7 +267,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                     </div>
                     <div class="item-content">
                         <p class="item-label">Цвет силуэта</p>
-                        <p class="item-subtitle" id="spheres-subtitle">Глубокий черный</p>
+                        <p class="item-subtitle" id="spheres-subtitle">Черный</p>
                     </div>
                     <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     </svg>
@@ -418,7 +408,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                 
                 <div class="submenu" id="submenu-logo">
                     <div class="submenu-header">
-                        <h3 class="submenu-title">Исполнение эмблемы</h3>
+                        <h3 class="submenu-title">Эмблема на микрофоне</h3>
                         <button class="submenu-back">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             </svg>
@@ -661,7 +651,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                 </div>
             </div>
 
-            <div class="submenu-section" id="shockmount-pins-section">
+            <div class="submenu-section" id="submenu-shockmount-pins">
                 <h4 class="section-title">Цвет пинов (Anchor Studs)</h4>
                 <div class="variants">
                     <div class="variant-item selected" data-variant="pins-RAL9003" tabindex="0">
@@ -715,11 +705,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                 
          <div class="menu-item" data-section="reset-settings" tabindex="0">
                     <div class="item-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;">
-                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                            <line x1="12" y1="9" x2="12" y2="13"></line>
-                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                        </svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
                     </div>
                     <div class="item-content">
                         <p class="item-label">Сброс настроек</p>

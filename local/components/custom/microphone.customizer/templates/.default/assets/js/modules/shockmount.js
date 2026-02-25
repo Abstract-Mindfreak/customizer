@@ -85,10 +85,11 @@ export function updateShockmountLayers() {
 
     if (!layer017 || !layer023) return;
 
-    if (currentState.model === '017') {
+    // Check if the variant string contains '017' or '023'
+    if (currentState.variant.includes('017')) {
         layer017.style.display = 'inline';
         layer023.style.display = 'none';
-    } else { // model is '023'
+    } else if (currentState.variant.includes('023')) {
         layer017.style.display = 'none';
         layer023.style.display = 'inline';
     }
