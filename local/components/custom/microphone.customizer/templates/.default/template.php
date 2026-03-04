@@ -8,9 +8,11 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
 use Bitrix\Main\Page\Asset;
 
 Asset::getInstance()->addCss($templateFolder . "/assets/css/style.css");
-
+Asset::getInstance()->addCss($templateFolder . "/assets/css/woodcase.css");
+Asset::getInstance()->addCss($templateFolder . "/assets/css/forms.css");
+Asset::getInstance()->addCss($templateFolder . "/assets/css/camera-effect.css");
+Asset::getInstance()->addCss($templateFolder . "/assets/css/start-screen.css");
 Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/interactjs@1.10.19/dist/interact.min.js");
-// NEW: Add global anime.js library
 Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js");
 ?>
 
@@ -20,29 +22,27 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
      data-ajax-path="<?= $componentPath ?>/ajax.php"
      data-sessid="<?= bitrix_sessid() ?>">
 
-    <!-- <div class="z-9">
-        <div class="z-91">
-            <h1 class="z-10">Custom Shop</h1>
-            <div class="z-11">by SOYUZ</div>
-        </div>
-    </div> -->
-
-    <div class="toggle-color">
-        <button id="fullscreen-toggle" class="fullscreen-toggle" aria-label="Переключить полноэкранный режим">
-            <svg class="fullscreen-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3m-18 0v3a2 2 0 0 0 2 2h3"></path>
-            </svg>
-        </button>
-        <button id="theme-toggle" class="theme-toggle" aria-label="Переключить тему"></button>
+    <div id="start-screen" style="display:none;">
+        <?$APPLICATION->IncludeComponent("bitrix:main.include", "", array("AREA_FILE_SHOW" => "file", "PATH" => SITE_DIR."include/custom/start-screen.php"), false);?>
     </div>
 
-    <div class="app-container">
+
+    
+        <div class="toggle-color">
+            <button id="fullscreen-toggle" class="fullscreen-toggle" aria-label="Переключить полноэкранный режим">
+                <svg class="fullscreen-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3m-18 0v3a2 2 0 0 0 2 2h3"></path>
+                </svg>
+            </button>        <button id="theme-toggle" class="theme-toggle" aria-label="Переключить тему"></button>
+    </div>
+
+ <div class="app-container">
         <div class="preview-area" id="preview-area">
             <div class="svg-container">
                 <div class="svg-wrapper" id="svg-wrapper"></div>
 
                 <!-- Shockmount Preview Container -->
-                <div class="shockmount-preview-container" id="shockmount-preview-container" style="display: none;">
+                <div class="shockmount-preview-container" id="shockmount-preview-container" style="">
                 <div class="shockmount-svg-container">
   <svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:xlink="http://www.w3.org/1999/xlink" inkscape:version="1.4.2 (f4327f4, 2025-05-13)" sodipodi:docname="finished-shockmount-023-017.svg" xml:space="preserve" id="shockmount-svg" x="0" y="0" style="enable-background:new 0 0 2048.2 2048.2;" version="1.1" viewBox="0 0 2048.2 2048.2">
                       <defs>
@@ -104,14 +104,14 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                         <image xlink:href="https://soyuzmicrophones.ru/image/custom/shockmount_017_tube-017_fet.png" id="image" width="2731" height="2731"/>
                       </defs>
                       <sodipodi:namedview inkscape:current-layer="g2" inkscape:cx="889.0625" inkscape:cy="1048.4375" inkscape:deskcolor="#d1d1d1" inkscape:pagecheckerboard="0" inkscape:pageopacity="0.0" inkscape:showpageshadow="2" inkscape:window-height="837" inkscape:window-maximized="1" inkscape:window-width="1600" inkscape:window-x="1912" inkscape:window-y="173" inkscape:zoom="0.32" id="namedview4" bordercolor="#000000" borderopacity="0.25" pagecolor="#ffffff"/>
-                      <style id="style1" type="text/css">
+                      <!-- <style id="style1" type="text/css">
                         .st0{clip-path:url(#SVGID_00000132065387513007370490000001992305182353871008_);}
                         .st1{clip-path:url(#SVGID_00000122697556771443517790000008810923124271612054_);}
                         .st2{clip-path:url(#SVGID_00000153674993483617198300000011974348311351201429_);}
                         .st3{clip-path:url(#SVGID_00000112620791091310655090000010983271362552829350_);}
-                      </style>
-                      <g inkscape:groupmode="layer" inkscape:highlight-color="#2f722b" inkscape:label="shockmount-017-series" id="layer10" style="display:inline">
-                        <g inkscape:highlight-color="#75bd00" inkscape:label="shockmount-017-main-group" id="g1" style="display:inline">
+                      </style> -->
+                      <g inkscape:groupmode="layer" inkscape:label="shockmount-017-series" id="layer10" style="display:inline">
+                        <g inkscape:label="shockmount-017-main-group" id="g1" style="display:inline">
                           <defs id="defs1">
                             <path id="SVGID_1_" d="M2043 1604.2c-11.52-41.62-62.48-71.42-114.13-93.13-4.21-183.33 2.47-363.8-2.93-545l1.08-1.72c.71-111.29-.26-196.28.83-294.16 42.07-12.72 101.26-39 113.69-78.88.77-56 14.35-77.32-41-110.29a167.7 167.7 0 0 0-28.61-14.27c-15.33-18.14-30.42-29-42.78-35.18-23.91-11.59-53.6-11.48-78.42-3-95.52-18.21-207.15-36-303.67-42.75-6.9-25-18.79-39.84-38.45-55.25 58.62-37.51-34.17-106.57-79-97.77-42.11-.62-107.25 47.93-79.13 92.75-41.88 6.23-85.82 22.72-123.69 41.61-110-4.32-220-2.06-330.17-.63-32.46-114.65-97.42-140.79-235.95-185.42-84.78-22.83-183.57 26-215.38 123.17-39.5 2.09-79.82 4.48-119.36 7.09-2-26.79-9.06-100.2-26.66-128.4C248.78 87.93 95.34 80 45 194.29 20.9 263.34 63.24 477.8 59 482c-17.79 7.14-48.29 29.64-55 54.1 2.38 32.28-3.31 45.2 2.25 71.06 19.85 44.39 94.5 65.16 139.22 81.33 1.81 302 4.58 531.62 7.81 823.82l-2.57 3.89c-50.79 21.43-117.55 45.3-130.53 105.7-4.84 42.19-1.72 93.81 36 116.58 130.82 91.13 298.91 102.17 451.24 132.16 0 .21 0 .42.05.63l-2.33-.33c3 22 11.37 42.13 27 59.67v.27c-5.26 2.74-11.36 5.54-13.68 11.2l2.1.34-2.62.1c-4.24 25.24 1.68 40.33 23.33 54.2 33.41 35.18 89.78 44.41 129.22 16.47 21.76-12.7 35.24-23.15 35.15-49.92 4-9.89 6.06-17.79 2.33-27.56 42.72-10 59.08-21.36 90.88-39 38.28-21.4 76-43.8 113.64-66.34a5.16 5.16 0 0 1 1.51-1.38l.08-.29c59.22-34.37 117.5-73.82 176.11-108.61 32.6-20.55 81-47.32 94.06-87.84 17.34-.28 34.84-.62 52.22-1l-.31.25c32.43 53.54 100.58 59.74 154.12 80.87 78.14 22.53 155 49.38 233.6 70.5.12.28.34.84.46 1.12 57.68 17.11 115.09 35.21 173.74 48.71-22 59.1 69.45 108.7 118.65 88.09l1.76.38c39.53-14.13 96-66.25 49.73-98.89 11.54-16.61 6.41-51-13-62.44 29.08-14.7 71.47-38.82 85.76-77.49 4.49-17.81 3.45-51.35 2.02-78.15zm-425.52 117.88c-106.58-33.51-214.48-63.88-320.93-97.08 22.47-3.56 45.42-8.33 68.18-7.78 50.77 60.42 135.65 38.55 163.56-31.88 31.21-7.6 61.2-19.33 90.32-32.31-.95.46-1.9.91-2.87 1.34l4.5-.8c53.17 51.53 107.74 101.56 162.18 151.75-5.12 21.13-2.17 43.27-2.77 64.84-56.55-15.33-104.77-30.73-162.22-48.08zM1044 1684.27c-85.35 50.94-182.48 111.1-266.87 159.86-1-12.69 1.79-26.62-1.26-38.73-26-26-84.49-18.84-120.61-22.12-.23-43.2-1.27-139.46-1.54-169.76 150 18.9 314.24 27 468.42 21.16-31.14 20.38-49.72 33.78-78.14 49.59zm426-1212.5c.58-.64 1.72-1.94 2.3-2.58 13.62 1.69 27.55 3.65 41.26 4.85a1.21 1.21 0 0 1 0 .18l.94.08c6.71 15.5 9.78 33.55 14.3 47.89 5.55 25.6 20.65 60.1 19.5 88.21-32-8.66-81.66-14.69-78.39-16.06.15-7.21 1.83-77.24.09-122.57zm143.19 933.34c-11.54-8-23.13-14.17-35.36-16-4.91-150.92 1.72-585.35.07-557.1v-10.33c0-3.72.14-20.33.29-43.41 25.54-9.88 69.19-23.43 75.82-53.35-1-8.44 3.26-57.49-2.48-64-2.19-3.06-7.29-9.16-10.45-11.23-12-12.1 129-41.59 137-46.18-7.41 17.25-.93 40-2.63 58.58 2.74 31 43.61 22 68.62 26.65 6.51 284.51 3.32 546.33 2 795.81-71.85-19.41-117.16-26-190.38-41.17-17.69-27.45-12.6-18.8-42.55-38.27zM1795.33 1643c-33.55-31.49-71.14-60.18-101.06-94.88 51.06 10.82 102.2 23.44 150 44.7 11.52 4.47 2.5 71.63 5 87.68a32.05 32.05 0 0 1-11.1 2.78c-12.17-15.43-29.28-26.05-42.84-40.28zm-299.19-306.19c0 11.56 0 21.58.09 29.59-7.4-1.71-15.11-3.61-22.46-5.53-1.86-179.66-1.91-377.25-2.82-559 8.39-2 17.88-3.81 26.42-5.15.09 68.88-.75 436.28-1.23 540.12zm-160.54-7.48c-3.09-187.6-3.33-336.37-3.71-509.81 3.28-2.54 14.95-2.65 16.35-2.72 17.64-1.63 28-3.58 49.53-4.38-.74 188.76 4.12 314.4 1.08 534.23-16.62-.56-47.39-5.33-63.08-7.43.04-3.11-.01-6.41-.17-9.86zm-545.21-123.28c-1.09-116.27-2.69-259.77-2.38-380 136.26 7.09 214.26 4.32 330 4.08 10.27-1.62 24.81 2.88 29-9.26 1.39-1.51 7.91-.23 8.83 2.72 23.76 19.56 63.47 22.28 85.51-2.12 0 .1 0 .21-.07.31 3.89-4.5 9.87-6.91 14.37-2.29-2.13 162 4.62 351.42 1 517.56-97.63-9.47-237.84-13.53-336.38-5.3a53 53 0 0 1-1.09 8.64 130.66 130.66 0 0 1-14.17.91c-55.68-33.32-57.18 1.77-92.88 2.57-8.71-3.67-9.73-7.78-21.06-5.1.78-58.5.13-102.48-.68-132.72zM650.83 1316c-.82-145.11-1.68-290.18-1.42-435.3 18.24.7 37.25-4 54.92-2.34 6.35 148.61 3.94 299.69 5.67 449.18.33 15.79.72 21.44-17.45 22.2-13.58 1.44-27.1 4.22-40.78 3.88-1.9-12.55 2.23-25.21-.94-37.62zm-206.21 99.93c-16.22 7-28.46 18.3-36.48 33.76-60 12.64-120.51 25.88-180.17 39.69 0-261.12-6.54-522.15-5.92-783.26 49.34 9.48 106.11 13.61 152.7 28.9-1.45 7.16 42.15 38.52 50.49 37.11 3.87.4 5 6.58 8.72 4.52.1 18.48-.46 37.07 2.07 55.43 12.78 17.75 29.9 33 52.62 34.76 14.8-1.57 3.82 100 7.51 117.36 2.17 135.41 3.6 270.92 3.45 406.38-19.61 6.97-37.21 14.2-54.99 25.36zm-93.73-907.3c25-12.25 56.78-11.4 84.44-16.12 4.47 32.17-9.5 90.18 8.22 114.94-1 10.23-9.85 17.49-9.14 28.5-29.57-.73-58.67-7.6-87.66-12.38-5.44-7.5-15.16-13.84-15.54-23.66 16.22-27.28 21.86-59.86 19.68-91.28zm440.88 178.88c0-3.45 0-6.89-.08-10.33 82 17.9 218.82 47.6 273.92 62-88.58.48-178.29-3-266.94-10.1-3 .48-7.52-1-6.4-4.84 2.06-12.24.06-24.49-.5-36.73zm463.54-1.38q-.07 9.32-.24 18.51c-10.37 7.37-15.33 16.38-22.76 25.19-81.74.61-36.17 17.2-86.61-25.44-66.15-28.91-99.51-26.85-165.66-46.58 130.71-5.29 150.21-.73 275.37 4.43q.02 11.85-.1 23.89zm141.38-177.74s-.45 43.93-.45 77.32c-146.51-18.32-309.63-20.82-461.12-14.38-.61-2.27.79-5 2.65-6.22 34-16.39 60.09-29.25 77.52-37.93 32-16.17 106.79-54.86 122.22-62.12 12.53-9.06 29.36-13.77 49.14-10.32 69.71 2.44 139.43 5.54 209.13 8.59 1.22 11.73.81 46.13.91 45.06zm-862.26 1238.9c-9.66-54.81-29.85-108.82-29.1-164.88 22.25 3.92 43.75 11.23 65.94 15.5 3 58.46 1.49 117.55 1.78 176.14-11.74.46-22.7-2.51-34.36-3.45-1.1-7.6-2.62-15.85-4.26-23.31zm1040.7-1268c80.59 11.12 161.93 21.33 239.78 45.9-66.41 28.8-138.88 46.92-208.8 66.26-7.67-37.95-25.42-74.06-30.98-112.16zm-736.78 66.54c25.74-25.05 38.68-58.44 51.88-90.56 54.07-1.85 108.51-3.59 162.54-2.2-51.11 39.08-143.34 53.36-166.07 118.05-19.14.07-38.22 1.26-57.28 2.88a45.72 45.72 0 0 1-4.49-16.17 87 87 0 0 0 13.42-12zm-434.9 1201.84c-45.25-9.22-90.27-20.41-133.85-35.6 17.23-16.35 24.64-49.72-.08-62 43.16-13.82 96.16-32.81 142.94-49.25 6-1.89 19.36-7.55 30.6-10.69 3.53 1 3.18 7.52 4.33 10.14 11.9 52.41 21.53 100.85 35 161.87-8.45-1.66-56.39-10.97-78.94-14.47zm79.65 14.6.62.09z"/>
                           </defs>
@@ -120,7 +120,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                           </clipPath>
                           <image inkscape:label="shockmount-017-main-image" xlink:href="https://soyuzmicrophones.ru/image/custom/shockmount_017_tube-017_fet.png" id="shockmount-body-image-colorize" width="2731" height="2731" style="enable-background:new;display:inline;overflow:visible" transform="scale(0.75)"/>
                         </g>
-                        <g inkscape:highlight-color="#6dbd4f" inkscape:label="shockmount-017-body-colorize-group" id="g2" style="display:inline">
+                        <g inkscape:label="shockmount-017-body-colorize-group" id="g2" style="display:none">
                           <defs id="defs2">
                             <use xlink:href="#SVGID_00000087404628409273299560000004968368527721897396_"/>
                           </defs>
@@ -131,7 +131,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                             <image inkscape:label="shockmount-017-body-image-colorize" xlink:href="https://soyuzmicrophones.ru/image/custom/shockmount_017_tube-017_fet.png" id="shockmount-body-image-monochrome" width="2731" height="2731" style="display:inline;overflow:visible;enable-background:new" transform="scale(0.75)"/>
                           </g>
                         </g>
-                        <g inkscape:highlight-color="#00c460" inkscape:label="shockmount-017-body-monochrome-group" id="g12" style="display:inline">
+                        <g inkscape:label="shockmount-017-body-monochrome-group" id="g12" style="display:inline">
                           <defs id="defs11">
                             <use xlink:href="#SVGID_00000087404628409273299560000004968368527721897396_" id="path11"/>
                           </defs>
@@ -142,7 +142,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                             <image inkscape:label="shockmount-body-image-monochrome" xlink:href="https://soyuzmicrophones.ru/image/custom/shockmount_017_tube-017_fet.png" id="image11" width="2731" height="2731" style="display:inline;overflow:visible;enable-background:new" transform="scale(0.75)"/>
                           </g>
                         </g>
-                        <g inkscape:highlight-color="#6bbc65" inkscape:label="shockmount-017-pins-colorize-group" id="g3" style="display:inline">
+                        <g inkscape:label="shockmount-017-pins-colorize-group" id="g3" style="display:inline">
                           <defs id="defs3">
                             <use xlink:href="#SVGID_00000072271108459268794390000003895150342499759748_"/>
                           </defs>
@@ -153,7 +153,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                             <image xlink:href="https://soyuzmicrophones.ru/image/custom/shockmount_017_tube-017_fet.png" id="shockmount-pins-image-colorize" width="2731" height="2731" style="display:inline;overflow:visible;enable-background:new" transform="scale(0.75)"/>
                           </g>
                         </g>
-                        <g inkscape:highlight-color="#4dc148" inkscape:label="shockmount-017-pins-monochrome-group" id="g4" style="display:inline">
+                        <g inkscape:label="shockmount-017-pins-monochrome-group" id="g4" style="display:inline">
                           <defs id="defs4">
                             <use xlink:href="#SVGID_00000072271108459268794390000003895150342499759748_" id="SVGID_00000060745630073815933660000011436097578274254747_"/>
                           </defs>
@@ -164,35 +164,35 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                             <image xlink:href="https://soyuzmicrophones.ru/image/custom/shockmount_017_tube-017_fet.png" id="shockmount-pins-image-monochrome" width="2731" height="2731" style="display:inline;overflow:visible;enable-background:new" transform="scale(0.75)"/>
                           </g>
                         </g>
-                        <g inkscape:groupmode="layer" inkscape:highlight-color="#67c957" inkscape:label="shockmount-017-pins-brass-group" id="shockmount-017-pins-brass-group" style="display:inline">
+                        <g inkscape:groupmode="layer" inkscape:label="shockmount-017-pins-brass-group" id="shockmount-017-pins-brass-group" style="display:inline">
                           <image xlink:href="https://soyuzmicrophones.ru/image/custom/shockmount_017-pins-raster.png" id="shockmount-017-pins-brass" width="1906.5" height="1804.5" x="80.227" y="228.057" style="display:inline"/>
                         </g>
                       </g>
                       <g inkscape:groupmode="layer" inkscape:label="shockmount-023-series" id="layer9" style="display:inline">
-                        <g inkscape:highlight-color="#ad3c2f" inkscape:label="shockmount-023-main-group" id="g17" style="display:inline" transform="translate(264.57063,-145.97)">
+                        <g inkscape:label="shockmount-023-main-group" id="g17" style="display:inline" transform="translate(264.57063,-145.97)">
                           <image inkscape:label="shockmount-023-main-image" xlink:href="https://soyuzmicrophones.ru/image/custom/shockmount_023_bomblet-023_malfa-023_deluxe.png" id="shockmount-023-raster" width="2731" height="2731" style="display:inline;isolation:isolate" transform="matrix(0.75,0,0,0.75,-210.125,154.875)"/>
                         </g>
-                        <g inkscape:highlight-color="#ee004a" inkscape:label="shockmount-023-body-colorize-group" id="g15" style="display:inline">
+                        <g inkscape:label="shockmount-023-body-colorize-group" id="g15" style="display:inline">
                           <g inkscape:label="shockmount-023-colorize" id="g9" clip-path="url(#clipPath27)" style="display:inline;filter:url(#filter7)" transform="translate(264.57063,-145.97)">
                             <image inkscape:label="shockmount-023-colorize-image" xlink:href="https://soyuzmicrophones.ru/image/custom/shockmount_023_bomblet-023_malfa-023_deluxe.png" id="shockmount-023-raster-5" width="2048.25" height="2048.25" x="-210.125" y="154.875" style="display:inline;isolation:isolate"/>
                           </g>
                         </g>
-                        <g inkscape:highlight-color="#a1213f" inkscape:label="shockmount-023-body-monochrome-group" id="g19" style="display:inline">
+                        <g inkscape:label="shockmount-023-body-monochrome-group" id="g19" style="display:inline">
                           <g inkscape:label="shockmount-023-body-monochrome" id="g9-2" clip-path="url(#clipPath28)" style="display:inline;filter:url(#filter11)" transform="translate(264.57063,-145.97)">
                             <image inkscape:label="shockmount-023-monochrome-image" xlink:href="https://soyuzmicrophones.ru/image/custom/shockmount_023_bomblet-023_malfa-023_deluxe.png" id="shockmount-023-raster-5-21" width="2048.25" height="2048.25" x="-210.125" y="154.875" style="display:inline;isolation:isolate"/>
                           </g>
                         </g>
-                        <g inkscape:highlight-color="#b6395d" inkscape:label="shockmount-023-pins-colorize-group" id="g14" style="display:inline">
+                        <g inkscape:label="shockmount-023-pins-colorize-group" id="g14" style="display:inline">
                           <g inkscape:label="shockmount-023-pins-colorize-group" id="g13" clip-path="url(#clipPath29)" style="display:inline;filter:url(#filter9)">
                             <image inkscape:label="shockmount-023-pins-colorize-image" xlink:href="https://soyuzmicrophones.ru/image/custom/shockmount_023_bomblet-023_malfa-023_deluxe.png" id="shockmount-023-raster-5-2" width="2048.25" height="2048.25" x="-210.125" y="154.875" style="display:inline;isolation:isolate" transform="translate(264.57063,-145.97)"/>
                           </g>
                         </g>
-                        <g inkscape:groupmode="layer" inkscape:highlight-color="#83173a" inkscape:label="shockmount-023-pins-monochrome-group" id="layer7" style="display:inline">
+                        <g inkscape:groupmode="layer" inkscape:label="shockmount-023-pins-monochrome-group" id="layer7" style="display:inline">
                           <g inkscape:label="shockmount-023-pins-monochrome" id="g13-2" clip-path="url(#clipPath30)" style="display:inline;filter:url(#filter13)" transform="translate(3.0321047e-6,-3.6108347e-5)">
                             <image inkscape:label="shockmount-023-pins-colorize-image" xlink:href="https://soyuzmicrophones.ru/image/custom/shockmount_023_bomblet-023_malfa-023_deluxe.png" id="shockmount-023-raster-5-2-4" width="2048.25" height="2048.25" x="-210.125" y="154.875" style="display:inline;isolation:isolate" transform="translate(264.57063,-145.97)"/>
                           </g>
                         </g>
-                        <g inkscape:groupmode="layer" inkscape:highlight-color="#a90027" inkscape:label="shockmount-023-pins-brass-group" id="shockmount-023-pins-brass-group" style="display:inline">
+                        <g inkscape:groupmode="layer" inkscape:label="shockmount-023-pins-brass-group" id="shockmount-023-pins-brass-group" style="display:inline">
                           <image inkscape:label="shockmount-023-pins-brass-image" xlink:href="https://soyuzmicrophones.ru/image/custom/shockmount_023-pins-raster.png" id="shockmount-023-pins-brass-raster" width="1663" height="1865" x="168.016" y="184.535" style="display:inline"/>
                         </g>
                       </g>
@@ -201,7 +201,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
             </div>
 
                 <!-- Case Preview Container -->
-                <div class="case-preview-container" id="case-preview-container" style="display: none; width:100%; height:100%;">
+                <div class="case-preview-container" id="case-preview-container" style=" width:100%; height:100%;">
                     <div id="wood-case-workspace">
                         <div class="loader" id="wood-case-loader">Загрузка...</div>
                         <svg id="wood-case-svg" preserveAspectRatio="xMidYMid meet">
@@ -243,28 +243,14 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
             </div>
         </div>
 
-        <div class="sidebar">
-            <div class="model-switch">
-                <button class="model-button active" data-model="023">
-                    <span>023</span>
-                    <small>серия</small>
-                </button>
-                <button class="model-button" data-model="017">
-                    <span>017</span>
-                    <small>серия</small>
-                </button>
-            </div>
-
-            <!-- Include actual controls from CUSTOMIZER.html -->
-            <div class="variant-switch" id="variant-switch">
-                <div class="variant-options" id="variants-023">
-                    <button class="variant-button active" data-variant="023-the-bomblet">023 the BOMBLET</button>
-                    <button class="variant-button" data-variant="malfa">023 MALFA</button>
-                    <button class="variant-button" data-variant="023-dlx">023 DELUXE</button>
-                </div>
-                <div class="variant-options" id="variants-017" style="display: none;">
-                    <button class="variant-button" data-variant="017-fet">017 FET</button>
-                    <button class="variant-button" data-variant="017-tube">017 TUBE</button>
+<div class="sidebar">
+            <div class="variant-switch" id="variant-switch" style="display:flex">
+                <div class="variant-options" style="display: flex;">
+                    <button class="variant-button active" data-series="023" data-variant="023-the-bomblet">023 the BOMBLET</button>
+                    <button class="variant-button" data-series="023" data-variant="023-malfa">023 MALFA</button>
+                    <button class="variant-button" data-series="023" data-variant="023-deluxe">023 DELUXE</button>
+                    <button class="variant-button" data-series="017" data-variant="017-fet">017 FET</button>
+                    <button class="variant-button" data-series="017" data-variant="017-tube">017 TUBE</button>
                 </div>
             </div>
 
@@ -277,7 +263,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                     </div>
                     <div class="item-content">
                         <p class="item-label">Цвет силуэта</p>
-                        <p class="item-subtitle" id="spheres-subtitle">Глубокий черный</p>
+                        <p class="item-subtitle" id="spheres-subtitle">Черный</p>
                     </div>
                     <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     </svg>
@@ -299,7 +285,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                             <div class="variant-item selected" data-variant="1" tabindex="0">
                                 <div class="variant-info">
                                     <div class="variant-icon" style="background: linear-gradient(135deg, #252525, #000000);"></div>
-                                    <span class="variant-label">Глубокий черный</span>
+                                    <span class="variant-label">Матовый антрацит</span>
                                 </div>
                                 <span class="variant-price">+0₽</span>
                             </div>
@@ -402,7 +388,39 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                     </div>
                 </div>
 
-                <!-- LOGO SECTION -->
+                <!-- Область toggle переключения загрузки собственного логотипа -->
+                
+                <div class="toggles-container">
+            <div class="toggle-wrapper">
+                <div class="toggle-label-group">
+                    <div class="toggle-label">Эмблема микрофона</div>
+                    <div class="toggle-sublabel">Отображение секции</div>
+                </div>
+                <input type="checkbox" class="bio-toggle" id="toggle-emblem" checked="" onchange="toggleSection('emblem')" aria-label="Toggle Emblem">
+            </div>
+            
+          
+        </div>
+                
+                
+                
+                <div class="menu-item toggle-logo-section" style="display: none;">
+                    <div class="variant-item" tabindex="0" data-action="toggle-custom-logo" style="justify-content: center; border-style: dashed; margin-top: 10px;">
+                        <span class="variant-label" style="color: var(--accent);">Включить загрузку своего логотипа</span>
+                    </div>
+                    <div class="item-icon">
+                        <div class="color-circle" id="custom-logo-color-display" style="background-color: var(--accent);"></div>
+                    </div>
+                    <div class="item-content">
+                        <p class="item-label">Свой логотип</p>
+                        <p class="item-subtitle">Загрузить файл (PNG, SVG)</p>
+                    </div>
+              
+                    <button class="remove-logo-btn" style="display:none; width:100%; margin-top:10px; padding:10px; border:1px solid #ef4444; color:#ef4444; background:none; border-radius:8px; cursor:pointer;">Удалить логотип</button>
+                    <div class="option-price" id="custom-logo-price">+0₽</div>
+                </div>
+             
+            <!-- LOGO SECTION - варианты оформления букв и формы логотипа + загрузка собственного логотипа-->
                 <div class="menu-item" data-section="logo" tabindex="0">
                     <div class="item-icon">
                         <div class="color-circle" id="logo-color-display" style="background-color: #000000;"></div>
@@ -418,7 +436,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                 
                 <div class="submenu" id="submenu-logo">
                     <div class="submenu-header">
-                        <h3 class="submenu-title">Исполнение эмблемы</h3>
+                        <h3 class="submenu-title">Эмблема на микрофоне</h3>
                         <button class="submenu-back">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             </svg>
@@ -450,14 +468,14 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                                     <span class="variant-price">+0₽</span>
                                 </div>
                                
-                                <div class="variant-item malfa-logo" data-variant="9006" tabindex="0" style="display: none;">
+                                <div class="variant-item malfa-logo" data-variant="malfasilver" tabindex="0" style="display: none;">
                                     <div class="variant-info">
                                         <div class="variant-icon" style="background-color: #9A9D9D;"></div>
                                         <span class="variant-label">MALFA Edition (Серебро)</span>
                                     </div>
                                     <span class="variant-price">+0₽</span>
                                 </div>
-                                <div class="variant-item malfa-logo" data-variant="1036" tabindex="0" style="display: none;">
+                                <div class="variant-item malfa-logo" data-variant="malfagold" tabindex="0" style="display: none;">
                                     <div class="variant-info">
                                         <div class="variant-icon" style="background-color: #746341;"></div>
                                         <span class="variant-label">MALFA Edition (Золото)</span>
@@ -467,74 +485,114 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                                 
                             </div>
                         </div>
-                        <span>Цвет эмали логотипа</span>
-                        <!-- Collapsible Palette Section for Logo Background -->
-                        <div class="submenu-section">
-                            <div class="variants" style="margin-bottom: 10px;">
-                                <div class="variant-item selected" data-variant="9005" tabindex="0">
-                                    <div class="variant-info">
-                                        <div class="variant-icon" style="background-color: #000000;"></div>
-                                        <span class="variant-label">RAL 9005 Глубокий черный</span>
-                                    </div>
-                                    <span class="variant-price">+0₽</span>
-                                </div>
-                                <div class="variant-item" data-variant="3001" tabindex="0">
-                                    <div class="variant-info">
-                                        <div class="variant-icon" style="background-color: #8F1E24;"></div>
-                                        <span class="variant-label">RAL 3001 Сигнальный красный</span>
-                                    </div>
-                                    <span class="variant-price">+0₽</span>
-                                </div>
-                                <div class="variant-item" data-variant="3005" tabindex="0">
-                                    <div class="variant-info">
-                                        <div class="variant-icon" style="background-color: #561E27;"></div>
-                                        <span class="variant-label">RAL 3005 Винно-красный</span>
-                                    </div>
-                                    <span class="variant-price">+0₽</span>
-                                </div>
-                                <div class="variant-item" data-variant="5017" tabindex="0">
-                                    <div class="variant-info">
-                                        <div class="variant-icon" style="background-color: #0F518A;"></div>
-                                        <span class="variant-label">RAL 5017 Транспортный синий</span>
-                                    </div>
-                                    <span class="variant-price">+0₽</span>
-                                </div>
-                                <div class="variant-item" data-variant="6001" tabindex="0">
-                                    <div class="variant-info">
-                                        <div class="variant-icon" style="background-color: #40693A;"></div>
-                                        <span class="variant-label">RAL 6001 Изумрудно-зеленый</span>
-                                    </div>
-                                    <span class="variant-price">+0₽</span>
-                                </div>
-                                <div class="variant-item" data-variant="9010" tabindex="0">
-                                    <div class="variant-info">
-                                        <div class="variant-icon" style="background-color: #EFEEE5;"></div>
-                                        <span class="variant-label">RAL 9010 Белый</span>
-                                    </div>
-                                    <span class="variant-price">+0₽</span>
-                                </div>
-                            </div>
-
-                            <button class="palette-toggle-btn">
-                                <span>Цвет эмали - RAL K7</span>
-                                <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                     <div class="submenu-section">
+                          <div class="submenu-section">
+                        <h4 class="section-title">Собственный логотип</h4>
+                       
+                    </div>
+                     </div>
+                      
+                    </div>
+                </div>
+                            
+                <!-- BGLOGO SECTION - варианты эмали логотипа Бесплатные RAL + платные RAL-->
+                <div class="menu-item" data-section="logobg" tabindex="0">
+                    <div class="item-icon">
+                        <div class="color-circle" id="logobg-color-display" style="background-color: #000000;"></div>
+                    </div>
+                    <div class="item-content">
+                        <p class="item-label">Цвет эмали логотипа</p>
+                        <p class="item-subtitle" id="logobg-subtitle">RAL 9005 Матовый антрацит</p>
+                    </div>
+                    <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    </svg>
+                    <div class="option-price" id="logobg-price">+0₽</div>
+                </div>
+                
+                <div class="submenu" id="submenu-logobg">
+                    <div class="submenu-header">
+                        <h3 class="submenu-title">Цвет эмали фона логотипа на микрофоне</h3>
+                        <button class="submenu-back">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             </svg>
-                            </button>
-                            <div class="palette-wrapper" id="palette-wrapper-logo">
-                                <div class="palette-content">
-                                    <div class="palette" id="pal-logo"></div>
-                                </div>
-                            </div>
-                        </div>
+                            <span>Назад</span>
+                        </button>
                     </div>
 
                     <div class="submenu-section">
-                        <h4 class="section-title">Собственный логотип</h4>
-                        <div class="variant-item" tabindex="0" style="justify-content: center; border-style: dashed;">
-                            <span class="variant-label" style="color: var(--accent);">Загрузить файл (PNG, SVG)</span>
+                        <h4 class="section-title">Цвет эмали логотипа (фон) бесплатные RAL цвета</h4>
+                        <div class="variants" style="margin-bottom: 10px;">
+                            <div class="variant-item selected" data-variant="9005" tabindex="0">
+                                <div class="variant-info">
+                                    <div class="variant-icon" style="background-color: #000000;"></div>
+                                    <span class="variant-label">RAL 9005 Матовый антрацит</span>
+                                </div>
+                                <span class="variant-price">+0₽</span>
+                            </div>
+                            <div class="variant-item" data-variant="3001" tabindex="0">
+                                <div class="variant-info">
+                                    <div class="variant-icon" style="background-color: #8F1E24;"></div>
+                                    <span class="variant-label">RAL 3001 Сигнальный красный</span>
+                                </div>
+                                <span class="variant-price">+0₽</span>
+                            </div>
+                            <div class="variant-item" data-variant="3005" tabindex="0">
+                                <div class="variant-info">
+                                    <div class="variant-icon" style="background-color: #561E27;"></div>
+                                    <span class="variant-label">RAL 3005 Винный красный</span>
+                                </div>
+                                <span class="variant-price">+0₽</span>
+                            </div>
+                            <div class="variant-item" data-variant="5017" tabindex="0">
+                                <div class="variant-info">
+                                    <div class="variant-icon" style="background-color: #0F518A;"></div>
+                                    <span class="variant-label">RAL 5017 Ультрамариновый синий</span>
+                                </div>
+                                <span class="variant-price">+0₽</span>
+                            </div>
+                            <div class="variant-item" data-variant="6001" tabindex="0">
+                                <div class="variant-info">
+                                    <div class="variant-icon" style="background-color: #40693A;"></div>
+                                    <span class="variant-label">RAL 6001 Изумрудный зеленый</span>
+                                </div>
+                                <span class="variant-price">+0₽</span>
+                            </div>
+                            <div class="variant-item" data-variant="9010" tabindex="0">
+                                <div class="variant-info">
+                                    <div class="variant-icon" style="background-color: #EFEEE5;"></div>
+                                    <span class="variant-label">RAL 9010 Чистый белый</span>
+                                </div>
+                                <span class="variant-price">+0₽</span>
+                            </div>
+                            <div class="variant-item" data-variant="9006" tabindex="0">
+                                <div class="variant-info">
+                                    <div class="variant-icon" style="background-color: #9A9D9D;"></div>
+                                    <span class="variant-label">RAL 9006 Белый алюминий</span>
+                                </div>
+                                <span class="variant-price">+0₽</span>
+                            </div>
+                            <div class="variant-item" data-variant="1036" tabindex="0">
+                                <div class="variant-info">
+                                    <div class="variant-icon" style="background-color: #746341;"></div>
+                                    <span class="variant-label">RAL 1036 Перламутровый золотой</span>
+                                </div>
+                                <span class="variant-price">+0₽</span>
+                            </div>
                         </div>
-                        <button class="remove-logo-btn" style="display:none; width:100%; margin-top:10px; padding:10px; border:1px solid #ef4444; color:#ef4444; background:none; border-radius:8px; cursor:pointer;">Удалить логотип</button>
+                        <button class="palette-toggle-btn" aria-expanded="false" aria-controls="palette-wrapper-logobg">
+                            <span class="palette-toggle-text">Премиум цвета RAL</span>
+                            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </button>
+                        <div class="palette-wrapper" id="palette-wrapper-logobg">
+                            <div class="palette-content">
+                                <div class="palette" id="pal-logobg"></div>
+                            </div>
+                        </div>
                     </div>
+
+                  
                 </div>
 
             </div>
@@ -545,7 +603,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                 <div class="color-circle" id="case-color-display" style="background-color: #8B4513;"></div>
             </div>
             <div class="item-content">
-                <p class="item-label">Футляр из массива дуба</p>
+                <p class="item-label">Деревянный футляр</p>
                 <p class="item-subtitle" id="case-subtitle">Стандартный логотип СОЮЗ</p>
             </div>
             <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -555,21 +613,49 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
         
         <div class="submenu" id="submenu-case">
             <div class="submenu-header">
-                <h3 class="submenu-title">Футляр из массива дуба</h3>
+                <h3 class="submenu-title">Деревянный футляр</h3>
                 <button class="submenu-back">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"></svg>
                     <span>Назад</span>
                 </button>
             </div>
-            
-            <div class="submenu-section">
-                <h4 class="section-title">Управление логотипом</h4>
-                <input type="file" id="case-file-input" hidden accept="image/png, image/webp, image/gif, image/svg+xml, image/tiff">
-                <div class="variant-item" tabindex="0" id="case-upload-btn" style="justify-content: center; border-style: dashed;">
-                    <span class="variant-label" style="color: var(--accent);">Загрузить файл (PNG, SVG)</span>
+                        <div class="submenu-section">
+                <h4 class="section-title">Лазерная гравировка на футляре</h4>
+                <div class="variant-item" tabindex="0" data-action="toggle-laser-engraving" style="justify-content: center; border-style: dashed;">
+                    <span class="variant-label" style="color: var(--accent);">Лазерная гравировка на футляре</span>
                 </div>
-                <button id="case-clear-btn" class="remove-logo-btn" style="display:none; width:100%; margin-top:10px; padding:10px; border:1px solid #ef4444; color:#ef4444; background:none; border-radius:8px; cursor:pointer;">Удалить логотип</button>
+            </div>
+            <div class="toggle-laser-engraving-data" style="display: none;">
+                <div class="submenu-section">
+                    <h4 class="section-title">Управление логотипом</h4>
+                    <input type="file" id="case-file-input" hidden accept="image/png, image/webp, image/gif, image/svg+xml, image/tiff">
+                    <div class="variant-item" tabindex="0" id="case-upload-btn" style="justify-content: center; border-style: dashed;">
+                        <span class="variant-label" style="color: var(--accent);">Загрузить файл (PNG, SVG)</span>
+                    </div>
+                    <button id="case-clear-btn" class="remove-logo-btn" style="display:none; width:100%; margin-top:10px; padding:10px; border:1px solid #ef4444; color:#ef4444; background:none; border-radius:8px; cursor:pointer;">Удалить логотип</button>
+                </div>
+            </div>
 
+         
+            </div>
+
+            
+            <div class="submenu-section" id="case-positioning-controls" style="display: none;">
+                <h4 class="section-title">Позиционирование</h4>
+                <div class="manual-inputs" style="display: flex; flex-direction: column; gap: 10px;">
+                    <div class="input-group" style="display: flex; justify-content: space-between; align-items: center;">
+                        <label for="input-case-top">Отступ сверху (мм)</label>
+                        <input type="number" id="input-case-top" value="0" style="width: 60px;">
+                    </div>
+                    <div class="input-group" style="display: flex; justify-content: space-between; align-items: center;">
+                        <label for="input-case-left">Отступ слева (мм)</label>
+                        <input type="number" id="input-case-left" value="0" style="width: 60px;">
+                    </div>
+                    <div class="input-group" style="display: flex; justify-content: space-between; align-items: center;">
+                        <label for="input-case-width">Ширина (мм)</label>
+                        <input type="number" id="input-case-width" value="100" style="width: 60px;">
+                    </div>
+                </div>
             </div>
 
             <div class="submenu-section">
@@ -581,7 +667,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                     <span>Отступ слева: <span id="info-left-tag" class="highlight">-</span></span>
                 </div>
             </div>
-        </div>
+      
 
         <!-- SHOCKMOUNT SECTION -->
         <div class="menu-item" data-section="shockmount" tabindex="0" id="shockmount-menu-item" style="display: none;">
@@ -661,8 +747,36 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                 </div>
             </div>
 
-            <div class="submenu-section" id="shockmount-pins-section">
-                <h4 class="section-title">Цвет пинов (Anchor Studs)</h4>
+     
+        </div>
+             
+         <!-- Пины подвеса SECTION -->
+
+        <div class="menu-item" data-section="shockmount-pins" tabindex="0" id="shockmount-pins-menu-item" style="display: none;">
+            <div class="item-icon">
+                <div class="color-circle" id="shockmount-pins-color-display" style="background-color: #f5f5f5;"></div>
+            </div>
+            <div class="item-content">
+                <p class="item-label">Цвет пинов антивибрационного подвеса</p>
+                <p class="item-subtitle" id="shockmount-pins-subtitle">Белый</p>
+            </div>
+            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            </svg>
+            <div class="option-price" id="shockmount-pins-price">+0₽</div>
+        </div>
+        
+        <div class="submenu" id="submenu-shockmount-pins">
+            <div class="submenu-header">
+                <h3 class="submenu-title">Цвет пинов подвеса</h3>
+                <button class="submenu-back">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        </svg>
+                                        <span>Назад</span>
+                                    </button>            </div>
+            
+   
+            <div class="submenu-section" id="shockmount-pins-options-section">
+                <h4 class="section-title">Цвет пинов</h4>
                 <div class="variants">
                     <div class="variant-item selected" data-variant="pins-RAL9003" tabindex="0">
                         <div class="variant-info">
@@ -671,7 +785,6 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                         </div>
                         <span class="variant-price">+0₽</span>
                     </div>
-                    
                     <div class="variant-item" data-variant="pins-RAL1013" tabindex="0">
                         <div class="variant-info">
                             <div class="variant-icon" style="background-color: #EAE0C8;"></div>
@@ -679,7 +792,6 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                         </div>
                         <span class="variant-price">+0₽</span>
                     </div>
-
                     <div class="variant-item" data-variant="pins-RAL9005" tabindex="0">
                         <div class="variant-info">
                             <div class="variant-icon" style="background-color: #0E0E10;"></div>
@@ -687,10 +799,10 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                         </div>
                         <span class="variant-price">+0₽</span>
                     </div>
-            
-                    <div class="variant-item" data-variant="brass" tabindex="0">
+
+                      <div class="variant-item" data-variant="pins-brass" tabindex="0">
                         <div class="variant-info">
-                            <div class="variant-icon" style="background: linear-gradient(135deg, #D4AF37, #b89427);"></div>
+                            <div class="variant-icon" style="background-color: #D4AF37;"></div>
                             <span class="variant-label">Полированная латунь</span>
                         </div>
                         <span class="variant-price">+0₽</span>
@@ -698,9 +810,9 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                 </div>
             </div>
             
-            <div class="submenu-section">
+            <div class="submenu-section" id="shockmount-pins-palette-section">
                 <button class="palette-toggle-btn">
-                    <span>Цвет пинов — RAL K7</span>
+                    <span>Цвет по палитре RAL</span>
                     <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M6 9l6 6 6-6"></path>
                     </svg>
@@ -711,15 +823,14 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                     </div>
                 </div>
             </div>
+
         </div>
-                
+             
+
+        <!-- сброс настроек -->
          <div class="menu-item" data-section="reset-settings" tabindex="0">
                     <div class="item-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;">
-                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                            <line x1="12" y1="9" x2="12" y2="13"></line>
-                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                        </svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
                     </div>
                     <div class="item-content">
                         <p class="item-label">Сброс настроек</p>
@@ -748,7 +859,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                             <span id="logo-price-row">+0₽</span>
                         </div>
                         <div class="price-row">
-                            <span>Футляр из массива дуба:</span>
+                            <span>Деревянный футляр:</span>
                             <span id="case-price-row">+0₽</span>
                         </div>
                         <div class="price-row" id="shockmount-price-row-container" style="display: none;">
@@ -761,7 +872,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                         </div>
                         <button class="order-button"><?= GetMessage("CUSTOMIZER_SAVE") ?></button>
             </div>
-         </div>
+</div>
              <div class="modal-overlay" id="order-modal">
         <div class="modal-container">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -950,5 +1061,8 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
             )
         );?>
     </div>
+
+
+
 
     <script type="module" src="<?= $templateFolder ?>/assets/js/main.js"></script>

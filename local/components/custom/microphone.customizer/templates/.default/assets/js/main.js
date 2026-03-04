@@ -1,80 +1,46 @@
-import { initEventListeners, updateUI } from './ui-core.js';
+import { initEventListeners } from './ui-core.js';
 import { initPalettes } from './modules/appearance.js';
+import { init as initLogo, toggleCustomLogo } from './modules/logo.js';
 import { initCaseAndShockmount } from './modules/accessories.js';
-import { init as initLogo } from './modules/logo.js';
-import { initializeWoodCase } from './modules/wood-case.js';
 import { initShockmount } from './modules/shockmount.js';
 import { loadSVG } from './engine.js';
 import { initValidation } from './services/validation.js';
-import { preloadImages, getDevice } from './utils.js';
-import { CASE_IMAGES, CASE_GEOMETRY } from './config.js';
-import { currentState, setInitialConfig } from './state.js';
-import * as cameraAnimation from './modules/camera-animation.js'; // NEW IMPORT
+import { stateManager } from './core/state.js';
+import { render } from './core/render.js';
+import * as cameraEffect from './modules/camera-effect.js';
+import { startSessionRefresh } from './utils/bitrix.js';
+import { toggleLaserEngraving, initializeWoodCase } from './modules/wood-case.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const appRoot = document.getElementById('customizer-app-root');
-    const elementId = appRoot ? parseInt(appRoot.dataset.elementId) : 0;
+    if (!appRoot) {
+        console.log('Customizer app root not found, customizer will not load.');
+        return;
+    }
+
+    // Store initial backend data in state
+    stateManager.set('ajaxPath', appRoot.dataset.ajaxPath);
+    stateManager.set('sessid', appRoot.dataset.sessid);
     
+    const elementId = parseInt(appRoot.dataset.elementId) || 0;
+    
+    // Subscribe the main render function to all state changes
+    stateManager.subscribe(render);
+
     if (window.BX_USER_DATA && window.BX_USER_DATA.AUTHORIZED) {
-        const userData = window.BX_USER_DATA;
-        
-        const nameField = document.getElementById('input-name');
-        const emailField = document.getElementById('input-email');
-        const phoneField = document.getElementById('input-phone');
-        const countryField = document.getElementById('input-country');
-        const cityField = document.getElementById('input-city');
-        
-        if (nameField && userData.NAME) nameField.value = userData.NAME;
-        if (emailField && userData.EMAIL) emailField.value = userData.EMAIL;
-        if (phoneField) {
-            // Телефон нужно получить из профиля пользователя
-            // Это поле может отсутствовать в стандартных данных
-            const userPhone = userData.PERSONAL_PHONE || userData.PHONE || '';
-            phoneField.value = userPhone;
-        }
-        if (countryField && userData.PERSONAL_COUNTRY) countryField.value = userData.PERSONAL_COUNTRY;
-        if (cityField && userData.PERSONAL_CITY) cityField.value = userData.PERSONAL_CITY;
+        // Handle user data if needed
     }
     
     if (elementId > 0) {
-        // Если есть ID товара, пытаемся загрузить его конфигурацию
-        try {
-            const ajaxPath = appRoot.dataset.ajaxPath;
-            const sessid = appRoot.dataset.sessid;
-            const response = await fetch(ajaxPath, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `action=loadConfig&element_id=${elementId}&sessid=${sessid}`
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                if (data.config) {
-                    // Загружаем конфигурацию товара
-                    Object.assign(currentState, data.config);
-                    setInitialConfig(data.config);
-                }
-            }
-        } catch (e) {
-            console.warn("Failed to load element config, using defaults:", e);
-        }
+        // Handle config loading if needed
     } else {
-        // Автономный режим - используем конфигурацию по умолчанию
-        setInitialConfig(currentState);
+        stateManager.setInitialConfig(stateManager.get());
     }
-
-    // Preload essential images
-    const device = getDevice(CASE_GEOMETRY.res);
-    const imagesToPreload = Object.values(CASE_IMAGES).map(imgSet => imgSet[device]);
-    preloadImages(imagesToPreload);
 
     await loadSVG();
     console.log('SVG загружен');
 
-    // NEW: Initialize camera animation after SVG is loaded
-    cameraAnimation.initCameraEffect('microphone'); // Set microphone as initial active layer
+    cameraEffect.initCameraEffect(stateManager.get('variant'));
     console.log('Camera effect initialized');
 
     initPalettes();
@@ -83,14 +49,94 @@ document.addEventListener('DOMContentLoaded', async () => {
     initValidation();
     initLogo();
     initializeWoodCase();
-    // initShockmount(); // This is called inside initCaseAndShockmount, no need to call again
+    initShockmount();
+    initToggles();
+    
+    render(); // Initial UI render based on state
 
-    updateUI();
+    // Start session refresh mechanism
+    startSessionRefresh();
 
-    // Initial animation
-    setTimeout(() => {
-        document.querySelectorAll('.menu-item').forEach((item, i) => {
-            setTimeout(() => item.classList.add('animate-in'), i * 100);
+    const startScreen = document.getElementById('start-screen');
+    const ctaButton = document.querySelector('.start-screen-hero-cta');
+    if (ctaButton && startScreen) {
+        ctaButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            startScreen.classList.add('hidden');
         });
-    }, 300);
+    }
 });
+
+// Initialize toggle functionality
+function initToggles() {
+    // Initialize custom logo toggle
+    const customLogoToggle = document.querySelector('[data-action="toggle-custom-logo"]');
+    if (customLogoToggle) {
+        customLogoToggle.addEventListener('click', toggleCustomLogo);
+    }
+    
+    // Initialize laser engraving toggle
+    const laserToggle = document.querySelector('[data-action="toggle-laser-engraving"]');
+    if (laserToggle) {
+        laserToggle.addEventListener('click', toggleLaserEngraving);
+    }
+    
+    // Initialize toggle states based on current state
+    const currentState = stateManager.get();
+    
+    // Set custom logo toggle state and UI
+    const isCustomLogoEnabled = currentState.logo?.customLogo || false;
+    if (customLogoToggle) {
+        customLogoToggle.classList.toggle('active', isCustomLogoEnabled);
+        customLogoToggle.setAttribute('aria-pressed', isCustomLogoEnabled);
+    }
+    
+    // Update custom logo price display
+    const customLogoPrice = document.getElementById('custom-logo-price');
+    const logoPrice = isCustomLogoEnabled ? 1500 : 0;
+    if (customLogoPrice) {
+        customLogoPrice.textContent = logoPrice > 0 ? `+${logoPrice}₽` : '+0₽';
+    }
+    
+    // Set initial visibility for logo sections
+    const logoSection = document.querySelector('[data-section="logo"]');
+    const logobgSection = document.querySelector('[data-section="logobg"]');
+    const customLogoSection = document.querySelector('.toggle-logo-section');
+    
+    if (isCustomLogoEnabled) {
+        if (logoSection) logoSection.style.display = 'none';
+        if (logobgSection) logobgSection.style.display = 'none';
+        if (customLogoSection) customLogoSection.style.display = 'block';
+    } else {
+        if (logoSection) logoSection.style.display = '';
+        if (logobgSection) logobgSection.style.display = '';
+        if (customLogoSection) customLogoSection.style.display = 'none';
+    }
+    
+    // Set laser engraving toggle state and UI
+    const isLaserEnabled = currentState.case?.laserEngraving || false;
+    if (laserToggle) {
+        laserToggle.classList.toggle('active', isLaserEnabled);
+        laserToggle.setAttribute('aria-pressed', isLaserEnabled);
+    }
+    
+    // Set initial visibility for case upload sections
+    const uploadSections = document.querySelectorAll('#submenu-case .submenu-section');
+    const laserDataSection = document.querySelector('.toggle-laser-engraving-data');
+    
+    if (isLaserEnabled) {
+        uploadSections.forEach(section => {
+            if (!section.closest('.toggle-laser-engraving-data')) {
+                section.style.display = 'block';
+            }
+        });
+        if (laserDataSection) laserDataSection.style.display = 'block';
+    } else {
+        uploadSections.forEach(section => {
+            if (!section.closest('.toggle-laser-engraving-data')) {
+                section.style.display = 'none';
+            }
+        });
+        if (laserDataSection) laserDataSection.style.display = 'none';
+    }
+}
