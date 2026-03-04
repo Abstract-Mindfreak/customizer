@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кастомизатор Микрофонов SOYUZ</title>
+    <style>
+        /* ============================================
+           CSS ПЕРЕМЕННЫЕ И БАЗОВЫЕ СТИЛИ
+           ============================================ */
+        :root {
+            --cream-base: #f5f0e8;
+            --cream-light: #faf6f0;
+            --cream-dark: #e8dfd0;
+            --beige: #d4c4a8;
+            --brass: #b8860b;
+            --brass-light: #d4af37;
+            --text-dark: #3d3628;
+            --text-light: #6b5d4f;
+            --accent: #b87333;
+            --accent-hover: #a0652d;
+            --border-color: #d9d0c8;
+            --item-bg: #fff;
+            --item-hover: #fdf9f5;
+            --item-active: #f0e8e0;
+            --error-color: #ef4444;
+            --transition-fluid: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            --transition-bounce: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            --sidebar-width: 420px;
+            --submenu-width: 100%;
+        }
+
+        [data-theme="dark"] {
+            --cream-base: #1e1b18;
+            --cream-light: #2a2622;
+            --cream-dark: #3d3832;
+            --text-dark: #f5f0ea;
+            --text-light: #d9cfc3;
+            --border-color: #4a423a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: #2d2d2d;
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .microphone-customizer-app {
+               width: 100%;
+    max-width: 100vw;
+    padding: 15px;
+        }
+
+        .app-container {
+            display: flex;
+            gap: 20px;
+            height: calc(100vh - 40px);
+            position: relative;
+        }
+
+        /* ============================================
+           PREVIEW AREA
+           ============================================ */
+        .preview-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .svg-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .svg-wrapper,
+        .shockmount-svg-container,
+        #wood-case-workspace {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .shockmount-preview-container,
+        .case-preview-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 59vh;
+            height: 59vh;
+            display: none;
+        }
+
+        .shockmount-preview-container.visible,
+        .case-preview-container.visible {
+            display: flex;
+        }
+
+        /* ============================================
+           SIDEBAR - ПРАВАЯ ПАНЕЛЬ
+           ============================================ */
+        .sidebar {
+            background: var(--cream-base);
+            border-radius: 20px;
+            padding: 28px;
+            width: 100%;
+            max-width: var(--sidebar-width);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            bottom: 20px;
+            overflow-y: auto;
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-track { background: rgba(217, 208, 200, 0.3); border-radius: 3px; }
+        .sidebar::-webkit-scrollbar-thumb { background-color: rgba(139, 111, 85, 0.6); border-radius: 3px; }
+
+        .sidebar-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-light);
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        /* ============================================
+           VARIANT SWITCH
+           ============================================ */
+        .variant-switch {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 15;
+        }
+
+        .variant-button {
+            flex: 1;
+            min-width: 100px;
+            padding: 10px;
+            background: var(--cream-light);
+            border: 1px solid var(--cream-dark);
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .variant-button.active {
+            background: var(--brass);
+            color: white;
+            border-color: var(--brass);
+            box-shadow: 0 4px 12px rgba(184, 134, 11, 0.3);
+        }
+
+        /* ============================================
+           MENU ITEMS
+           ============================================ */
+        .menu-item {
+            background: var(--cream-light);
+            border: 1px solid var(--cream-dark);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            z-index: 12;
+        }
+
+        .menu-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-color: var(--beige);
+        }
+
+        .menu-item.hidden {
+            display: none !important;
+        }
+
+        .item-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            border: 2px solid var(--brass-light);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .color-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .item-content { flex: 1; }
+
+        .item-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+            text-transform: uppercase;
+        }
+
+        .item-subtitle {
+            font-size: 11px;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+
+        .option-price {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--brass);
+            background: rgba(184, 115, 51, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .chevron-icon {
+            width: 16px;
+            height: 16px;
+            stroke: var(--text-light);
+            opacity: 0.5;
+            transition: transform 0.3s ease;
+        }
+
+        .menu-item.expanded .chevron-icon {
+            transform: rotate(90deg);
+        }
+
+        /* ============================================
+           SUBMENUS - ВЫДВИЖЕНИЕ СПРАВА
+           ============================================ */
+        .submenu {
+            background: var(--cream-base);
+            border-radius: 20px;
+            padding: 28px;
+            width: var(--submenu-width);
+            max-width: var(--sidebar-width);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            bottom: 20px;
+            z-index: 20;
+            overflow-y: auto;
+            transform: translateX(110%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: block;
+        }
+
+        .submenu.active {
+            transform: translateX(0);
+        }
+
+        .submenu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--cream-dark);
+            position: sticky;
+            top: 0;
+            background: var(--cream-base);
+            z-index: 21;
+        }
+
+        .submenu-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-dark);
+        }
+
+        .submenu-back {
+            background: none;
+            border: 1px solid var(--text-light);
+            color: var(--text-light);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+        }
+
+        .submenu-back:hover {
+            background: var(--cream-light);
+            color: var(--text-dark);
+        }
+
+        .section-title {
+            font-size: 11px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        /* ============================================
+           VARIANTS (FREE SECTION) - ГОРИЗОНТАЛЬНЫЙ СПИСОК
+           ============================================ */
+        .variants {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .variant-item {
+            background: var(--cream-light);
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .variant-item:hover {
+            border-color: var(--brass-light);
+            transform: translateX(2px);
+        }
+
+        .variant-item.selected {
+            border-color: var(--brass);
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .variant-item[data-custom-ral="true"] .variant-label::before,
+        .variant-item[data-non-ral="true"] .variant-label::before {
+            content: "• ";
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .variant-item[data-custom-ral="true"] .variant-label::after {
+            content: " [кастомный RAL]";
+            font-size: 9px;
+            color: var(--accent);
+            margin-left: 4px;
+            font-weight: 500;
+        }
+
+        .variant-item[data-non-ral="true"] .variant-label::after {
+            content: " [не RAL]";
+            font-size: 9px;
+            color: var(--accent);
+            margin-left: 4px;
+            font-weight: 500;
+        }
+
+        .variant-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .variant-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+        }
+
+        .variant-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-dark);
+            line-height: 1.3;
+        }
+
+        .variant-price {
+            font-size: 11px;
+            color: var(--brass);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* ============================================
+           SWATCH (PAID RAL PALETTE) - СЕТКА
+           ============================================ */
+        .palette-toggle-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--item-bg);
+            border: 2px solid var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+            margin-top: 15px;
+        }
+
+        .palette-toggle-btn:hover {
+            background: var(--item-hover);
+            border-color: var(--accent);
+        }
+
+        .palette-toggle-btn.active {
+            background: var(--item-active);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .palette-toggle-btn .chevron {
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .palette-toggle-btn.active .chevron {
+            transform: rotate(180deg);
+        }
+
+        .palette-wrapper {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+            background: var(--item-bg);
+            border-radius: 0 0 8px 8px;
+            margin-top: -8px;
+            border: 2px solid transparent;
+        }
+
+        .palette-wrapper.open {
+            max-height: 800px;
+            opacity: 1;
+            border-color: var(--border-color);
+            margin-bottom: 20px;
+            overflow-y: auto;
+        }
+
+        .palette-content { padding: 15px; }
+
+        .palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+            gap: 4px;
+        }
+
+        .swatch {
+            aspect-ratio: 1;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            position: relative;
+            transform: scale(0);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+        }
+
+        .palette-wrapper.open .swatch {
+            transform: scale(1);
+        }
+
+        .swatch:hover {
+            transform: scale(1.2) !important;
+            z-index: 2;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: #fff;
+        }
+
+        .swatch.selected {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--accent);
+            z-index: 3;
+            transform: scale(1.1);
+        }
+
+        /* ============================================
+           LIQUID TOGGLE SWITCH
+           ============================================ */
+        .liquid-toggle {
+            appearance: none;
+            width: 50px;
+            height: 26px;
+            background: #e8dfd0;
+            border-radius: 26px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: inset 0 2px 4px rgba(139, 90, 43, 0.15);
+            border: 1px solid rgba(184, 115, 51, 0.2);
+        }
+
+        .liquid-toggle::before {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f5f0e8 0%, #d4c4a8 100%);
+            top: 2px;
+            left: 3px;
+            transition: 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            box-shadow: 0 2px 4px rgba(61, 54, 40, 0.2);
+            z-index: 2;
+        }
+
+        .liquid-toggle::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(184, 115, 51, 0.3) 0%, transparent 70%);
+            transition: 0.4s ease-out;
+            border-radius: 50%;
+            opacity: 0;
+            z-index: 1;
+        }
+
+        .liquid-toggle:checked {
+            background: #d4af37;
+            box-shadow: inset 0 2px 6px rgba(139, 90, 43, 0.3), 0 0 0 2px rgba(212, 175, 55, 0.3);
+        }
+
+        .liquid-toggle:checked::before {
+            left: 27px;
+            background: #fff;
+            box-shadow: 0 2px 6px rgba(184, 115, 51, 0.4);
+        }
+
+        .liquid-toggle:checked::after {
+            transform: translate(-50%, -50%) scale(1.2);
+            opacity: 1;
+        }
+
+        /* ============================================
+           SPECIAL SECTIONS
+           ============================================ */
+        .toggle-logo-section {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid var(--brass-light);
+        }
+
+        .toggle-flexbox-option-text {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            align-items: center;
+        }
+
+        .toggle-laser-engraving-data {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            border: 1px dashed var(--brass-light);
+            width: 100%;
+            transition: opacity 0.3s ease;
+        }
+
+        #shockmount-toggle {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .switch-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .switch-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* ============================================
+           LOGO OVERLAY
+           ============================================ */
+        .logo-options-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(2px);
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .logo-options-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .logo-overlay-text {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--accent);
+            text-align: center;
+            padding: 10px;
+            background: var(--item-bg);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ============================================
+           TOTAL PRICE
+           ============================================ */
+        .total-price {
+            margin-top: 30px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            position: relative;
+            z-index: 12;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 8px;
+            color: var(--text-light);
+        }
+
+        .price-total {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px solid var(--cream-dark);
+        }
+
+        .order-button {
+            width: 100%;
+            margin-top: 15px;
+            padding: 14px;
+            background: var(--brass);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(184, 134, 11, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .order-button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* ============================================
+           STORAGE & TEMPLATES
+           ============================================ */
+        #ral-storage,
+        #variant-storage {
+            display: none;
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 1024px) {
+            .app-container { flex-direction: column; }
+            .sidebar {
+                position: relative;
+                right: auto;
+                top: auto;
+                bottom: auto;
+                max-width: 100%;
+                margin: 0 auto;
+            }
+            .submenu { max-width: 100%; }
+            .preview-area { height: 400px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="microphone-customizer-app" id="customizer-app-root">
+        <div class="app-container">
+            <!-- PREVIEW AREA -->
+            <div class="preview-area" id="preview-area">
+                <div class="svg-container">
+                    <div class="svg-wrapper" id="svg-wrapper"></div>
+                    <div class="shockmount-preview-container" id="shockmount-preview-container">
+                        <div class="shockmount-svg-container"></div>
+                    </div>
+                    <div class="case-preview-container" id="case-preview-container">
+                        <div id="wood-case-workspace"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIDEBAR -->
+            <div class="sidebar" id="sidebar">
+                <!-- VARIANT SWITCH -->
+                <div class="variant-switch" id="variant-switch">
+                    <button class="variant-button active" data-series="023" data-variant="023-the-bomblet">023 the BOMBLET</button>
+                    <button class="variant-button" data-series="023" data-variant="023-malfa">023 MALFA</button>
+                    <button class="variant-button" data-series="023" data-variant="023-deluxe">023 DELUXE</button>
+                    <button class="variant-button" data-series="017" data-variant="017-fet">017 FET</button>
+                    <button class="variant-button" data-series="017" data-variant="017-tube">017 TUBE</button>
+                </div>
+
+                <!-- SPHERES SECTION -->
+                <div class="menu-item" data-section="spheres" tabindex="0">
+                    <div class="item-icon"><div class="color-circle" id="spheres-color-display" style="background-color: rgb(161, 161, 160);"></div></div>
+                    <div class="item-content">
+                        <p class="item-label">Цвет силуэта</p>
+                        <p class="item-subtitle" id="spheres-subtitle">Сатинированная сталь</p>
+                    </div>
+                    <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    <div class="option-price" id="spheres-price">+0₽</div>
+                </div>
+                <div class="submenu" id="submenu-spheres">
+                    <div class="submenu-header">
+                        <h3 class="submenu-title">Выберите цвет для верхней и нижней полусфер</h3>
+                        <button class="submenu-back"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg><span>Назад</span></button>
+                    </div>
+                    <div class="submenu-section">
+                        <h4 class="section-title">Материал и цвет</h4>
+                        <div class="variants" id="quick-select-spheres"></div>
+                    </div>
+                    <div class="submenu-section">
+                        <button class="palette-toggle-btn" aria-expanded="false"><span>RAL K7</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+                        <div class="palette-wrapper" id="palette-wrapper-spheres"><div class="palette-content"><div class="palette" id="pal-spheres"></div></div></div>
+                    </div>
+                </div>
+
+                <!-- BODY SECTION -->
+                <div class="menu-item" data-section="body" tabindex="0">
+                    <div class="item-icon"><div class="color-circle" id="body-color-display" style="background-color: rgb(161, 161, 160);"></div></div>
+                    <div class="item-content">
+                        <p class="item-label">Цвет корпуса</p>
+                        <p class="item-subtitle" id="body-subtitle">Сатинированная сталь</p>
+                    </div>
+                    <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    <div class="option-price" id="body-price">+0₽</div>
+                </div>
+                <div class="submenu" id="submenu-body">
+                    <div class="submenu-header">
+                        <h3 class="submenu-title">Определите цвет центральной части корпуса</h3>
+                        <button class="submenu-back"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg><span>Назад</span></button>
+                    </div>
+                    <div class="submenu-section">
+                        <h4 class="section-title">Цвет корпуса</h4>
+                        <div class="variants" id="quick-select-body"></div>
+                    </div>
+                    <div class="submenu-section">
+                        <button class="palette-toggle-btn" aria-expanded="false"><span>RAL K7</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+                        <div class="palette-wrapper" id="palette-wrapper-body"><div class="palette-content"><div class="palette" id="pal-body"></div></div></div>
+                    </div>
+                </div>
+
+                <!-- LOGO TOGGLE SECTION -->
+                <div class="menu-item toggle-logo-section">
+                    <div class="toggle-flexbox-option-text">
+                        <h4 class="section-title" style="margin:0;">Собственная эмблема</h4>
+                        <input type="checkbox" class="liquid-toggle" id="logo-mode-toggle" onchange="toggleLogoMode()">
+                    </div>
+                    <p style="font-size:11px; color:var(--text-light); margin-top:5px;">Замените стандартную эмблему Soyuz на собственный дизайн. Загрузите PNG/SVG, размер до 3 МБ. Цвет эмали в этом случае не применяется.</p>
+                    <div id="custom-logo-upload-area" style="display: none; width: 100%; margin-top: 10px; padding: 15px; background: rgba(255, 255, 255, 0.5); border-radius: 8px; border: 1px dashed var(--brass); text-align: center;">
+                        <div class="variant-item" tabindex="0" style="justify-content:center; width:100%;"><span class="variant-label" style="color: var(--accent);">Загрузить файл (PNG, SVG)</span></div>
+                        <button class="remove-logo-btn" style="display:none; width:100%; margin-top:10px; padding:8px; border:1px solid #ef4444; color:#ef4444; background:none; border-radius:6px; cursor:pointer; font-size:11px;">Удалить логотип</button>
+                    </div>
+                </div>
+
+                <!-- STANDARD LOGO SECTION -->
+                <div class="menu-item hidden" data-section="logo" tabindex="0" id="logo-section">
+                    <div class="item-icon"><div class="color-circle" id="logo-color-display" style="background-color: #A1A1A0;"></div></div>
+                    <div class="item-content">
+                        <p class="item-label">Эмблема</p>
+                        <p class="item-subtitle" id="logo-subtitle">Холодный хром</p>
+                    </div>
+                    <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    <div class="option-price" id="logo-price">+0₽</div>
+                </div>
+                <div class="submenu" id="submenu-logo">
+                    <div class="submenu-header">
+                        <h3 class="submenu-title">Эмблема на микрофоне</h3>
+                        <button class="submenu-back"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg><span>Назад</span></button>
+                    </div>
+                    <div style="position: relative;">
+                        <div class="logo-options-overlay" id="logo-overlay"><div class="logo-overlay-text">Используется загруженное изображение</div></div>
+                        <div class="submenu-section">
+                            <h4 class="section-title">Исполнение эмблемы</h4>
+                            <div class="variants">
+                                <div class="variant-item" data-variant="gold" tabindex="0">
+                                    <div class="variant-info"><div class="variant-icon" style="background-color: #D4AF37;"></div><span class="variant-label">Классическая латунь</span></div>
+                                    <span class="variant-price">+0₽</span>
+                                </div>
+                                <div class="variant-item selected" data-variant="silver" tabindex="0">
+                                    <div class="variant-info"><div class="variant-icon" style="background-color: #A1A1A0;"></div><span class="variant-label">Холодный хром</span></div>
+                                    <span class="variant-price">+0₽</span>
+                                </div>
+                                <div class="variant-item malfa-logo" data-variant="malfasilver" tabindex="0" style="display: none;">
+                                    <div class="variant-info"><div class="variant-icon" style="background-color: #9A9D9D;"></div><span class="variant-label">MALFA (Серебро)</span></div>
+                                    <span class="variant-price">+0₽</span>
+                                </div>
+                                <div class="variant-item malfa-logo" data-variant="malfagold" tabindex="0" style="display: none;">
+                                    <div class="variant-info"><div class="variant-icon" style="background-color: #746341;"></div><span class="variant-label">MALFA (Золото)</span></div>
+                                    <span class="variant-price">+0₽</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LOGO BG SECTION -->
+                <div class="menu-item hidden" data-section="logobg" tabindex="0" id="logobg-section">
+                    <div class="item-icon"><div class="color-circle" id="logobg-color-display" style="background-color: rgb(143, 30, 36);"></div></div>
+                    <div class="item-content">
+                        <p class="item-label">Цвет эмали логотипа</p>
+                        <p class="item-subtitle" id="logobg-subtitle">RAL 3001 Сигнальный красный</p>
+                    </div>
+                    <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    <div class="option-price" id="logobg-price">+0₽</div>
+                </div>
+                <div class="submenu" id="submenu-logobg">
+                    <div class="submenu-header">
+                        <h3 class="submenu-title">Цвет эмали фона логотипа на микрофоне</h3>
+                        <button class="submenu-back"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg><span>Назад</span></button>
+                    </div>
+                    <div style="position: relative;">
+                        <div class="logo-options-overlay" id="logobg-overlay"><div class="logo-overlay-text">Используется загруженное изображение</div></div>
+                        <div class="submenu-section">
+                            <h4 class="section-title">Фоновая заливка эмблемы</h4>
+                            <div class="variants" id="quick-select-logobg" style="margin-bottom: 10px;"></div>
+                            <button class="palette-toggle-btn" aria-expanded="false"><span class="palette-toggle-text">Премиум цвета RAL</span><svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+                            <div class="palette-wrapper" id="palette-wrapper-logobg"><div class="palette-content"><div class="palette" id="pal-logobg"></div></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CASE SECTION -->
+                <div class="menu-item" data-section="case" tabindex="0">
+                    <div class="item-icon"><div class="color-circle" id="case-color-display" style="background-color: #8B4513;"></div></div>
+                    <div class="item-content">
+                        <p class="item-label">Деревянный футляр</p>
+                        <p class="item-subtitle" id="case-subtitle">Классический футляр СОЮЗ.</p>
+                    </div>
+                    <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    <div class="option-price" id="case-price">+0₽</div>
+                </div>
+                <div class="submenu" id="submenu-case">
+                    <div class="submenu-header">
+                        <h3 class="submenu-title">Футляр</h3>
+                        <button class="submenu-back"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg><span>Назад</span></button>
+                    </div>
+                    <div class="submenu-section">
+                        <h4 class="section-title">Добавить персональную лазерную гравировку</h4>
+                        <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                            <h4 class="section-title" style="margin:0;">Собственная гравировка</h4>
+                            <input type="checkbox" class="liquid-toggle" id="laser-engraving-toggle" onchange="toggleLaserEngraving()">
+                        </div>
+                        <p style="font-size:11px; color:var(--text-light); margin-top:5px;">Добавьте собственное изображение для лазерной гравировки на крышке футляра. Загрузите PNG/SVG с прозрачным фоном, разместите и масштабируйте прямо на макете.</p>
+                    </div>
+                    <div class="toggle-laser-engraving-data" id="laser-engraving-data" style="display: none;">
+                        <div class="submenu-section">
+                            <h4 class="section-title">Загрузите изображение</h4>
+                            <input type="file" id="case-file-input" hidden accept="image/png, image/webp, image/gif, image/svg+xml, image/tiff">
+                            <div class="variant-item" tabindex="0" id="case-upload-btn" style="justify-content: center; border-style: dashed;"><span class="variant-label" style="color: var(--accent);">Загрузить файл (PNG, SVG)</span></div>
+                            <p style="font-size:11px; color:var(--text-light); margin-top:5px;">Изображения без прозрачности будут обработаны фильтром.</p>
+                            <button id="case-clear-btn" class="remove-logo-btn" style="display:none; width:100%; margin-top:10px; padding:10px; border:1px solid #ef4444; color:#ef4444; background:none; border-radius:8px; cursor:pointer;">Удалить загруженный файл</button>
+                        </div>
+                        <div class="submenu-section" id="case-positioning-controls" style="display: none;">
+                            <h4 class="section-title">Позиционирование</h4>
+                            <div class="manual-inputs" style="display: flex; flex-direction: column; gap: 10px;">
+                                <div class="input-group" style="display: flex; justify-content: space-between; align-items: center;"><label for="input-case-top">Отступ сверху (мм)</label><input type="number" id="input-case-top" value="0" style="width: 60px;"></div>
+                                <div class="input-group" style="display: flex; justify-content: space-between; align-items: center;"><label for="input-case-left">Отступ слева (мм)</label><input type="number" id="input-case-left" value="0" style="width: 60px;"></div>
+                                <div class="input-group" style="display: flex; justify-content: space-between; align-items: center;"><label for="input-case-width">Ширина (мм)</label><input type="number" id="input-case-width" value="100" style="width: 60px;"></div>
+                            </div>
+                        </div>
+                        <div class="submenu-section">
+                            <h4 class="section-title">Информация</h4>
+                            <div class="info" style="font-family: 'Consolas', monospace; font-size: 12px; color: #999; display: flex; flex-direction: column; gap: 5px;">
+                                <span>Размер холста: <span id="info-res-tag" class="highlight">-</span></span>
+                                <span>Ширина футляра: <span id="info-mm-tag" class="highlight">-</span></span>
+                                <span>Отступ сверху: <span id="info-top-tag" class="highlight">-</span></span>
+                                <span>Отступ слева: <span id="info-left-tag" class="highlight">-</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SHOCKMOUNT TOGGLE -->
+                <div class="menu-item" id="shockmount-toggle">
+                    <h4 class="section-title">Добавить подвес</h4>
+                    <div class="switch-container" id="shockmount-switch-container">
+                        <label class="switch"><span class="switch-label option-price">+10 000₽</span></label>
+                        <input type="checkbox" class="liquid-toggle" onchange="toggleShockmount()" id="shockmount-switch">
+                    </div>
+                    <div id="shockmount-included-text" style="display: none;"><span style="color: #2c5282; font-size: 14px;">Подвес включен в комплект</span></div>
+                </div>
+
+                <!-- SHOCKMOUNT SECTION -->
+                <div class="menu-item" data-section="shockmount" tabindex="0" id="shockmount-menu-item" style="display: none;">
+                    <div class="item-icon"><div class="color-circle" id="shockmount-color-display" style="background-color: #f5f5f5;"></div></div>
+                    <div class="item-content">
+                        <p class="item-label">Антивибрационный подвес</p>
+                        <p class="item-subtitle" id="shockmount-subtitle">RAL 9010 Чистый белый</p>
+                    </div>
+                    <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    <div class="option-price" id="shockmount-price">+0₽</div>
+                </div>
+                <div class="submenu" id="submenu-shockmount">
+                    <div class="submenu-header">
+                        <h3 class="submenu-title">Антивибрационный подвес (каркас)</h3>
+                        <button class="submenu-back"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg><span>Назад</span></button>
+                    </div>
+                    <div class="submenu-section" id="shockmount-options-section">
+                        <h4 class="section-title">Цвет каркаса</h4>
+                        <div class="variants" id="quick-select-shockmount"></div>
+                    </div>
+                    <div class="submenu-section">
+                        <button class="palette-toggle-btn" aria-expanded="false"><span>Цвет по палитре RAL</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+                        <div class="palette-wrapper" id="palette-wrapper-shockmount"><div class="palette-content"><div class="palette" id="pal-shockmount"></div></div></div>
+                    </div>
+                </div>
+
+                <!-- SHOCKMOUNT PINS SECTION -->
+                <div class="menu-item" data-section="shockmount-pins" tabindex="0" id="shockmount-pins-menu-item" style="display: none;">
+                    <div class="item-icon"><div class="color-circle" id="shockmount-pins-color-display" style="background-color: #f5f5f5;"></div></div>
+                    <div class="item-content">
+                        <p class="item-label">Цвет пинов антивибрационного подвеса</p>
+                        <p class="item-subtitle" id="shockmount-pins-subtitle">Полированная латунь</p>
+                    </div>
+                    <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    <div class="option-price" id="shockmount-pins-price">+0₽</div>
+                </div>
+                <div class="submenu" id="submenu-shockmount-pins">
+                    <div class="submenu-header">
+                        <h3 class="submenu-title">Цвет пинов подвеса</h3>
+                        <button class="submenu-back"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg><span>Назад</span></button>
+                    </div>
+                    <div class="submenu-section" id="shockmount-pins-options-section">
+                        <h4 class="section-title">Цвет пинов</h4>
+                        <div class="variants" id="quick-select-shockmount-pins"></div>
+                    </div>
+                    <div class="submenu-section" id="shockmount-pins-palette-section">
+                        <button class="palette-toggle-btn" aria-expanded="false"><span>Цвет по палитре RAL</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+                        <div class="palette-wrapper" id="palette-wrapper-pins"><div class="palette-content"><div class="palette" id="pal-pins"></div></div></div>
+                    </div>
+                </div>
+
+                <!-- TOTAL PRICE -->
+                <div class="total-price">
+                    <div class="price-row"><span>Базовая цена:</span><span id="base-price">150 000₽</span></div>
+                    <div class="price-row"><span>Силуэт:</span><span id="spheres-price-row">+0₽</span></div>
+                    <div class="price-row"><span>Корпус:</span><span id="body-price-row">+0₽</span></div>
+                    <div class="price-row"><span>Эмблема:</span><span id="logo-price-row">+0₽</span></div>
+                    <div class="price-row"><span>Футляр:</span><span id="case-price-row">+0₽</span></div>
+                    <div class="price-row" id="shockmount-price-row-container" style="display: none;"><span>Подвес:</span><span id="shockmount-price-row">+0₽</span></div>
+                    <div class="price-row price-total"><span>Итого:</span><span id="total-price">150 000₽</span></div>
+                    <button class="order-button">Отправить конфигурацию</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- HIDDEN STORAGE -->
+        <div id="ral-storage"></div>
+        <div id="variant-storage"></div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+(function() {
+    'use strict';
+
+    // ============================================
+    // RAL ПАЛИТРА (218 ЦВЕТОВ)
+    // ============================================
+    const RAL_PALETTE = {
+        "1000": "#C5BB8A", "1001": "#C6B286", "1002": "#C7AE72", "1003": "#E6B019", "1004": "#D2A40E",
+        "1005": "#BC9611", "1006": "#CF9804", "1007": "#D49300", "1011": "#A38454", "1012": "#CFB539",
+        "1013": "#DFDBC7", "1014": "#D4C79C", "1015": "#DED3B6", "1016": "#E8E253", "1017": "#E4AF56",
+        "1018": "#EBD346", "1019": "#9C917B", "1020": "#999167", "1021": "#E5C000", "1023": "#E6BE05",
+        "1024": "#AD9451", "1026": "#FFFF00", "1027": "#998420", "1028": "#F2A500", "1032": "#CFA81E",
+        "1033": "#E4A02D", "1034": "#D9A156", "1035": "#898271", "1036": "#746341", "1037": "#DB9A17",
+        "2000": "#C7750F", "2001": "#A74D23", "2002": "#AC3721", "2003": "#E17C30", "2004": "#CC5608",
+        "2005": "#FF4612", "2007": "#FFAD19", "2008": "#D66C21", "2009": "#C9560D", "2010": "#BC602D",
+        "2011": "#CF7421", "2012": "#C2674F", "2013": "#954527", "2017": "#FA4402", "3000": "#962A27",
+        "3001": "#8F1E24", "3002": "#8D1F24", "3003": "#7C0D24", "3004": "#651927", "3005": "#561E27",
+        "3007": "#3D2326", "3009": "#643730", "3011": "#6E2124", "3012": "#B7856E", "3013": "#8A2F28",
+        "3014": "#BC6F72", "3015": "#CC9EA4", "3016": "#963D2F", "3017": "#B9535B", "3018": "#B63C49",
+        "3020": "#AB1519", "3022": "#BE6954", "3024": "#EE1729", "3026": "#F71027", "3027": "#9E1B3C",
+        "3028": "#B92726", "3031": "#973238", "3032": "#661925", "3033": "#94352D", "4001": "#7C5B80",
+        "4002": "#823A4B", "4003": "#B65A88", "4004": "#5F1837", "4005": "#746395", "4006": "#852E6F",
+        "4007": "#44263C", "4008": "#7C477D", "4009": "#95838F", "4010": "#AC3B71", "4011": "#685C80",
+        "4012": "#67657A", "5000": "#35496B", "5001": "#294763", "5002": "#193278", "5003": "#203151",
+        "5004": "#1E222C", "5005": "#134A85", "5007": "#466589", "5008": "#2F3A44", "5009": "#215F78",
+        "5010": "#0E457A", "5011": "#222C3E", "5012": "#457FB3", "5013": "#212F51", "5014": "#667691",
+        "5015": "#3172AD", "5017": "#0F518A", "5018": "#47848D", "5019": "#1A5784", "5020": "#113E4D",
+        "5021": "#216D76", "5022": "#282C58", "5023": "#4D648A", "5024": "#6C8DAA", "5025": "#3C6379",
+        "5026": "#1B2B4D", "6000": "#4A7363", "6001": "#40693A", "6002": "#3B5B2F", "6003": "#4F553E",
+        "6004": "#214245", "6005": "#234235", "6006": "#3C3D32", "6007": "#2E3526", "6008": "#333327",
+        "6009": "#2A372C", "6010": "#4E6E39", "6011": "#6A7C5B", "6012": "#2F3B39", "6013": "#777659",
+        "6014": "#454339", "6015": "#3C3F38", "6016": "#256753", "6017": "#5C8144", "6018": "#689A45",
+        "6019": "#B8CFAD", "6020": "#3B4634", "6021": "#899B79", "6022": "#3B382E", "6024": "#3A8258",
+        "6025": "#5D703E", "6026": "#0D5951", "6027": "#88B5B3", "6028": "#3D5547", "6029": "#226C45",
+        "6032": "#417E57", "6033": "#568480", "6034": "#86A9AD", "6035": "#2E4F31", "6036": "#27514A",
+        "6037": "#3F8C3D", "6038": "#20A339", "6039": "#B3C43E", "7000": "#7E8B92", "7001": "#8B949B",
+        "7002": "#7D7965", "7003": "#76776A", "7004": "#969799", "7005": "#696D6B", "7006": "#716C60",
+        "7008": "#6C6040", "7009": "#5B6058", "7010": "#575B57", "7011": "#535A5E", "7012": "#595E60",
+        "7013": "#545146", "7015": "#51535A", "7016": "#3B4044", "7021": "#323537", "7022": "#4C4C47",
+        "7023": "#7D7F76", "7024": "#45494E", "7026": "#394345", "7030": "#8C8C83", "7031": "#5D676D",
+        "7032": "#B1B1A1", "7033": "#7C8273", "7034": "#8C8870", "7035": "#C2C6C3", "7036": "#949292",
+        "7037": "#797B7B", "7038": "#ADB0A9", "7039": "#68675F", "7040": "#969CA1", "7042": "#8C9190",
+        "7043": "#4F5352", "7044": "#B3B2A9", "7045": "#8C9094", "7046": "#7C8287", "7047": "#C5C5C5",
+        "7048": "#7A7871", "8000": "#816D44", "8001": "#8F6833", "8002": "#704F40", "8003": "#74502F",
+        "8004": "#814D37", "8007": "#67492F", "8008": "#694F2B", "8011": "#533A29", "8012": "#5C3128",
+        "8014": "#453729", "8015": "#57332B", "8016": "#483026", "8017": "#42332E", "8019": "#3B3736",
+        "8022": "#201F20", "8023": "#965D33", "8024": "#6F543C", "8025": "#6E5B4B", "8028": "#4C3E30",
+        "8029": "#764537", "9001": "#E5E1D4", "9002": "#D4D5CD", "9003": "#EBECEA", "9004": "#2F3133",
+        "9005": "#131516", "9006": "#9A9D9D", "9007": "#828280", "9010": "#EFEEE5", "9011": "#25282A",
+        "9012": "#F2F1E1", "9016": "#EFF0EB", "9017": "#262625", "9018": "#C6CBC6", "9022": "#818382",
+        "9023": "#767779"
+    };
+
+    // ============================================
+    // КАСТОМНЫЕ МАТЕРИАЛЫ (НЕ RAL)
+    // ============================================
+    const CUSTOM_MATERIALS = {
+        "matte-black": { name: "Матовый черный", color: "#2d2d2d", type: "custom" },
+        "classic-brass": { name: "Классическая латунь", color: "#D4AF37", type: "custom" },
+        "satin-steel": { name: "Сатинированная сталь", color: "#A1A1A0", type: "custom" },
+        "oyster-white": { name: "Жемчужно-белый", color: "#F5F5DC", type: "custom" },
+        "polished-brass": { name: "Полированная латунь", color: "#D4AF37", type: "custom" },
+        "cold-chrome": { name: "Холодный хром", color: "#A1A1A0", type: "custom" }
+    };
+
+    // ============================================
+    // КОНФИГУРАЦИЯ БЕСПЛАТНЫХ ВАРИАНТОВ
+    // ============================================
+    const FREE_VARIANTS = {
+        spheres: [
+            { label: "Матовый черный", hex: "#2d2d2d", isCustomRal: true, ralCode: "9005" },
+            { label: "Классическая латунь", hex: "#D4AF37", isNonRal: true },
+            { label: "Сатинированная сталь", hex: "#A1A1A0", isNonRal: true }
+        ],
+        body: [
+            { label: "Матовый черный", hex: "#2d2d2d", isCustomRal: true, ralCode: "9005" },
+            { label: "Жемчужно-белый", hex: "#F5F5DC", isCustomRal: true, ralCode: "1013" },
+            { label: "Сатинированная сталь", hex: "#A1A1A0", isNonRal: true }
+        ],
+        logobg: [
+            { label: "RAL 9005 Матовый черный", hex: "#131516", ralCode: "9005" },
+            { label: "RAL 3001 Сигнальный красный", hex: "#8F1E24", ralCode: "3001" },
+            { label: "RAL 3005 Винный красный", hex: "#561E27", ralCode: "3005" },
+            { label: "RAL 5017 Ультрамариновый синий", hex: "#0F518A", ralCode: "5017" },
+            { label: "RAL 6001 Изумрудный зеленый", hex: "#40693A", ralCode: "6001" },
+            { label: "RAL 9010 Чистый белый", hex: "#EFEEE5", ralCode: "9010" }
+        ],
+        shockmount: [
+            { label: "RAL 9010 Чистый белый", hex: "#EFEEE5", ralCode: "9010" },
+            { label: "RAL 1013 Жемчужно-белый", hex: "#DFDBC7", ralCode: "1013" },
+            { label: "RAL 9005 Матовый черный", hex: "#131516", ralCode: "9005" }
+        ],
+        pins: [
+            { label: "Полированная латунь", hex: "#D4AF37", isNonRal: true },
+            { label: "RAL 9006 Белый алюминий", hex: "#9A9D9D", isCustomRal: true, ralCode: "9006" },
+            { label: "RAL 9010 Чистый белый", hex: "#EFEEE5", ralCode: "9010" },
+            { label: "RAL 1013 Жемчужно-белый", hex: "#DFDBC7", ralCode: "1013" },
+            { label: "RAL 9005 Матовый черный", hex: "#131516", ralCode: "9005" }
+        ]
+    };
+
+    // ============================================
+    // СОСТОЯНИЕ ВЫБРАННЫХ ЦВЕТОВ
+    // ============================================
+    const colorState = {
+        spheres: { type: "custom", value: "satin-steel", isNonRal: true, label: "Сатинированная сталь", hex: "#A1A1A0" },
+        body: { type: "custom", value: "satin-steel", isNonRal: true, label: "Сатинированная сталь", hex: "#A1A1A0" },
+        logobg: { type: "ral", value: "3001", label: "RAL 3001 Сигнальный красный", hex: "#8F1E24" },
+        shockmount: { type: "ral", value: "9010", label: "RAL 9010 Чистый белый", hex: "#EFEEE5" },
+        pins: { type: "custom", value: "polished-brass", isNonRal: true, label: "Полированная латунь", hex: "#D4AF37" }
+    };
+
+    // ============================================
+    // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+    // ============================================
+    let currentVariant = "023-the-bomblet";
+    const ralStorage = document.getElementById('ral-storage');
+    const variantStorage = document.getElementById('variant-storage');
+    
+    // Хранилища для элементов
+    const ralSwatches = new Map();      // code → DOM element (218 total)
+    const variantItems = new Map();     // uniqueId → DOM element
+    
+    // Конфигурация контейнеров
+    const sectionContainers = {
+        spheres: { quick: 'quick-select-spheres', palette: 'pal-spheres' },
+        body: { quick: 'quick-select-body', palette: 'pal-body' },
+        logobg: { quick: 'quick-select-logobg', palette: 'pal-logobg' },
+        shockmount: { quick: 'quick-select-shockmount', palette: 'pal-shockmount' },
+        pins: { quick: 'quick-select-shockmount-pins', palette: 'pal-pins' }
+    };
+
+    // ============================================
+    // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+    // ============================================
+    
+    function getContainer(section, type) {
+        const config = sectionContainers[section];
+        if (!config) return null;
+        return document.getElementById(config[type]);
+    }
+    
+    function getAllFreeRalCodes() {
+        const codes = new Set();
+        Object.values(FREE_VARIANTS).forEach(variants => {
+            variants.forEach(v => { if (v.ralCode) codes.add(v.ralCode); });
+        });
+        return codes;
+    }
+
+    // ============================================
+    // СОЗДАНИЕ RAL SWATCH (218 элементов, один раз)
+    // ============================================
+    function createRalSwatch(code, hex) {
+        if (ralSwatches.has(code)) return ralSwatches.get(code);
+        
+        const swatch = document.createElement('div');
+        swatch.className = 'swatch';
+        swatch.dataset.ral = code;
+        swatch.dataset.color = hex;
+        swatch.dataset.type = 'ral';
+        swatch.style.backgroundColor = hex;
+        swatch.setAttribute('role', 'button');
+        swatch.setAttribute('tabindex', '0');
+        swatch.setAttribute('aria-label', `RAL ${code}`);
+        
+        // Обработчик клика
+        swatch.addEventListener('click', function() {
+            const section = this.dataset.currentSection;
+            if (section) {
+                handleRalSelect(section, code, hex);
+            }
+        });
+        
+        // Доступность с клавиатуры
+        swatch.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+        
+        ralStorage.appendChild(swatch);
+        ralSwatches.set(code, swatch);
+        return swatch;
+    }
+
+    // ============================================
+    // СОЗДАНИЕ VARIANT-ITEM (бесплатные варианты)
+    // ============================================
+    function createVariantItem(label, hex, section, isCustomRal = false, isNonRal = false, ralCode = null) {
+        const uniqueId = `${section}::${label}`;
+        if (variantItems.has(uniqueId)) return variantItems.get(uniqueId);
+        
+        const item = document.createElement('div');
+        item.className = 'variant-item';
+        item.dataset.label = label;
+        item.dataset.color = hex;
+        item.dataset.section = section;
+        item.dataset.type = isNonRal ? 'non-ral' : (isCustomRal ? 'custom-ral' : 'ral');
+        
+        if (isCustomRal && ralCode) {
+            item.dataset.customRal = 'true';
+            item.dataset.ralCode = ralCode;
+        }
+        if (isNonRal) {
+            item.dataset.nonRal = 'true';
+        }
+        
+        item.innerHTML = `
+            <div class="variant-info">
+                <div class="variant-icon" style="background-color: ${hex};"></div>
+                <span class="variant-label">${label}</span>
+            </div>
+            <span class="variant-price">+0₽</span>
+        `;
+        
+        item.setAttribute('tabindex', '0');
+        
+        // Обработчик клика
+        item.addEventListener('click', function() {
+            handleVariantSelect(section, label, hex, isCustomRal, isNonRal, ralCode);
+        });
+        
+        // Доступность с клавиатуры
+        item.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+        
+        variantStorage.appendChild(item);
+        variantItems.set(uniqueId, item);
+        return item;
+    }
+
+    // ============================================
+    // ОБРАБОТКА ВЫБОРА RAL ЦВЕТА
+    // ============================================
+    function handleRalSelect(section, code, hex) {
+        // Снимаем выделение со всех элементов в этом разделе
+        clearSectionSelection(section);
+        
+        // Находим и выделяем выбранный свотч
+        const swatch = ralSwatches.get(code);
+        if (swatch) {
+            swatch.classList.add('selected');
+        }
+        
+        // Обновляем состояние
+        colorState[section] = {
+            type: 'ral',
+            value: code,
+            label: `RAL ${code}`,
+            hex: hex
+        };
+        
+        // Обновляем UI
+        updateSectionDisplay(section, hex, `RAL ${code}`);
+        updateTotalPrice();
+        
+        console.log(`Выбран RAL ${code} для ${section}`);
+    }
+
+    // ============================================
+    // ОБРАБОТКА ВЫБОРА БЕСПЛАТНОГО ВАРИАНТА
+    // ============================================
+    function handleVariantSelect(section, label, hex, isCustomRal, isNonRal, ralCode) {
+        // Снимаем выделение со всех variant-item в этом разделе
+        const quickContainer = getContainer(section, 'quick');
+        if (quickContainer) {
+            [...quickContainer.children].forEach(el => el.classList.remove('selected'));
+        }
+        
+        // Находим и выделяем выбранный item
+        const uniqueId = `${section}::${label}`;
+        const item = variantItems.get(uniqueId);
+        if (item) {
+            item.classList.add('selected');
+        }
+        
+        // Обновляем состояние
+        colorState[section] = {
+            type: isNonRal ? 'non-ral' : (isCustomRal ? 'custom-ral' : 'ral'),
+            value: isCustomRal && ralCode ? ralCode : label.toLowerCase().replace(/\s+/g, '-'),
+            isCustomRal: isCustomRal || false,
+            isNonRal: isNonRal || false,
+            ralCode: isCustomRal ? ralCode : null,
+            label: label,
+            hex: hex
+        };
+        
+        // Обновляем UI
+        updateSectionDisplay(section, hex, label);
+        updateTotalPrice();
+        
+        console.log(`Выбран "${label}" для ${section}`);
+    }
+
+    // ============================================
+    // СНИТИЕ ВЫДЕЛЕНИЯ В РАЗДЕЛЕ
+    // ============================================
+    function clearSectionSelection(section) {
+        const quickContainer = getContainer(section, 'quick');
+        const paletteContainer = getContainer(section, 'palette');
+        
+        // Снимаем с variant-item
+        if (quickContainer) {
+            [...quickContainer.children].forEach(el => el.classList.remove('selected'));
+        }
+        
+        // Снимаем с swatch
+        if (paletteContainer) {
+            [...paletteContainer.children].forEach(el => el.classList.remove('selected'));
+        }
+    }
+
+    // ============================================
+    // ОБНОВЛЕНИЕ ОТОБРАЖЕНИЯ РАЗДЕЛА
+    // ============================================
+    function updateSectionDisplay(section, hex, label) {
+        const displayEl = document.getElementById(`${section}-color-display`);
+        const subtitleEl = document.getElementById(`${section}-subtitle`);
+        
+        if (displayEl) displayEl.style.backgroundColor = hex;
+        if (subtitleEl) subtitleEl.textContent = label;
+        
+        // Вызов специальной логики для custom-ral / non-ral
+        const state = colorState[section];
+        if (state?.isCustomRal || state?.isNonRal) {
+            handleSpecialMaterial(section, state);
+        }
+    }
+
+    // ============================================
+    // ОБРАБОТКА СПЕЦИАЛЬНЫХ МАТЕРИАЛОВ
+    // ============================================
+    function handleSpecialMaterial(section, state) {
+        // Здесь ваша логика смены изображений вместо перекраски
+        // Пример:
+        // if (state.isCustomRal) loadCustomImage(section, `ral-${state.ralCode}`);
+        // if (state.isNonRal) loadCustomImage(section, state.value);
+        
+        console.log(`🎨 Special material for ${section}:`, state.label);
+    }
+
+    // ============================================
+    // ЗАПОЛНЕНИЕ ПАЛИТРЫ (ПЕРЕМЕЩЕНИЕ ЭЛЕМЕНТОВ)
+    // ============================================
+    function populatePalette(section, freeRalCodes) {
+        const paletteContainer = getContainer(section, 'palette');
+        if (!paletteContainer) return;
+        
+        // 1. Возвращаем все свотчи из контейнера в хранилище
+        while (paletteContainer.firstChild) {
+            ralStorage.appendChild(paletteContainer.firstChild);
+        }
+        
+        // 2. Перемещаем только НЕ-бесплатные RAL в контейнер
+        ralSwatches.forEach((swatch, code) => {
+            // Пропускаем бесплатные RAL
+            if (freeRalCodes.has(code)) return;
+            
+            // Устанавливаем текущий раздел для обработчика клика
+            swatch.dataset.currentSection = section;
+            
+            // Перемещаем (DOM move, не create!)
+            paletteContainer.appendChild(swatch);
+        });
+        
+        console.log(`📦 ${section}: ${paletteContainer.children.length} свотчей в палитре`);
+    }
+
+    // ============================================
+    // ВОЗВРАТ ПАЛИТРЫ В ХРАНИЛИЩЕ
+    // ============================================
+    function returnPaletteToStorage(section) {
+        const paletteContainer = getContainer(section, 'palette');
+        if (!paletteContainer) return;
+        
+        while (paletteContainer.firstChild) {
+            ralStorage.appendChild(paletteContainer.firstChild);
+        }
+    }
+
+    // ============================================
+    // ЗАПОЛНЕНИЕ БЕСПЛАТНОГО РАЗДЕЛА
+    // ============================================
+    function populateQuickSelect(section) {
+        const quickContainer = getContainer(section, 'quick');
+        if (!quickContainer) return;
+        
+        const variants = FREE_VARIANTS[section];
+        if (!variants) return;
+        
+        // Очищаем контейнер (возвращаем в storage если нужно)
+        while (quickContainer.firstChild) {
+            variantStorage.appendChild(quickContainer.firstChild);
+        }
+        
+        // Заполняем variant-item
+        variants.forEach(v => {
+            const item = createVariantItem(v.label, v.hex, section, v.isCustomRal, v.isNonRal, v.ralCode);
+            quickContainer.appendChild(item);
+        });
+    }
+
+    // ============================================
+    // ПОДСВЕТКА ВЫБРАННОГО ЭЛЕМЕНТА
+    // ============================================
+    function highlightSelected(section) {
+        const state = colorState[section];
+        if (!state) return;
+        
+        const quickContainer = getContainer(section, 'quick');
+        const paletteContainer = getContainer(section, 'palette');
+        
+        if (state.isCustomRal || state.isNonRal) {
+            // Ищем в variant-item по label или ralCode
+            if (quickContainer) {
+                const item = [...quickContainer.children].find(el => 
+                    el.dataset.label === state.label || 
+                    (state.ralCode && el.dataset.ralCode === state.ralCode)
+                );
+                if (item) item.classList.add('selected');
+            }
+        } else if (state.type === 'ral' && state.value) {
+            // Ищем в swatch или variant-item
+            const swatch = ralSwatches.get(state.value);
+            if (swatch && swatch.parentElement === paletteContainer) {
+                swatch.classList.add('selected');
+            } else if (quickContainer) {
+                const item = [...quickContainer.children].find(el => el.dataset.ralCode === state.value);
+                if (item) item.classList.add('selected');
+            }
+        }
+    }
+
+    // ============================================
+    // ОБРАБОТЧИК АККОРДЕОНА ПАЛИТРЫ
+    // ============================================
+    function initPaletteToggle(section) {
+        const paletteContainer = getContainer(section, 'palette');
+        if (!paletteContainer) return;
+        
+        const toggleBtn = paletteContainer.closest('.submenu-section')?.querySelector('.palette-toggle-btn');
+        if (!toggleBtn) return;
+        
+        const wrapper = paletteContainer.closest('.palette-wrapper');
+        if (!wrapper) return;
+        
+        toggleBtn.addEventListener('click', function() {
+            const isOpen = wrapper.classList.toggle('open');
+            this.classList.toggle('active');
+            this.setAttribute('aria-expanded', isOpen);
+            
+            // При открытии — заполняем палитру
+            if (isOpen) {
+                const freeRalCodes = getAllFreeRalCodes();
+                populatePalette(section, freeRalCodes);
+            } else {
+                // При закрытии — возвращаем в хранилище
+                returnPaletteToStorage(section);
+            }
+        });
+    }
+
+    // ============================================
+    // ИНИЦИАЛИЗАЦИЯ ВСЕХ ПАЛИТР
+    // ============================================
+    function initPalettes() {
+        console.log('🎨 Инициализация палитр...');
+        
+        // 1. Создаём 218 RAL свотчей (один раз)
+        Object.entries(RAL_PALETTE).forEach(([code, hex]) => {
+            createRalSwatch(code, hex);
+        });
+        console.log(`✅ Создано ${ralSwatches.size} RAL свотчей`);
+        
+        // 2. Собираем все бесплатные RAL коды
+        const allFreeRalCodes = getAllFreeRalCodes();
+        
+        // 3. Инициализируем каждый раздел
+        Object.keys(sectionContainers).forEach(section => {
+            // Заполняем бесплатный раздел
+            populateQuickSelect(section);
+            
+            // Инициализируем аккордеон палитры
+            initPaletteToggle(section);
+            
+            // Подсвечиваем выбранное
+            highlightSelected(section);
+        });
+        
+        // 4. Возвращаем все палитры в хранилище (скрыты по умолчанию)
+        Object.keys(sectionContainers).forEach(section => {
+            returnPaletteToStorage(section);
+        });
+        
+        console.log(`🎯 Всего .swatch в DOM: ${document.querySelectorAll('.swatch').length}`);
+    }
+
+    // ============================================
+    // ПЕРЕСЧЕТ ЦЕНЫ
+    // ============================================
+    function updateTotalPrice() {
+        const basePrice = 150000;
+        let totalPrice = basePrice;
+        
+        const shockSwitch = document.getElementById('shockmount-switch');
+        if (shockSwitch?.checked) {
+            totalPrice += 10000;
+            const row = document.getElementById('shockmount-price-row-container');
+            if (row) row.style.display = 'flex';
+        } else {
+            const row = document.getElementById('shockmount-price-row-container');
+            if (row) row.style.display = 'none';
+        }
+        
+        const fmt = p => p.toLocaleString('ru-RU') + '₽';
+        const baseEl = document.getElementById('base-price');
+        const totalEl = document.getElementById('total-price');
+        
+        if (baseEl) baseEl.textContent = fmt(basePrice);
+        if (totalEl) totalEl.textContent = fmt(totalPrice);
+    }
+
+    // ============================================
+    // ЛОГИКА ПЕРЕКЛЮЧЕНИЯ ВАРИАНТОВ
+    // ============================================
+    function initVariantSwitch() {
+        const buttons = document.querySelectorAll('#variant-switch .variant-button');
+        
+        buttons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                buttons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentVariant = this.dataset.variant;
+                updateShockmountVisibility();
+            });
+        });
+        
+        updateShockmountVisibility();
+    }
+
+    function updateShockmountVisibility() {
+        const toggle = document.getElementById('shockmount-toggle');
+        const shockMenu = document.getElementById('shockmount-menu-item');
+        const pinsMenu = document.getElementById('shockmount-pins-menu-item');
+        const checkbox = document.getElementById('shockmount-switch');
+        
+        if (!toggle || !shockMenu || !pinsMenu) return;
+        
+        if (currentVariant === "023-the-bomblet") {
+            toggle.style.display = 'flex';
+            if (checkbox?.checked) {
+                shockMenu.style.display = 'flex';
+                pinsMenu.style.display = 'flex';
+            } else {
+                shockMenu.style.display = 'none';
+                pinsMenu.style.display = 'none';
+            }
+        } else {
+            toggle.style.display = 'none';
+            shockMenu.style.display = 'flex';
+            pinsMenu.style.display = 'flex';
+        }
+        updateTotalPrice();
+    }
+
+    function toggleShockmount() { 
+        updateShockmountVisibility(); 
+    }
+
+    // ============================================
+    // ЛОГОТИП - ПЕРЕКЛЮЧЕНИЕ РЕЖИМА
+    // ============================================
+    function toggleLogoMode() {
+        const checkbox = document.getElementById('logo-mode-toggle');
+        const uploadArea = document.getElementById('custom-logo-upload-area');
+        const logoSection = document.getElementById('logo-section');
+        const logobgSection = document.getElementById('logobg-section');
+        const logoOverlay = document.getElementById('logo-overlay');
+        const logobgOverlay = document.getElementById('logobg-overlay');
+        
+        if (checkbox?.checked) {
+            // Режим "Свой логотип" ВКЛЮЧЕН
+            if (uploadArea) uploadArea.style.display = 'block';
+            if (logoSection) logoSection.classList.add('hidden');
+            if (logobgSection) logobgSection.classList.add('hidden');
+            if (logoOverlay) logoOverlay.classList.add('active');
+            if (logobgOverlay) logobgOverlay.classList.add('active');
+        } else {
+            // Режим "Свой логотип" ВЫКЛЮЧЕН
+            if (uploadArea) uploadArea.style.display = 'none';
+            if (logoSection) logoSection.classList.remove('hidden');
+            if (logobgSection) logobgSection.classList.remove('hidden');
+            if (logoOverlay) logoOverlay.classList.remove('active');
+            if (logobgOverlay) logobgOverlay.classList.remove('active');
+        }
+    }
+
+    // ============================================
+    // ЛАЗЕРНАЯ ГРАВИРОВКА
+    // ============================================
+    function toggleLaserEngraving() {
+        const checkbox = document.getElementById('laser-engraving-toggle');
+        const data = document.getElementById('laser-engraving-data');
+        if (!data) return;
+        
+        if (checkbox?.checked) {
+            data.style.display = 'block';
+            data.style.opacity = '0';
+            setTimeout(() => { 
+                data.style.transition = 'opacity 0.3s ease'; 
+                data.style.opacity = '1'; 
+            }, 10);
+        } else {
+            data.style.opacity = '0';
+            setTimeout(() => { 
+                data.style.display = 'none'; 
+                data.style.opacity = '1'; 
+            }, 300);
+        }
+    }
+
+    // ============================================
+    // ПОДМЕНЮ
+    // ============================================
+    function initSubmenus() {
+        // Открытие подменю
+        document.querySelectorAll('.menu-item[data-section]').forEach(item => {
+            item.addEventListener('click', function() {
+                const section = this.dataset.section;
+                const submenu = document.getElementById(`submenu-${section}`);
+                
+                if (submenu && !this.classList.contains('hidden')) {
+                    // Закрываем другие подменю
+                    document.querySelectorAll('.submenu').forEach(s => {
+                        if (s !== submenu) s.classList.remove('active');
+                    });
+                    submenu.classList.toggle('active');
+                    this.classList.toggle('expanded');
+                }
+            });
+        });
+        
+        // Кнопка "Назад"
+        document.querySelectorAll('.submenu-back').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const submenu = this.closest('.submenu');
+                submenu.classList.remove('active');
+                
+                const section = submenu.id.replace('submenu-', '');
+                const menuItem = document.querySelector(`.menu-item[data-section="${section}"]`);
+                if (menuItem) menuItem.classList.remove('expanded');
+            });
+        });
+    }
+
+    // ============================================
+    // ЗАГРУЗКА ФАЙЛОВ
+    // ============================================
+    function initFileUploads() {
+        // Логотип
+        const logoUpload = document.querySelector('#custom-logo-upload-area .variant-item');
+        const logoRemove = document.querySelector('#custom-logo-upload-area .remove-logo-btn');
+        
+        if (logoUpload) {
+            logoUpload.addEventListener('click', () => {
+                alert('Функция загрузки логотипа будет реализована в основной версии.');
+            });
+        }
+        
+        if (logoRemove) {
+            logoRemove.addEventListener('click', () => {
+                const cb = document.getElementById('logo-mode-toggle');
+                if (cb) {
+                    cb.checked = false;
+                    toggleLogoMode();
+                }
+            });
+        }
+        
+        // Гравировка футляра
+        const caseUpload = document.getElementById('case-upload-btn');
+        const caseClear = document.getElementById('case-clear-btn');
+        const caseInput = document.getElementById('case-file-input');
+        
+        if (caseUpload) {
+            caseUpload.addEventListener('click', () => caseInput?.click());
+        }
+        
+        if (caseInput) {
+            caseInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    if (caseClear) caseClear.style.display = 'block';
+                    const controls = document.getElementById('case-positioning-controls');
+                    if (controls) controls.style.display = 'block';
+                }
+            });
+        }
+        
+        if (caseClear) {
+            caseClear.addEventListener('click', function() {
+                if (caseInput) caseInput.value = '';
+                caseClear.style.display = 'none';
+                const controls = document.getElementById('case-positioning-controls');
+                if (controls) controls.style.display = 'none';
+            });
+        }
+    }
+
+    // ============================================
+    // СБРОС НАСТРОЕК
+    // ============================================
+    function initResetSettings() {
+        const resetItem = document.querySelector('[data-section="reset-settings"]');
+        if (resetItem) {
+            resetItem.addEventListener('click', function() {
+                if (confirm('Сбросить все настройки к стандартным?')) {
+                    // Сброс цветов
+                    colorState.spheres = { type: "custom", value: "satin-steel", isNonRal: true, label: "Сатинированная сталь", hex: "#A1A1A0" };
+                    colorState.body = { type: "custom", value: "satin-steel", isNonRal: true, label: "Сатинированная сталь", hex: "#A1A1A0" };
+                    colorState.logobg = { type: "ral", value: "3001", label: "RAL 3001 Сигнальный красный", hex: "#8F1E24" };
+                    colorState.shockmount = { type: "ral", value: "9010", label: "RAL 9010 Чистый белый", hex: "#EFEEE5" };
+                    colorState.pins = { type: "custom", value: "polished-brass", isNonRal: true, label: "Полированная латунь", hex: "#D4AF37" };
+     
+                    // Обновляем UI
+                    Object.keys(colorState).forEach(section => {
+                        const state = colorState[section];
+                        updateSectionDisplay(section, state.hex, state.label);
+                        clearSectionSelection(section);
+                        highlightSelected(section);
+                    });
+                    
+                    // Сброс переключателей
+                    const logoToggle = document.getElementById('logo-mode-toggle');
+                    if (logoToggle) {
+                        logoToggle.checked = false;
+                        toggleLogoMode();
+                    }
+                    
+                    const laserToggle = document.getElementById('laser-engraving-toggle');
+                    if (laserToggle) {
+                        laserToggle.checked = false;
+                        toggleLaserEngraving();
+                    }
+                    
+                    const shockToggle = document.getElementById('shockmount-switch');
+                    if (shockToggle) {
+                        shockToggle.checked = false;
+                        updateShockmountVisibility();
+                    }
+                    
+                    updateTotalPrice();
+                    showNotification('Настройки сброшены', 'success');
+                }
+            });
+        }
+    }
+
+    // ============================================
+    // УВЕДОМЛЕНИЯ
+    // ============================================
+    function showNotification(message, type = 'success') {
+        let notification = document.getElementById('notification');
+        
+        if (!notification) {
+            notification = document.createElement('div');
+            notification.id = 'notification';
+            notification.className = 'notification';
+            document.body.appendChild(notification);
+        }
+        
+        notification.textContent = message;
+        notification.className = `notification ${type} show`;
+        
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, 3000);
+    }
+
+    // ============================================
+    // ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ
+    // ============================================
+    function init() {
+        console.log('🚀 Инициализация кастомизатора...');
+        
+        // Проверка наличия необходимых элементов
+        if (!ralStorage) {
+            console.error('❌ Не найден #ral-storage');
+            return;
+        }
+        if (!variantStorage) {
+            console.error('❌ Не найден #variant-storage');
+            return;
+        }
+        
+        // Инициализируем палитры (218 свотчей total)
+        initPalettes();
+        
+        // Инициализируем переключатель вариантов
+        initVariantSwitch();
+        
+        // Инициализируем подменю
+        initSubmenus();
+        
+        // Инициализируем загрузку файлов
+        initFileUploads();
+        
+        // Инициализируем сброс настроек
+        initResetSettings();
+        
+        // Инициализируем цену
+        updateTotalPrice();
+        
+        // Инициализируем состояние логотипа
+        toggleLogoMode();
+        
+        console.log('✅ Кастомизатор готов к работе');
+        console.log(`📊 DOM статистика:`);
+        console.log(`   • RAL свотчей: ${ralSwatches.size}`);
+        console.log(`   • Variant items: ${variantItems.size}`);
+        console.log(`   • Всего .swatch в DOM: ${document.querySelectorAll('.swatch').length}`);
+    }
+
+    // Запуск после загрузки DOM
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+    // Экспорт глобальных функций для HTML обработчиков
+    window.toggleLogoMode = toggleLogoMode;
+    window.toggleLaserEngraving = toggleLaserEngraving;
+    window.toggleShockmount = toggleShockmount;
+    
+})();
+    </script>
+</body>
+</html>
