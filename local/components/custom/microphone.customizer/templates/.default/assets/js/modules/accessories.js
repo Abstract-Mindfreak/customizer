@@ -1,13 +1,9 @@
-import { currentState, setState } from '../state.js';
-import { updateUI } from '../ui-core.js';
-import { initShockmount } from './shockmount.js';
-import * as cameraAnimation from './camera-animation.js'; // NEW IMPORT
+import { stateManager } from '../core/state.js';
+import { eventRegistry } from '../core/events.js';
+import { switchLayer } from './camera-effect.js';
 
 // --- CORE INITIALIZATION ---
 export function initCaseAndShockmount() {
-    // Original Shockmount Logic
-    initShockmount();
-
     // Unified Preview Switching
     initPreviewSwitching();
 }
@@ -22,13 +18,14 @@ export function initPreviewSwitching() {
         <button class="preview-switch-btn active" data-preview="microphone">Микрофон</button>
         <button class="preview-switch-btn" data-preview="case">Деревянный футляр</button>
         <button class="preview-switch-btn" data-preview="shockmount" id="shockmount-preview-btn">Подвес</button>
+         <button class="preview-switch-btn" data-preview="global-view" id="global-view-preview-btn">Общий вид</button>
     `;
 
     previewArea.insertBefore(switchContainer, previewArea.firstChild);
 
     switchContainer.querySelectorAll('.preview-switch-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            switchPreview(this.dataset.preview); // Call switchPreview, which now handles button active state
+        eventRegistry.add(btn, 'click', function() {
+            switchPreview(this.dataset.preview);
         });
     });
 }
@@ -43,14 +40,10 @@ export function switchPreview(previewType) {
         targetButton.classList.add('active');
     }
 
-    // Call cameraAnimation to switch layers, replacing display manipulation
-    cameraAnimation.switchLayer(previewType);
+    // Call cameraEffect to switch layers
+    switchLayer(previewType);
 }
 
-// Legacy functions - больше не используются
-export function handleCaseVariantSelection() {
-    // Устаревшая функция
-}
-export function uploadCaseLogo() {
-    // Устаревшая функция
-}
+// Legacy functions - not used
+export function handleCaseVariantSelection() {}
+export function uploadCaseLogo() {}

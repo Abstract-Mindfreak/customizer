@@ -1,21 +1,33 @@
-import { currentState, setState } from '../state.js';
+import { stateManager } from '../core/state.js';
 import { CONFIG, FREE_LOGO_RALS, RAL_PALETTE } from '../config.js';
 import { handleShockmountColorSelection, handleShockmountPinSelection } from './shockmount.js';
 import { updateSVG } from '../engine.js';
 import { updateUI } from '../ui-core.js';
+import { applySectionColor, batchApplySectionColors } from './color-utils.js';
+import { updatePrices } from './price-calculator.js';
+import { isMalfaMic, isMalfaLogo, updateLogoSVG as updateLogoFromLogoModule } from './logo.js';
+
+// Function to update logo preview
+function updateLogoPreview() {
+    updateSVG();
+}
+
+// Function to update SVG logo elements based on variant
+function updateLogoSVG(variant) {
+    // Delegate all MALFA logo logic to logo.js
+    updateLogoFromLogoModule();
+}
 
 export function initPalettes() {
-    const sections = ['spheres', 'body', 'logo', 'shockmount', 'pins'];
+    const sections = ['spheres', 'body', 'shockmount', 'pins', 'logobg'];
     sections.forEach(section => {
         const container = document.getElementById('pal-' + section);
+        if (!container) return; // Skip if container doesn't exist
         container.innerHTML = '';
 
         for (let [name, color] of Object.entries(RAL_PALETTE)) {
             // Task 3: Exclude RAL 1013 from body palette
             if (section === 'body' && name === '1013') continue;
-
-            // Exclude free RAL colors from logo palette
-            if (section === 'logo' && FREE_LOGO_RALS.includes(name)) continue;
 
             let div = document.createElement('div');
             div.className = 'swatch';
@@ -41,31 +53,60 @@ export function initPalettes() {
             container.appendChild(div);
         }
     });
+
+    // Handle logo palette separately (different structure)
+    const logoBgContainer = document.getElementById('pal-logo');
+    if (logoBgContainer) {
+        logoBgContainer.innerHTML = '';
+        for (let [name, color] of Object.entries(RAL_PALETTE)) {
+            let div = document.createElement('div');
+            div.className = 'swatch';
+            div.style.backgroundColor = color;
+            div.title = `RAL ${name}`;
+            div.dataset.color = color;
+            div.dataset.ral = name;
+
+            div.setAttribute('role', 'button');
+            div.setAttribute('tabindex', '0');
+            div.setAttribute('aria-label', `RAL ${name} ${color}`);
+            div.setAttribute('aria-pressed', 'false');
+
+            div.onclick = () => handleColorSelection('logo', color, name);
+
+            div.onkeydown = (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleColorSelection('logo', color, name);
+                }
+            };
+
+            logoBgContainer.appendChild(div);
+        }
+    }
 }
 
 export function togglePalette(section) {
     const wrapper = document.getElementById(`palette-wrapper-${section}`);
-    const btn = wrapper.previousElementSibling;
+    const toggleBtn = wrapper?.previousElementSibling;
+    
+    const submenuId = section === 'pins' ? 'submenu-shockmount-pins' : `submenu-${section}`;
+    const submenu = document.getElementById(submenuId);
+    
+    if (!wrapper || !toggleBtn || !submenu) {
+        return;
+    }
+
     const isOpen = wrapper.classList.contains('open');
-
-    document.querySelectorAll('.palette-wrapper.open').forEach(el => {
-        if (el !== wrapper) {
-            el.classList.remove('open');
-            if (el.previousElementSibling) el.previousElementSibling.classList.remove('active');
-        }
-    });
-
-    if (isOpen) {
-        wrapper.classList.remove('open');
-        btn.classList.remove('active');
-    } else {
+    
+    // Close all other palettes
+    document.querySelectorAll('.palette-wrapper').forEach(p => p.classList.remove('open'));
+    
+    if (!isOpen) {
         wrapper.classList.add('open');
-        btn.classList.add('active');
-
-        const swatches = wrapper.querySelectorAll('.swatch');
-        swatches.forEach((swatch, index) => {
-            swatch.style.transitionDelay = `${index * 3}ms`;
-        });
+        toggleBtn.classList.add('active');
+    } else {
+        wrapper.classList.remove('open');
+        toggleBtn.classList.remove('active');
     }
 }
 
@@ -75,6 +116,8 @@ export function handleColorSelection(section, color, ralName) {
     let swatchContainer;
     if (section === 'pins') {
         swatchContainer = document.getElementById('pal-pins').parentElement;
+    } else if (section === 'logobg') {
+        swatchContainer = document.getElementById('pal-logobg').parentElement;
     } else {
         swatchContainer = document.getElementById('submenu-' + section);
     }
@@ -92,42 +135,79 @@ export function handleColorSelection(section, color, ralName) {
         targetSwatch.setAttribute('aria-pressed', 'true');
     }
 
+    // Start batch operation to prevent multiple renders
+    const batchSet = stateManager.startBatch();
+
     if (section === 'spheres' || section === 'body') {
-        setState(`${section}.variant`, '3');
-        setState(`${section}.color`, ralLabel);
-        setState(`${section}.colorValue`, color);
-        setState(`prices.${section}`, CONFIG.optionPrice);
+        batchSet(`${section}.variant`, '3');
+        batchSet(`${section}.color`, ralLabel);
+        batchSet(`${section}.colorValue`, color);
+        batchSet(`prices.${section}`, CONFIG.optionPrice);
 
-        const submenu = document.getElementById('submenu-' + section);
-        submenu.querySelectorAll('.variant-item').forEach(i => i.classList.remove('selected'));
-        const var3 = submenu.querySelector('[data-variant="3"]');
-        if(var3) var3.classList.add('selected');
+        // Apply color using color utils
+        // applySectionColor(section, {
+        //     variant: '3',
+        //     color: ralLabel,
+        //     colorValue: color
+        // });
 
-    } else if (section === 'logo') {
-        setState('logo.bgColor', ralName);
-        setState('logo.bgColorValue', color);
+    } else if (section === 'logobg') {
+        batchSet('logobg.color', ralName);
+        batchSet('logobg.colorValue', color);
 
-        if (FREE_LOGO_RALS.includes(ralName)) {
-            setState('prices.logo', 0);
-        } else {
-            setState('prices.logo', CONFIG.optionPrice);
-        }
+        const isFree = FREE_LOGO_RALS.includes(ralName);
+        batchSet('prices.logobg', isFree ? 0 : CONFIG.optionPrice);
 
-        const submenu = document.getElementById('submenu-logo');
-        FREE_LOGO_RALS.forEach(ral => {
-            submenu.querySelector(`[data-variant="${ral}"]`)?.classList.remove('selected');
+        // Apply color using color utils
+        applySectionColor('logobg', {
+            color: ralName,
+            colorValue: color
         });
+
+        // Update variant selection in UI
+        const submenu = document.getElementById('submenu-logobg');
+        if (submenu) {
+            submenu.querySelectorAll('.variant-item').forEach(i => i.classList.remove('selected'));
+            const targetVariant = submenu.querySelector(`[data-variant="${ralName}"]`);
+            if(targetVariant) targetVariant.classList.add('selected');
+        }
+        
+        // Update SVG visualization
+        updateSVG();
+
     } else if (section === 'shockmount') {
         handleShockmountColorSelection(color, ralName);
+        
+        // Set price based on whether it's a free color or paid
+        const freePinsRals = ['9003', '1013', '9005'];
+        const isFree = freePinsRals.includes(ralName);
+        batchSet('prices.shockmount', isFree ? 0 : CONFIG.optionPrice);
     } else if (section === 'pins') {
+        // For pins, check if this is a free RAL color
+        const freePinsRals = ['9003', '1013', '9005'];
+        const isFree = freePinsRals.includes(ralName);
+        
         handleShockmountPinSelection('custom', color, ralName);
+        
+        // Set price based on whether it's a free color or paid
+        batchSet('prices.shockmount', isFree ? 0 : CONFIG.optionPrice);
     }
-    updateSVG();
+    
+    // End batch and apply all changes at once
+    stateManager.endBatch();
+    
+    // Update UI once after all changes
     updateUI();
 }
 
 export function updateSectionLayers(section, state) {
-    const svg = document.querySelector('#svg-wrapper svg');
+    const svg = document.querySelector('#svg-wrapper svg#svg8');
+    
+    // Skip logobg - it's handled by color-utils
+    if (section === 'logobg') {
+        return;
+    }
+    
     const originalLayer = svg.querySelector(`#${section}-original`);
     const colorLayer = svg.querySelector(`#${section}-colorized`);
     const monoLayer = svg.querySelector(`#${section}-monochrome`);
@@ -183,11 +263,23 @@ export function calculateLuminance(hex) {
 }
 
 export function updateFilter(section, hex) {
-    const svg = document.querySelector('#svg-wrapper svg');
+    // Skip logobg - it's handled by color-utils
+    if (section === 'logobg') {
+        return;
+    }
+    
+    const svg = document.querySelector('#svg-wrapper svg#svg8');
+    if (!svg) {
+        return;
+    }
+    
     const rgb = hexToRgb(hex);
     let id = (section === 'logobg') ? 'feFlood-logobg-color' : `feFlood-${section}-color`;
+    
     const el = svg.querySelector(`#${id}`);
-    if (el) el.setAttribute('flood-color', rgb);
+    if (el) {
+        el.setAttribute('flood-color', rgb);
+    }
 }
 
 export function hexToRgb(hex) {
@@ -202,9 +294,17 @@ export function hexToRgbValues(hex) {
 
 export function handleStyleSelection(section, variant) {
     const submenu = document.getElementById('submenu-' + section);
+    
+    // Clear all variant selections in this section
     submenu.querySelectorAll('.variant-item').forEach(i => {
         i.classList.remove('selected');
         i.setAttribute('aria-selected', 'false');
+    });
+
+    // Clear palette selections when variant is selected
+    submenu.querySelectorAll('.swatch').forEach(s => {
+        s.classList.remove('selected');
+        s.setAttribute('aria-pressed', 'false');
     });
 
     const selected = submenu.querySelector(`[data-variant="${variant}"]`);
@@ -213,28 +313,64 @@ export function handleStyleSelection(section, variant) {
         selected.setAttribute('aria-selected', 'true');
     }
 
-    if (section === 'spheres' || section === 'body') {
-        setState(`${section}.variant`, variant);
-        setState(`${section}.color`, null); // Clear color
-        setState(`${section}.colorValue`, '#ffffff00');
-        setState(`prices.${section}`, 0); // Styles are free
+    // Start batch operation to prevent multiple renders
+    const batchSet = stateManager.startBatch();
 
+    if (section === 'spheres' || section === 'body') {
+        batchSet(`${section}.variant`, variant);
+        batchSet(`${section}.color`, null); // Clear color
+        batchSet(`${section}.colorValue`, '#ffffff00');
+        batchSet(`prices.${section}`, 0); // Styles are free
+
+    } else if (section === 'logobg') {
+        // Handle logo background color selection
+        const isFree = FREE_LOGO_RALS.includes(variant);
+        const color = variant === 'black' ? '#000000' : RAL_PALETTE[variant];
+        
+        batchSet('logobg.color', variant);
+        batchSet('logobg.colorValue', color);
+        batchSet('prices.logobg', isFree ? 0 : CONFIG.optionPrice);
+        
+        // Apply color using color utils
+        applySectionColor('logobg', {
+            color: variant,
+            colorValue: color
+        });
+
+    } else if (section === 'logo') {
+        // Handle logo variant selection
+        let logoVariant;
+       if (variant === 'malfasilver') {
+            logoVariant = 'malfasilver';
+        } else if (variant === 'malfagold') {
+            logoVariant = 'malfagold';
+        } else if (variant === 'gold') {
+            logoVariant = 'standard-gold';
+        } else if (variant === 'silver') {
+            logoVariant = 'standard-silver';
+        } else {
+            logoVariant = variant;
+        }
+        
+        batchSet('logo.variant', logoVariant);
+        batchSet('prices.logo', 0);
+        
         // Clear palette selection
         submenu.querySelectorAll('.swatch').forEach(s => {
             s.classList.remove('selected');
             s.setAttribute('aria-pressed', 'false');
         });
-
-    } else if (section === 'logo') {
-        if (variant === 'black' || FREE_LOGO_RALS.includes(variant)) {
-            setState('logo.bgColor', variant);
-            setState('logo.bgColorValue', variant === 'black' ? '#000000' : RAL_PALETTE[variant]);
-            setState('prices.logo', 0);
-        } else {
-            setState('logo.variant', variant);
-            setState('prices.logo', 0); // Silver/Gold are free
-        }
     }
-    updateSVG();
+    
+    // End batch and apply all changes at once
+    stateManager.endBatch();
+    
+    // Update SVG logo elements after state is applied
+    if (section === 'logo') {
+        updateLogoSVG(variant);
+    }
+    
+    // Update UI once after all changes
     updateUI();
+    updateLogoPreview();
 }

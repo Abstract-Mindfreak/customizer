@@ -1,9 +1,9 @@
-import { setState, currentState } from '../state.js';
+import { stateManager } from '../core/state.js';
 import { getDevice } from '../utils.js';
-import { CASE_IMAGES, CASE_GEOMETRY } from '../config.js';
+import { CASE_IMAGES, CASE_GEOMETRY, CONFIG } from '../config.js';
 
 const WoodCase = {
-    currentCase: '017-tube',
+    currentCase: '023-the-bomblet',
     userImgSrc: null,
     isSvg: false,
     svgRatio: 1,
@@ -23,7 +23,54 @@ const WoodCase = {
         document.getElementById('case-file-input').addEventListener('change', (e) => this.handleUpload(e));
         document.getElementById('case-clear-btn').addEventListener('click', () => this.clearLogo());
 
+        this.setupManualInputs();
         this.render();
+    },
+
+    setupManualInputs() {
+        const topInput = document.getElementById('input-case-top');
+        const leftInput = document.getElementById('input-case-left');
+        const widthInput = document.getElementById('input-case-width');
+
+        if (!topInput || !leftInput || !widthInput) return;
+
+        const updateFromInputs = () => {
+            if (!this.userImgSrc) return;
+            const state = this.history[this.currentCase];
+            const pxPerMM = this.getPixelsPerMM(this.currentCase);
+
+            const plane = document.getElementById('wood-case-perspective-plane');
+            const pH = parseFloat(plane.style.height) || 0;
+            const pW = parseFloat(plane.style.width) || 0;
+
+            const container = document.getElementById('user-logo-container');
+            let bW, bH;
+            if (this.isSvg) {
+                bW = 550; bH = 550 / this.svgRatio;
+            } else {
+                const img = container.querySelector('img');
+                bW = img ? img.naturalWidth : 100;
+                bH = img ? img.naturalHeight : 100;
+            }
+
+            const targetWidthPx = parseFloat(widthInput.value) * pxPerMM;
+            state.scale = targetWidthPx / bW;
+
+            const cH = bH * state.scale;
+            const cW = bW * state.scale;
+
+            const targetTopPx = parseFloat(topInput.value) * pxPerMM;
+            const targetLeftPx = parseFloat(leftInput.value) * pxPerMM;
+
+            state.y = targetTopPx - pH/2 + cH/2;
+            state.x = targetLeftPx - pW/2 + cW/2;
+
+            this.updateTransform();
+        };
+
+        [topInput, leftInput, widthInput].forEach(input => {
+            input.addEventListener('input', updateFromInputs);
+        });
     },
 
     getDevice() {
@@ -33,8 +80,6 @@ const WoodCase = {
     setCase(id) {
         const variantMap = {
             'malfa': '023-malfa',
-            '023-dlx': '023-deluxe',
-            '023-the-bomblet': '023-bomblet'
         };
         const caseId = variantMap[id] || id;
 
@@ -53,10 +98,11 @@ const WoodCase = {
     },
 
     handleUpload(e) {
-        const file = e.target.files[0];
+        const file = (e.target && e.target.files) ? e.target.files[0] : (e.files ? e.files[0] : null);
         if (!file) return;
         document.getElementById('wood-case-loader').style.display = 'block';
         document.getElementById('case-clear-btn').style.display = 'block';
+        document.getElementById('case-positioning-controls').style.display = 'block';
 
         const reader = new FileReader();
         reader.onload = (ev) => {
@@ -81,12 +127,12 @@ const WoodCase = {
             const loadHandler = () => {
                 this.applyStartConfig(this.currentCase);
                 this.render();
-                setState('case.variant', 'custom');
-                setState('case.customLogo', this.userImgSrc);
+                stateManager.set('case.variant', 'custom');
+                stateManager.set('case.customLogo', this.userImgSrc);
                 
                 // При загрузке кастомного лого добавляем +1500₽ к цене кейса
                 if (this.userImgSrc) {
-                    setState('prices.case', 1500);
+                    stateManager.set('prices.case', 1500);
                     console.log('💰 Цена кейса обновлена: +1500₽ (загружено кастомное лого)');
                     
                     // Обновляем отображение цены
@@ -202,26 +248,35 @@ const WoodCase = {
         container.style.width = bW + 'px'; container.style.height = bH + 'px';
         container.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
 
-        setState('case.logoTransform', { x: state.x, y: state.y, scale: state.scale });
+        stateManager.set('case.logoTransform', { x: state.x, y: state.y, scale: state.scale });
         const pxPerMM = this.getPixelsPerMM(this.currentCase);
         const width_mm = Math.round((bW * state.scale) / pxPerMM);
-        setState('case.logoWidthMM', width_mm);
+        stateManager.set('case.logoWidthMM', width_mm);
 
         this.drawRulers();
     },
 
     setupInteract() {
+        const isMobile = window.innerWidth <= 768;
+        const sensitivity = isMobile ? 1.5 : 1;
+
         interact('#wood-case-logo-wrapper').gesturable({
             onmove: (e) => {
                 const state = this.history[this.currentCase];
-                state.scale *= (1 + e.ds);
+                // Increase pinch-zoom range/sensitivity
+                const ds = e.ds * sensitivity * 2;
+                state.scale *= (1 + ds);
+                // Clamp scale
+                state.scale = Math.max(0.01, Math.min(5, state.scale));
                 this.updateTransform();
                 this.showRulers();
             }
         }).draggable({
             onmove: (e) => {
                 const state = this.history[this.currentCase];
-                state.x += e.dx; state.y += e.dy;
+                // Increase sensitivity for touch dragging
+                state.x += e.dx * sensitivity;
+                state.y += e.dy * sensitivity;
                 this.updateTransform();
                 this.showRulers();
             }
@@ -308,7 +363,15 @@ const WoodCase = {
         document.getElementById('info-top-tag').textContent = top_mm + ' мм';
         document.getElementById('info-left-tag').textContent = left_mm + ' мм';
 
-        setState('case.logoOffsetMM', { top: top_mm, left: left_mm });
+        // Update manual inputs
+        const topInput = document.getElementById('input-case-top');
+        const leftInput = document.getElementById('input-case-left');
+        const widthInput = document.getElementById('input-case-width');
+        if (topInput && document.activeElement !== topInput) topInput.value = top_mm;
+        if (leftInput && document.activeElement !== leftInput) leftInput.value = left_mm;
+        if (widthInput && document.activeElement !== widthInput) widthInput.value = Math.round(cW / pxPerMM);
+
+        stateManager.set('case.logoOffsetMM', { top: top_mm, left: left_mm });
 
         const sCorners = [{x:iTLx,y:iTLy},{x:iTLx+cW,y:iTLy},{x:iTLx+cW,y:iTLy+cH},{x:iTLx,y:iTLy+cH}].map(p => this.projectPoint(p.x, p.y, this.currentMatrix));
         const pTL = sCorners[0], pTR = sCorners[1], pBL = sCorners[3];
@@ -359,13 +422,57 @@ const WoodCase = {
             if(el) el.textContent = '-';
         });
         document.getElementById('case-clear-btn').style.display = 'none';
+        document.getElementById('case-positioning-controls').style.display = 'none';
         document.getElementById('case-file-input').value = '';
 
-        setState('case.variant', 'standard');
-        setState('case.customLogo', null);
-        setState('case.logoWidthMM', 0);
+        stateManager.set('case.variant', 'standard');
+        stateManager.set('case.customLogo', null);
+        stateManager.set('case.logoWidthMM', 0);
     }
 };
+
+export function toggleLaserEngraving() {
+    const currentState = stateManager.get();
+    const isLaserEnabled = currentState.case?.laserEngraving || false;
+    
+    // Toggle the state
+    const newState = !isLaserEnabled;
+    stateManager.set('case.laserEngraving', newState);
+    
+    // Update price based on toggle state
+    const casePrice = newState ? 1500 : 0;
+    stateManager.set('prices.case', casePrice);
+    
+    // Update UI
+    const casePriceRow = document.getElementById('case-price-row');
+    if (casePriceRow) {
+        casePriceRow.textContent = casePrice > 0 ? `+${casePrice}₽` : '0₽';
+    }
+    
+    // Show/hide upload sections inside #submenu-case
+    const uploadSections = document.querySelectorAll('#submenu-case .submenu-section');
+    const laserDataSection = document.querySelector('.toggle-laser-engraving-data');
+    
+    if (newState) {
+        // Laser engraving enabled - show upload sections
+        uploadSections.forEach(section => {
+            if (!section.closest('.toggle-laser-engraving-data')) {
+                section.style.display = 'block';
+            }
+        });
+        if (laserDataSection) laserDataSection.style.display = 'block';
+    } else {
+        // Laser engraving disabled - hide upload sections
+        uploadSections.forEach(section => {
+            if (!section.closest('.toggle-laser-engraving-data')) {
+                section.style.display = 'none';
+            }
+        });
+        if (laserDataSection) laserDataSection.style.display = 'none';
+    }
+    
+    console.log(`[Wood Case] Laser engraving ${newState ? 'enabled' : 'disabled'}, price: ${casePrice}₽`);
+}
 
 export function initializeWoodCase() {
     WoodCase.init();
