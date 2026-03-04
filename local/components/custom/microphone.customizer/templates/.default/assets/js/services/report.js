@@ -69,7 +69,7 @@ export async function sendOrder(clientData) {
     const woodcaseDesk = `Ш:${currentState.case.logoWidthMM}мм, Сверху:${currentState.case.logoOffsetMM.top}мм`;
     formData.set('form_text_36', woodcaseDesk);
     formData.set('form_text_37', currentState.shockmount.color || 'Standard');
-    formData.set('form_text_38', currentState.shockmount.pins?.variant || '');
+    formData.set('form_text_38', currentState.shockmountPins?.variant || '');
     
     // Цена
     const totalPrice = CONFIG.basePrice + (currentState.prices.spheres || 0) + (currentState.prices.body || 0) + (currentState.prices.logo || 0) + (currentState.prices.case || 0) + (currentState.prices.shockmount || 0);
