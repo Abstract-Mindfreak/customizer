@@ -91,13 +91,13 @@ export const RAL_PALETTE = {
 };
 export const DEFAULT_MIC_CONFIGS = {
     '023-the-bomblet': {
-        spheres: { variant: '2', color: null, colorValue: '#a1a1a0' },
-        body: { variant: '2', color: null, colorValue: '#a1a1a0' },
+        spheres: { variant: '3', color: null, colorValue: '#a1a1a0' },
+        body: { variant: '3', color: null, colorValue: '#a1a1a0' },
         logo: { variant: 'silver', customLogo: null },
         logobg: { color: '3001', colorValue: RAL_PALETTE['3001'] },
         case: { variant: 'standard', customLogo: null, logoTransform: { x: 40, y: 26, scale: 1.2 } },
         shockmount: { enabled: true, variant: 'white', color: null, colorValue: '#ffffff' },
-        shockmountPins: { variant: 'pins-RAL9005', colorValue: '#EAE0C8', material: null }
+        shockmountPins: { variant: 'RAL9005', colorValue: '#EAE0C8', material: null }
     },
     'malfa': {
         spheres: { variant: '2', color: null, colorValue: '#a1a1a0' },
@@ -106,7 +106,7 @@ export const DEFAULT_MIC_CONFIGS = {
         logobg: { color: MALFA_SILVER_RAL, colorValue: RAL_PALETTE[MALFA_SILVER_RAL] },
         case: { variant: 'standard', customLogo: null, logoTransform: { x: 40, y: 26, scale: 1.2 } },
         shockmount: { enabled: true, variant: 'white', color: null, colorValue: '#ffffff' },
-        shockmountPins: { variant: 'pins-RAL9005', colorValue: '#EAE0C8', material: null }
+        shockmountPins: { variant: 'RAL9005', colorValue: '#EAE0C8', material: null }
     },
     '023-dlx': {
         spheres: { variant: '2', color: null, colorValue: '#a1a1a0' },
@@ -115,7 +115,7 @@ export const DEFAULT_MIC_CONFIGS = {
         logobg: { color: '3001', colorValue: RAL_PALETTE['3001'] },
         case: { variant: 'standard', customLogo: null, logoTransform: { x: 40, y: 26, scale: 1.2 } },
         shockmount: { enabled: true, variant: 'white', color: null, colorValue: '#ffffff' },
-        shockmountPins: { variant: 'pins-brass', colorValue: '#EAE0C8', material: null }
+        shockmountPins: { variant: 'brass', colorValue: '#EAE0C8', material: null }
     },
     '017-fet': {
         spheres: { variant: '1', color: null, colorValue: '#d4af37' },
@@ -124,21 +124,21 @@ export const DEFAULT_MIC_CONFIGS = {
         logobg: { color: '6001', colorValue: RAL_PALETTE['6001'] },
         case: { variant: 'standard', customLogo: null, logoTransform: { x: 40, y: 26, scale: 1.2 } },
         shockmount: { enabled: true, variant: 'white', color: null, colorValue: '#ffffff' },
-        shockmountPins: { variant: 'pins-brass', colorValue: '#EAE0C8', material: null }
+        shockmountPins: { variant: 'brass', colorValue: '#EAE0C8', material: null }
     },
     '017-tube': {
-        spheres: { variant: '1', color: null, colorValue: '#d4af37' },
-        body: { variant: '1', color: 'RAL 1013', colorValue: RAL_PALETTE['1013'] },
+        spheres: { variant: '2', color: null, colorValue: '#d4af37' },
+        body: { variant: '2', color: 'RAL 1013', colorValue: RAL_PALETTE['1013'] },
         logo: { variant: 'gold', customLogo: null },
         logobg: { color: '5017', colorValue: RAL_PALETTE['5017'] },
         case: { variant: 'standard', customLogo: null, logoTransform: { x: 40, y: 26, scale: 1.2 } },
         shockmount: { enabled: true, variant: 'shock-RAL1013', color: null, colorValue: '#ffffff' },
-        shockmountPins: { variant: 'pins-brass', colorValue: '#EAE0C8', material: null }
+        shockmountPins: { variant: 'brass', colorValue: '#EAE0C8', material: null }
     }
 };
 
 export const variantNames = {
-    '1': 'Матовый антрацит',
+    '1': 'Матовый черный',
     '2': 'Классическая латунь',
     '3': 'Сатинированная сталь'
 };

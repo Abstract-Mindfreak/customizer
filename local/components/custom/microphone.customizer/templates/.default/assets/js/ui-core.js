@@ -182,9 +182,9 @@ const wrappedUpdateUI = function updateUI() {
     }
 
     const shockmountColorNames = {
-        'white': 'Белый',
-        'cream': 'Слоновая кость',
-        'black': 'Матовый антрацит'
+        'white': 'Чистый белый',
+        'cream': 'Жемчужно-белый',
+        'black': 'Матовый черный'
     };
     let shockmountText = shockmountColorNames[currentState.shockmount.variant] || 'Белый';
     
