@@ -1,24 +1,48 @@
-import { currentState } from './state.js';
+import { stateManager } from './core/state.js';
 import { CONFIG } from './config.js';
 import { SVG_STORAGE } from './svg-assets.js';
-import { getCorrectiveFilters, calculateLuminance, updateFilter, hexToRgb, hexToRgbValues, updateSectionLayers } from './modules/appearance.js';
+import { updateSectionLayers } from './modules/appearance.js';
 import { showNotification } from './ui-core.js';
 import { updateLogoSVG } from './modules/logo.js';
+import { getAssetSuffix } from './utils.js';
+import { eventRegistry } from './core/events.js';
+
+export function updateResponsiveAssets(svg) {
+    if (!svg) return;
+    const suffix = getAssetSuffix();
+    const images = svg.querySelectorAll('image');
+    images.forEach(img => {
+        let href = img.getAttribute('xlink:href') || img.getAttribute('href');
+        if (href && href.includes('/image/custom/')) {
+            // Replace existing suffix or add new one before extension
+            const newHref = href.replace(/(_4k|_tablet|_hdmob|_hd|_mobile|_desktop)?\.(png|jpg|webp|jpeg)$/i, `${suffix}.$2`);
+            if (href !== newHref) {
+                img.setAttribute('xlink:href', newHref);
+                img.setAttribute('href', newHref);
+            }
+        }
+    });
+}
 
 export function updateSVG() {
     try {
         const svg = document.querySelector('#svg-wrapper svg');
         if (!svg) return;
 
-        svg.style.transform = currentState.model === '023' ? `scale(${CONFIG.scaleFactor})` : 'scale(1)';
+        svg.style.transform = stateManager.get().model === '023' ? `scale(${CONFIG.scaleFactor})` : 'scale(1)';
 
         for (let i = 1; i <= 3; i++) {
             const grill = svg.querySelector(`#img-grill-mic${i}`);
-            if (grill) grill.style.display = (currentState.spheres.variant === String(i)) ? 'inline' : 'none';
+            if (grill) {
+                // Show grill image only if spheres are set to a custom RAL color
+                // Standard variants 1, 2, 3 should have the grill hidden
+                const isCustomColor = !!stateManager.get().spheres.color;
+                grill.style.display = (isCustomColor && stateManager.get().spheres.variant === String(i)) ? 'inline' : 'none';
+            }
         }
 
-        updateSectionLayers('spheres', currentState.spheres);
-        updateSectionLayers('body', currentState.body);
+        updateSectionLayers('spheres', stateManager.get().spheres);
+        updateSectionLayers('body', stateManager.get().body);
         updateLogoSVG();
     } catch (e) {
         console.error("SVG Update Error:", e);
@@ -59,6 +83,15 @@ export async function loadSVG(svgPath = null) {
     document.querySelectorAll('.submenu-back > svg').forEach(el => el.innerHTML = SVG_STORAGE.SUBMENU_BACK);
     document.querySelectorAll('.palette-toggle-btn > svg').forEach(el => el.innerHTML = SVG_STORAGE.PALETTE_TOGGLE_CHEVRON);
     const svg = document.querySelector('#svg-wrapper svg');
-    if (svg) svg.style.transformOrigin = 'center bottom';
+    if (svg) {
+        svg.style.transformOrigin = 'center bottom';
+        updateResponsiveAssets(svg);
+    }
     updateSVG();
+
+    // Re-update assets on window resize
+    eventRegistry.add(window, 'resize', () => {
+        const currentSvg = document.querySelector('#svg-wrapper svg');
+        if (currentSvg) updateResponsiveAssets(currentSvg);
+    });
 }
