@@ -74,6 +74,12 @@ export function init() {
         eventRegistry.add(uploadButton, 'click', uploadCustomLogo);
     }
     
+    // Добавляем обработчик для кнопки удаления кастомного логотипа
+    const removeButton = document.querySelector('.remove-logo-btn');
+    if (removeButton) {
+        eventRegistry.add(removeButton, 'click', clearCustomLogo);
+    }
+    
     // Initialize lock state
     updateLogoItemsLockState();
 }
@@ -120,13 +126,15 @@ export function updateLogoSVG() {
     const malfaLogoTextPath = svg.querySelector('#malfa-logo-text-path');
     const clipLogoBgMalfa = svg.querySelector('#clip-logobg-malfa');
 
-    // Handle custom logo
-    if (state.logo.customLogo) {
+    // Handle custom logo (единый для всех вариантов)
+    if (state.logo.useCustom && state.logo.customLogoData) {
+        // Скрываем все стандартные логотипы
         ['logotype-gold', 'logo-bg-black', 'logo-bg-colorized', 'logo-bg-monochrome', 'logo-letters-and-frame', 'malfa-logo'].forEach(id => {
             const el = svg.querySelector(`#${id}`);
             if (el) el.style.display = 'none';
         });
 
+        // Создаем слой для кастомного логотипа
         const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
         g.id = 'custom-logo-layer';
         const img = document.createElementNS("http://www.w3.org/2000/svg", "image");
@@ -134,13 +142,25 @@ export function updateLogoSVG() {
         img.setAttribute('height', '350');
         img.setAttribute('x', '150');
         img.setAttribute('y', '1117');
-        img.setAttribute('href', state.logo.customLogo);
+        img.setAttribute('href', state.logo.customLogoData);
         g.appendChild(img);
         svg.appendChild(g);
+        
+        console.log('[Logo] Custom logo applied to all variants');
         return;
     }
 
-    // Check if we should show MALFA logo
+    // Если кастомный логотип не включен, скрываем слой кастомного логотипа
+    if (state.logo.useCustom && !state.logo.customLogoData) {
+        // Показываем overlay, что логотип не загружен
+        const overlay = document.getElementById('logo-overlay');
+        if (overlay) {
+            overlay.innerHTML = '<div class="logo-overlay-text">Загрузите изображение для логотипа</div>';
+            overlay.style.display = 'block';
+        }
+    }
+
+    // Стандартная логика для MALFA логотипа
     const malfaMic = isMalfaMic(state);
     const malfaLogoSelected = isMalfaLogo(state);
     
@@ -184,7 +204,7 @@ export function updateLogoSVG() {
         // Handle overlay
         const overlay = svg.querySelector('#logo-overlay');
         if (overlay) {
-            overlay.style.display = state.logo.customLogo ? 'inline' : 'none';
+            overlay.style.display = state.logo.useCustom ? 'inline' : 'none';
         }
         
         return;
@@ -219,11 +239,12 @@ export function updateLogoSVG() {
 }
 
 export function updateLogoItemsLockState() {
-    const hasCustomLogo = stateManager.get().logo.customLogo;
+    const state = stateManager.get();
+    const hasCustomLogo = state.logo.useCustom;
     const logoItems = document.querySelectorAll('#submenu-logo .variant-item[data-variant]:not([data-variant="custom"])');
     const logoBgItems = document.querySelectorAll('#submenu-logo-bg .variant-item');
     
-    // Lock/unlock logo items (3-1, 3-2, 3-3, 3-4)
+    // Lock/unlock logo items based on custom logo state
     logoItems.forEach(item => {
         if (hasCustomLogo) {
             item.classList.add('locked');
@@ -232,7 +253,7 @@ export function updateLogoItemsLockState() {
         }
     });
     
-    // Lock/unlock logo-bg items (4-1, 4-2, 4-3, 4-4, 4-5, 4-6, 4-7)
+    // Lock/unlock logo background items based on custom logo state
     logoBgItems.forEach(item => {
         if (hasCustomLogo) {
             item.classList.add('locked');
@@ -252,15 +273,30 @@ export function uploadCustomLogo() {
             const reader = new FileReader();
             reader.onload = event => {
                 try {
-                    stateManager.set('logo.customLogo', event.target.result);
-                    stateManager.set('prices.logo', CONFIG.optionPrice);
-                    document.querySelector('.remove-logo-btn').style.display = 'block';
+                    // Сохраняем кастомный логотип в StateManager (единый для всех вариантов)
+                    stateManager.set('logo.customLogoData', event.target.result);
+                    
+                    // Показываем кнопку удаления
+                    const removeBtn = document.querySelector('.remove-logo-btn');
+                    if (removeBtn) {
+                        removeBtn.style.display = 'block';
+                    }
 
-                    document.getElementById('logo-overlay').classList.add('active');
+                    // Показываем overlay
+                    const overlay = document.getElementById('logo-overlay');
+                    if (overlay) {
+                        overlay.classList.add('active');
+                    }
 
+                    // Обновляем состояние lock
                     updateLogoItemsLockState();
+                    
+                    // Обновляем SVG для отображения кастомного логотипа
+                    updateLogoSVG();
+                    
+                    console.log('[Logo] Custom logo uploaded successfully');
                 } catch (err) {
-                    console.error(err);
+                    console.error('[Logo] Error uploading custom logo:', err);
                     showNotification('Ошибка при загрузке логотипа', 'error');
                 }
             };
@@ -268,4 +304,29 @@ export function uploadCustomLogo() {
         }
     };
     input.click();
+}
+
+export function clearCustomLogo() {
+    // Удаляем кастомный логотип из StateManager
+    stateManager.set('logo.customLogoData', null);
+    
+    // Скрываем кнопку удаления
+    const removeBtn = document.querySelector('.remove-logo-btn');
+    if (removeBtn) {
+        removeBtn.style.display = 'none';
+    }
+
+    // Скрываем overlay
+    const overlay = document.getElementById('logo-overlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+    }
+
+    // Обновляем состояние lock
+    updateLogoItemsLockState();
+    
+    // Обновляем SVG
+    updateLogoSVG();
+    
+    console.log('[Logo] Custom logo cleared');
 }

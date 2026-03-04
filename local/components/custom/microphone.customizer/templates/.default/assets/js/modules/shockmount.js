@@ -90,10 +90,9 @@ export function toggleShockmount() {
 
 // Mapping of variants to shockmount layer IDs
 const SHOCKMOUNT_LAYER_BY_VARIANT = {
-    '017-basic': 'layer10',
-    '017-deluxe': 'layer10', 
+    '017-tube': 'layer10', 
     '017-fet': 'layer10',
-    '023-basic': 'layer9',
+    '023-the-bomblet': 'layer9',
     '023-malfa': 'layer9',
     '023-deluxe': 'layer9'
 };
@@ -140,10 +139,10 @@ export function handleShockmountVariantSelection(variant) {
 
     const colors = { 'RAL9003': '#F4F4F4', 'RAL1013': '#EAE0C8', 'RAL9005': '#0E0E10' };
     // Remove prefix if present
-    const cleanVariant = variant.replace('shock-', '');
+    //const cleanVariant = variant.replace('shock-', '');
     stateManager.set('shockmount.variant', variant);
-    stateManager.set('shockmount.color', colors[cleanVariant] || `RAL ${cleanVariant}`);
-    stateManager.set('shockmount.colorValue', colors[cleanVariant] || '#F4F4F4');
+    // stateManager.set('shockmount.color', colors[variant] || `RAL ${variant}`);
+    // stateManager.set('shockmount.colorValue', colors[variant] || '#F4F4F4');
     stateManager.set('prices.shockmount', 0);
 
 
@@ -204,7 +203,7 @@ export function handleShockmountPinSelection(variant, color = null, ralName = nu
         // Standard color variants (RAL9003, RAL1013, RAL9005)
         const colors = { 'RAL9003': '#F4F4F4', 'RAL1013': '#EAE0C8', 'RAL9005': '#0E0E10' };
         // Remove prefix if present
-        const cleanVariant = variant.replace('pins-', '');
+        //const cleanVariant = variant.replace('pins-', '');
         stateManager.set('shockmountPins', { 
             variant: variant, 
             material: null, 
@@ -279,9 +278,6 @@ export function updateShockmountPinsPreview() {
 
 import { eventRegistry } from '../core/events.js';
 
-// ... (rest of imports)
-
-// ... (rest of file)
 
 function initShockmountEventListeners() {
     eventRegistry.add(document.getElementById('shockmount-switch'), 'change', toggleShockmount);

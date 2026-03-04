@@ -2,6 +2,7 @@
 
 import { CONFIG, FREE_LOGO_RALS, FREE_SHOCKMOUNT_BODY_RALS, FREE_SHOCKMOUNT_PINS_RALS } from '../config.js';
 import { APP_DEBUG } from '../core/state.js';
+import { isFreeVariant } from '../config/free-variants.config.js';
 
 /**
  * Price calculation rules for different sections
@@ -10,35 +11,37 @@ const PRICE_RULES = {
     base: () => CONFIG.basePrice,
     
     spheres: (state) => {
-        return state.spheres.color ? CONFIG.optionPrice : 0;
+        if (!state.spheres?.color) return 0;
+        return isFreeVariant('spheres', state.spheres.color) ? 0 : CONFIG.optionPrice;
     },
     
     body: (state) => {
-        return state.body.color ? CONFIG.optionPrice : 0;
+        if (!state.body?.color) return 0;
+        return isFreeVariant('body', state.body.color) ? 0 : CONFIG.optionPrice;
     },
     
     logo: (state) => {
-        return state.logo.customLogo ? CONFIG.customLogoPrice : 0;
+        return state.logo.useCustom ? 2000 : 0; // Цена из задачи 3
     },
     
     logobg: (state) => {
         if (!state.logobg?.color) return 0;
-        return FREE_LOGO_RALS.includes(state.logobg.color) ? 0 : CONFIG.optionPrice;
+        return isFreeVariant('logobg', state.logobg.color) ? 0 : CONFIG.optionPrice;
     },
     
     shockmount: (state) => {
         if (!state.shockmount.enabled) return 0;
-        if (!state.shockmount.color) return 0;
-        return FREE_SHOCKMOUNT_BODY_RALS.includes(state.shockmount.color.replace('RAL ', '')) ? 0 : CONFIG.optionPrice;
+        return CONFIG.shockmountPrice; // Фиксированная цена 10000₽ для подвеса
     },
     
     shockmountPins: (state) => {
-        if (!state.shockmountPins.colorName) return 0;
-        return FREE_SHOCKMOUNT_PINS_RALS.includes(state.shockmountPins.colorName.replace('RAL ', '')) ? 0 : CONFIG.optionPrice;
+        if (!state.shockmount.enabled) return 0;
+        if (!state.shockmountPins.color) return 0;
+        return isFreeVariant('shockmountPins', state.shockmountPins.color) ? 0 : CONFIG.optionPrice;
     },
     
     case: (state) => {
-        return state.case.customLogo ? CONFIG.customLogoPrice : 0;
+        return state.case.laserEngravingEnabled ? 2500 : 0; // Цена из задачи 4
     }
 };
 

@@ -130,18 +130,6 @@ const WoodCase = {
                 stateManager.set('case.variant', 'custom');
                 stateManager.set('case.customLogo', this.userImgSrc);
                 
-                // При загрузке кастомного лого добавляем +1500₽ к цене кейса
-                if (this.userImgSrc) {
-                    stateManager.set('prices.case', 1500);
-                    console.log('💰 Цена кейса обновлена: +1500₽ (загружено кастомное лого)');
-                    
-                    // Обновляем отображение цены
-                    const casePriceElement = document.getElementById('case-price-row');
-                    if (casePriceElement) {
-                        casePriceElement.textContent = '+1500₽';
-                    }
-                }
-                
                 document.getElementById('wood-case-loader').style.display = 'none';
             };
 
