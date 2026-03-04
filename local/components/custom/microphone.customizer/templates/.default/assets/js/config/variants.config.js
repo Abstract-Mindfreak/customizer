@@ -6,7 +6,7 @@ export const DEFAULT_MIC_CONFIGS = {
         body: { variant: '2', color: null, colorValue: '#a1a1a0' },
         logo: { variant: 'silver', bgColor: '3001', bgColorValue: RAL_PALETTE['3001'], customLogo: null },
         case: { variant: 'standard', customLogo: null, logoTransform: { x: 40, y: 26, scale: 1.2 } },
-        shockmount: { enabled: false, variant: 'pins-RAL1013', color: null, colorValue: '#ffffff', pins: { variant: 'RAL9003', colorValue: '#F4F4F4', material: null } }
+        shockmount: { enabled: true, variant: 'pins-RAL1013', color: null, colorValue: '#ffffff', pins: { variant: 'RAL9003', colorValue: '#F4F4F4', material: null } }
     },
     '023-malfa': {
         spheres: { variant: '2', color: null, colorValue: '#a1a1a0' },
