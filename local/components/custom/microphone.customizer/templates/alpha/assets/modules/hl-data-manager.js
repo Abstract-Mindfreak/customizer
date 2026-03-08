@@ -30,6 +30,16 @@ export function initHLDataManager() {
         currentModelOptions: data.currentModelOptions || {}
     });
 
+    // Глобально доступная палитра для других модулей
+    window.RAL_PALETTE = Object.values(data.ralColors || {}).reduce((acc, curr) => {
+        acc[curr.UF_CODE] = curr.UF_HEX;
+        return acc;
+    }, {});
+
+    // Устанавливаем текущую модель и вариант
+    stateManager.set('variant', data.currentModelCode);
+    stateManager.set('model', data.currentModelCode.includes('023') ? '023' : '017');
+
     // Инициализируем опции для текущей модели
     initializeModelOptions(data.currentModelOptions);
 
@@ -98,18 +108,26 @@ function initializeModelPricing(modelsByCode, currentModelCode) {
     const currentModel = modelsByCode[currentModelCode];
     if (!currentModel) return;
 
-    // Устанавливаем базовую цену модели
-    stateManager.set('basePrice', currentModel.UF_BASE_PRICE || 0);
+    // Устанавливаем базовую цену модели в секцию цен
+    stateManager.set('prices.base', parseInt(currentModel.UF_BASE_PRICE) || 0);
     
     // Устанавливаем информацию о модели
     stateManager.set('currentModel', {
         id: currentModel.ID,
         code: currentModel.UF_CODE,
         name: currentModel.UF_NAME,
-        basePrice: currentModel.UF_BASE_PRICE,
-        shockmountEnabled: currentModel.UF_SHOCKMOUNT_ENABLED,
-        shockmountPrice: currentModel.UF_SHOCKMOUNT_PRICE
+        basePrice: parseInt(currentModel.UF_BASE_PRICE),
+        shockmountEnabled: !!parseInt(currentModel.UF_SHOCKMOUNT_ENABLED),
+        shockmountPrice: parseInt(currentModel.UF_SHOCKMOUNT_PRICE)
     });
+
+    // Для 023-the-bomblet подвес должен быть OFF по умолчанию
+    if (currentModelCode === '023-the-bomblet') {
+        stateManager.set('shockmount.enabled', false);
+    } else {
+        // Для остальных моделей, если в HL указано что он включен по умолчанию
+        stateManager.set('shockmount.enabled', !!parseInt(currentModel.UF_SHOCKMOUNT_ENABLED));
+    }
 
     console.log('[HL Data Manager] Model pricing initialized:', {
         model: currentModelCode,
