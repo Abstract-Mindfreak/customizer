@@ -1,1 +1,2 @@
-Pre release version of customizer
+Pre release version of customizer microphones with HILOAD bitrix 
+
