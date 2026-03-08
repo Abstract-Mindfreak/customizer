@@ -31,7 +31,7 @@ export function initHLDataManager() {
     });
 
     // Инициализируем опции для текущей модели
-    initializeModelOptions(data.currentModelOptions);
+    initializeModelOptions(data.currentModelOptions, data.currentModelCode);
 
     // Устанавливаем базовые цены из HL-данных
     initializeModelPricing(data.modelsByCode, data.currentModelCode);
@@ -45,7 +45,7 @@ export function initHLDataManager() {
 /**
  * Инициализация опций для текущей модели
  */
-function initializeModelOptions(modelOptions) {
+function initializeModelOptions(modelOptions, modelCode) {
     if (!modelOptions) return;
 
     // Проходим по всем типам опций и устанавливаем начальные значения
@@ -79,6 +79,20 @@ function initializeModelOptions(modelOptions) {
         stateManager.set(`${sectionKey}.colorValue`, hex);
         stateManager.set(`${sectionKey}.variant`, variant);
         stateManager.set(`${sectionKey}.optionId`, firstOption.ID);
+
+        // Special case for shockmount: OFF by default for 023-the-bomblet
+        if (sectionKey === 'shockmount') {
+            const isBomblet = modelCode === 'bomblet' || modelCode === '023-the-bomblet';
+            stateManager.set('shockmount.enabled', !isBomblet);
+        }
+
+        // Use model series from HL data if available
+        const hlData = stateManager.get('hlData');
+        const modelInfo = hlData?.modelsByCode[modelCode];
+        if (modelInfo) {
+            const series = modelCode.includes('023') ? '023' : '017';
+            stateManager.set('model', series);
+        }
 
         console.log(`[HL Data Manager] Set initial ${sectionKey}:`, {
             value,

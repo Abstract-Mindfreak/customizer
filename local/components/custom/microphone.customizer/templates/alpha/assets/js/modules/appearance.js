@@ -1,5 +1,5 @@
 import { stateManager } from '../core/state.js';
-import { CONFIG, FREE_LOGO_RALS, RAL_PALETTE } from '../config.js';
+import { CONFIG, FREE_LOGO_RALS } from '../config.js';
 import { handleShockmountColorSelection, handleShockmountPinSelection } from './shockmount-new.js';
 import { updateSVG } from '../engine.js';
 import { updateUI } from '../ui-core.js';
@@ -19,13 +19,19 @@ function updateLogoSVG(variant) {
 }
 
 export function initPalettes() {
+    const hlData = stateManager.get('hlData');
+    const ralPalette = hlData?.ralColors || {};
+
     const sections = ['spheres', 'body', 'shockmount', 'pins', 'logobg'];
     sections.forEach(section => {
         const container = document.getElementById('pal-' + section);
         if (!container) return; // Skip if container doesn't exist
         container.innerHTML = '';
 
-        for (let [name, color] of Object.entries(RAL_PALETTE)) {
+        for (let [id, colorData] of Object.entries(ralPalette)) {
+            const name = colorData.UF_CODE;
+            const color = colorData.UF_HEX;
+
             // Task 3: Exclude RAL 1013 from body palette
             if (section === 'body' && name === '1013') continue;
 
@@ -59,7 +65,9 @@ export function initPalettes() {
     const logoBgContainer = document.getElementById('pal-logo');
     if (logoBgContainer) {
         logoBgContainer.innerHTML = '';
-        for (let [name, color] of Object.entries(RAL_PALETTE)) {
+        for (let [id, colorData] of Object.entries(ralPalette)) {
+            const name = colorData.UF_CODE;
+            const color = colorData.UF_HEX;
             let div = document.createElement('div');
             div.className = 'swatch';
             div.style.backgroundColor = color;
@@ -90,19 +98,19 @@ export function initPalettes() {
 export function togglePalette(section) {
     const wrapper = document.getElementById(`palette-wrapper-${section}`);
     const toggleBtn = wrapper?.previousElementSibling;
-    
+
     const submenuId = section === 'pins' ? 'submenu-pins' : `submenu-${section}`;
     const submenu = document.getElementById(submenuId);
-    
+
     if (!wrapper || !toggleBtn || !submenu) {
         return;
     }
 
     const isOpen = wrapper.classList.contains('open');
-    
+
     // Close all other palettes
     document.querySelectorAll('.palette-wrapper').forEach(p => p.classList.remove('open'));
-    
+
     if (!isOpen) {
         wrapper.classList.add('open');
         toggleBtn.classList.add('active');
@@ -166,13 +174,13 @@ export function handleColorSelection(section, color, ralName) {
             const targetVariant = submenu.querySelector(`[data-variant="${ralName}"]`);
             if(targetVariant) targetVariant.classList.add('selected');
         }
-        
+
         // Update SVG visualization
         updateSVG();
 
     } else if (section === 'shockmount') {
         handleShockmountColorSelection(color, ralName);
-        
+
         // Set price based on whether it's a free color or paid
         const freePinsRals = ['9003', '1013', '9005'];
         const isFree = freePinsRals.includes(ralName);
@@ -181,28 +189,28 @@ export function handleColorSelection(section, color, ralName) {
         // For pins, check if this is a free RAL color
         const freePinsRals = ['9003', '1013', '9005'];
         const isFree = freePinsRals.includes(ralName);
-        
+
         handleShockmountPinSelection('custom', color, ralName);
-        
+
         // Set price based on whether it's a free color or paid
         batchSet('prices.shockmount', isFree ? 0 : CONFIG.optionPrice);
     }
-    
+
     // End batch and apply all changes at once
     stateManager.endBatch();
-    
+
     // Update UI once after all changes
     updateUI();
 }
 
 export function updateSectionLayers(section, state) {
     const svg = document.querySelector('#microphone-svg-container svg#svg8');
-    
+
     // Skip logobg - it's handled by color-utils
     if (section === 'logobg') {
         return;
     }
-    
+
     const originalLayer = svg.querySelector(`#${section}-original`);
     const colorLayer = svg.querySelector(`#${section}-colorized`);
     const monoLayer = svg.querySelector(`#${section}-monochrome`);
@@ -253,26 +261,26 @@ export function updateFilter(section, hex) {
         console.warn('[updateFilter] No color value for section', { section, hex });
         return;
     }
-    
+
     // Skip logobg - it's handled by color-utils
     if (section === 'logobg') {
         return;
     }
-    
+
     // Use centralized normalization from color-utils
     const rgbString = normalizeToRgbString(hex);
     if (!rgbString) {
         console.warn('[updateFilter] Failed to normalize color value', { section, hex });
         return;
     }
-    
+
     const svg = document.querySelector('#microphone-svg-container svg');
     if (!svg) {
         return;
     }
-    
+
     let id = (section === 'logobg') ? 'feFlood-logobg-color' : `feFlood-${section}-color`;
-    
+
     const el = svg.querySelector(`#${id}`);
     if (el) {
         // Debug logging to verify the actual value being set
@@ -282,7 +290,7 @@ export function updateFilter(section, hex) {
             rawColorValue: hex,
             appliedValue: rgbString
         });
-        
+
         el.setAttribute('flood-color', rgbString);
     }
 }
@@ -294,7 +302,7 @@ export function hexToRgbValues(hex) {
 
 export function handleStyleSelection(section, variant) {
     const submenu = document.getElementById('submenu-' + section);
-    
+
     // Clear all variant selections in this section
     submenu.querySelectorAll('.variant-item').forEach(i => {
         i.classList.remove('selected');
@@ -325,12 +333,14 @@ export function handleStyleSelection(section, variant) {
     } else if (section === 'logobg') {
         // Handle logo background color selection
         const isFree = FREE_LOGO_RALS.includes(variant);
-        const color = variant === 'black' ? '#000000' : RAL_PALETTE[variant];
-        
+        const hlData = stateManager.get('hlData');
+        const ralData = Object.values(hlData?.ralColors || {}).find(c => c.UF_CODE === variant);
+        const color = variant === 'black' ? '#000000' : (ralData?.UF_HEX || '#000000');
+
         batchSet('logobg.color', variant);
         batchSet('logobg.colorValue', color);
         batchSet('prices.logobg', isFree ? 0 : CONFIG.optionPrice);
-        
+
         // Apply color using color utils
         applySectionColor('logobg', {
             color: variant,
@@ -351,25 +361,25 @@ export function handleStyleSelection(section, variant) {
         } else {
             logoVariant = variant;
         }
-        
+
         batchSet('logo.variant', logoVariant);
         batchSet('prices.logo', 0);
-        
+
         // Clear palette selection
         submenu.querySelectorAll('.swatch').forEach(s => {
             s.classList.remove('selected');
             s.setAttribute('aria-pressed', 'false');
         });
     }
-    
+
     // End batch and apply all changes at once
     stateManager.endBatch();
-    
+
     // Update SVG logo elements after state is applied
     if (section === 'logo') {
         updateLogoSVG(variant);
     }
-    
+
     // Update UI once after all changes
     updateUI();
     updateLogoPreview();

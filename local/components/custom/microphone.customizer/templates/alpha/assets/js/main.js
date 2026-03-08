@@ -69,12 +69,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Start session refresh mechanism
     startSessionRefresh();
 
+    // Start screen logic
     const startScreen = document.getElementById('start-screen');
     const ctaButton = document.querySelector('.start-screen-hero-cta');
+
+    // Check if start screen has been shown this session
+    const startScreenShown = sessionStorage.getItem('customizer_start_screen_shown');
+
+    if (startScreen && !startScreenShown) {
+        startScreen.style.display = 'flex';
+        startScreen.classList.remove('hidden');
+    } else if (startScreen) {
+        startScreen.classList.add('hidden');
+    }
+
     if (ctaButton && startScreen) {
         ctaButton.addEventListener('click', (e) => {
             e.preventDefault();
             startScreen.classList.add('hidden');
+            sessionStorage.setItem('customizer_start_screen_shown', 'true');
+        });
+    }
+
+    // Help button in UI to reopen start screen
+    const helpBtn = document.getElementById('help-btn');
+    if (helpBtn && startScreen) {
+        helpBtn.addEventListener('click', () => {
+            startScreen.classList.remove('hidden');
         });
     }
 });

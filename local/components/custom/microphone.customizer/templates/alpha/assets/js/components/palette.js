@@ -1,6 +1,6 @@
 // components/Palette.js
 
-import { RAL_PALETTE, RAL_EXCLUSIONS } from '../config/ral.config.js';
+import { stateManager } from '../core/state.js';
 import { handleColorSelection } from '../modules/appearance-new.js';
 
 /**
@@ -12,9 +12,17 @@ export function createPalette(section, container) {
     if (!container) return;
     
     container.innerHTML = ''; // Clear previous content
-    const exclusions = RAL_EXCLUSIONS[section] || [];
 
-    for (const [name, color] of Object.entries(RAL_PALETTE)) {
+    const hlData = stateManager.get('hlData');
+    const ralPalette = hlData?.ralColors || {};
+
+    // RAL 1013 exclusion for body
+    const exclusions = section === 'body' ? ['1013'] : [];
+
+    for (const [id, colorData] of Object.entries(ralPalette)) {
+        const name = colorData.UF_CODE;
+        const color = colorData.UF_HEX;
+
         if (exclusions.includes(name)) {
             continue;
         }
