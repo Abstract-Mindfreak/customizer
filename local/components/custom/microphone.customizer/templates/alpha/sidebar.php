@@ -290,6 +290,7 @@
                     <div class="price-row"><span>Эмблема:</span><span id="logo-price-row">+0₽</span></div>
                     <div class="price-row"><span>Футляр:</span><span id="case-price-row">+0₽</span></div>
                     <div class="price-row" id="shockmount-price-row-container" style="display: none;"><span>Подвес:</span><span id="shockmount-price-row">+0₽</span></div>
+                    <div class="price-row" id="pins-price-row-container" style="display: none;"><span>Пины:</span><span id="shockmount-pins-price-row">+0₽</span></div>
                     <div class="price-row price-total"><span>Итого:</span><span id="total-price">150 000₽</span></div>
                     <button class="order-button">Отправить конфигурацию</button>
                 </div>

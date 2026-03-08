@@ -23,19 +23,13 @@ function updateLogoSVG(variant) {
 }
 
 export function initPalettes() {
-    const hlData = stateManager.get('hlData');
-    const ralPalette = hlData?.ralColors || {};
-
     const sections = ['spheres', 'body', 'shockmount', 'pins', 'logobg'];
     sections.forEach(section => {
         const container = document.getElementById('pal-' + section);
         if (!container) return; // Skip if container doesn't exist
         container.innerHTML = '';
 
-        for (let [id, colorData] of Object.entries(ralPalette)) {
-            const name = colorData.UF_CODE;
-            const color = colorData.UF_HEX;
-
+        for (let [name, color] of Object.entries(RAL_PALETTE)) {
             // Task 3: Exclude RAL 1013 from body palette
             if (section === 'body' && name === '1013') continue;
 
@@ -68,10 +62,7 @@ export function initPalettes() {
     const logoBgContainer = document.getElementById('pal-logo');
     if (logoBgContainer) {
         logoBgContainer.innerHTML = '';
-        for (let [id, colorData] of Object.entries(ralPalette)) {
-            const name = colorData.UF_CODE;
-            const color = colorData.UF_HEX;
-
+        for (let [name, color] of Object.entries(RAL_PALETTE)) {
             let div = document.createElement('div');
             div.className = 'swatch';
             div.style.backgroundColor = color;
@@ -181,8 +172,6 @@ export function handleColorSelection(section, color, ralName) {
         batchSet(`${section}.color`, ralLabel);
         //сохраняет hex значения RAL цвета в state.body.colorValue или state.spheres.colorValue
         batchSet(`${section}.colorValue`, color);
-        // Добавляет +1500р за платный RAL цвет корпуса
-        batchSet(`prices.${section}`, CONFIG.optionPrice);
 
         // Apply color using color utils
         // applySectionColor(section, {
@@ -196,9 +185,6 @@ export function handleColorSelection(section, color, ralName) {
         batchSet('logobg.color', ralName);
         //сохраняет hex значения RAL цвета в state.logobg.colorValue
         batchSet('logobg.colorValue', color);
-
-        const isFree = FREE_LOGO_RALS.includes(ralName);
-        batchSet('prices.logobg', isFree ? 0 : CONFIG.optionPrice);
 
         // Apply color using color utils
         applySectionColor('logobg', {
@@ -222,20 +208,10 @@ export function handleColorSelection(section, color, ralName) {
         //Устанавливает цвет подвеса
         handleShockmountColorSelection(color, ralName);
         
-        // Set price based on whether it's a free color or paid
-        const freePinsRals = ['9003', '1013', '9005'];
-        const isFree = freePinsRals.includes(ralName);
-        batchSet('prices.shockmount', isFree ? 0 : CONFIG.optionPrice);
     //Ветка handleShockmountColorSelection отвечает за установку цвета пинов подвеса
     } else if (section === 'pins') {
-        // For pins, check if this is a free RAL color
-        const freePinsRals = ['9003', '1013', '9005'];
-        const isFree = freePinsRals.includes(ralName);
         //передает 'custom' для платного RAL цвета пинов подвеса
         handleShockmountPinSelection('custom', color, ralName);
-        
-        // Set price based on whether it's a free color or paid
-        batchSet('prices.shockmount', isFree ? 0 : CONFIG.optionPrice);
     }
     
     // End batch and apply all changes at once
@@ -347,23 +323,21 @@ export function handleStyleSelection(section, variant) {
     const submenu = document.getElementById('submenu-' + section);
     
     // Clear all variant selections in this section
-    if (submenu) {
-        submenu.querySelectorAll('.variant-item').forEach(i => {
-            i.classList.remove('selected');
-            i.setAttribute('aria-selected', 'false');
-        });
+    submenu.querySelectorAll('.variant-item').forEach(i => {
+        i.classList.remove('selected');
+        i.setAttribute('aria-selected', 'false');
+    });
 
-        // Clear palette selections when variant is selected
-        submenu.querySelectorAll('.swatch').forEach(s => {
-            s.classList.remove('selected');
-            s.setAttribute('aria-pressed', 'false');
-        });
+    // Clear palette selections when variant is selected
+    submenu.querySelectorAll('.swatch').forEach(s => {
+        s.classList.remove('selected');
+        s.setAttribute('aria-pressed', 'false');
+    });
 
-        const selected = submenu.querySelector(`[data-variant="${variant}"]`);
-        if (selected) {
-            selected.classList.add('selected');
-            selected.setAttribute('aria-selected', 'true');
-        }
+    const selected = submenu.querySelector(`[data-variant="${variant}"]`);
+    if (selected) {
+        selected.classList.add('selected');
+        selected.setAttribute('aria-selected', 'true');
     }
 
     // Start batch operation to prevent multiple renders
@@ -374,26 +348,14 @@ export function handleStyleSelection(section, variant) {
         batchSet(`${section}.variant`, variant);
         batchSet(`${section}.color`, null); // Clear color
         batchSet(`${section}.colorValue`, '#ffffff00');
-        batchSet(`prices.${section}`, 0); // Styles are free
 
     } else if (section === 'logobg') {
         // Handle logo background color selection
-        const hlData = stateManager.get('hlData');
-        const ralPalette = hlData?.ralColors || {};
-        
-        // Find RAL color in palette
-        let color = '#000000';
-        if (variant === 'black') {
-            color = '#000000';
-        } else {
-            const foundColor = Object.values(ralPalette).find(c => c.UF_CODE === variant);
-            if (foundColor) color = foundColor.UF_HEX;
-        }
-
         const isFree = FREE_LOGO_RALS.includes(variant);
+        const color = variant === 'black' ? '#000000' : RAL_PALETTE[variant];
+
         batchSet('logobg.color', variant);
         batchSet('logobg.colorValue', color);
-        batchSet('prices.logobg', isFree ? 0 : CONFIG.optionPrice);
         
         // Apply color using color utils
         applySectionColor('logobg', {
@@ -418,7 +380,6 @@ export function handleStyleSelection(section, variant) {
         }
         
         batchSet('logo.variant', logoVariant);
-        batchSet('prices.logo', 0);
         
         // Clear palette selection
         submenu.querySelectorAll('.swatch').forEach(s => {

@@ -71,34 +71,20 @@ export function initSVGVisibility(svg, initialState) {
     const spheresVariant = initialState.spheres?.variant;
     const bodyVariant = initialState.body?.variant;
 
-    // Для spheres: если variant 'satinsteel' или '3', показать spheres-original-3
-    if (spheresVariant === 'satinsteel' || spheresVariant === '3') {
-        const spheresOriginal3 = svg.querySelector('#spheres-original-3');
-        if (spheresOriginal3) {
-            spheresOriginal3.style.setProperty('display', 'inline', 'important');
-            console.log('[SVG] Set spheres-original-3 to visible');
-        }
-    }
-
-    // Для body: если variant 'satinsteel' || '3', показать body-original-3
-    if (bodyVariant === 'satinsteel' || bodyVariant === '3') {
-        const bodyOriginal3 = svg.querySelector('#body-original-3');
-        if (bodyOriginal3) {
-            bodyOriginal3.style.setProperty('display', 'inline', 'important');
-            console.log('[SVG] Set body-original-3 to visible');
-        }
-    }
+    // Для spheres: если variant 'satinsteel' или '3' или '2' (для bomblet)
+    const targetSpheresId = `spheres-original-${spheresVariant}`;
+    const targetBodyId = `body-original-${bodyVariant}`;
 
     // Скрыть все остальные *-original-* слои, которые не должны быть видны
     const allOriginalLayers = svg.querySelectorAll('[id*="-original-"]');
     allOriginalLayers.forEach(layer => {
         const layerId = layer.id;
-        const shouldHide =
-            (layerId.startsWith('spheres-original-') && layerId !== 'spheres-original-3') ||
-            (layerId.startsWith('body-original-') && layerId !== 'body-original-3');
+        const isTarget = (layerId === targetSpheresId || layerId === targetBodyId);
 
-        if (shouldHide) {
+        if (!isTarget && (layerId.startsWith('spheres-original-') || layerId.startsWith('body-original-'))) {
             layer.style.setProperty('display', 'none', 'important');
+        } else if (isTarget) {
+            layer.style.setProperty('display', 'inline', 'important');
         }
     });
 

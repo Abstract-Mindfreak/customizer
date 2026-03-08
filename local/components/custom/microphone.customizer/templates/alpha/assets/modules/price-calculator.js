@@ -103,13 +103,13 @@ export function getBreakdown(state) {
 
     // 1. Spheres
     if (state.spheres?.color) {
-        const isRal = state.spheres.variant === 'ral';
+        const isRal = state.spheres.variant === 'ral' || state.spheres.variant === '3';
         breakdown.spheres = getSurcharge('spheres', state.spheres.color, modelCode, isRal);
     }
 
     // 2. Body
     if (state.body?.color) {
-        const isRal = state.body.variant === 'ral';
+        const isRal = state.body.variant === 'ral' || state.body.variant === '3';
         breakdown.body = getSurcharge('body', state.body.color, modelCode, isRal);
     }
 

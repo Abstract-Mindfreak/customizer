@@ -75,6 +75,13 @@ function restoreMicState(variant) {
     }
 
     setState('variant', variant);
+
+    // Recalculate prices after state change
+    const currentState = stateManager.get();
+    const priceBreakdown = getBreakdown(currentState);
+    Object.keys(priceBreakdown).forEach(section => {
+        setState(`prices.${section}`, priceBreakdown[section]);
+    });
 }
 
 // === ПРОСТОЕ ЛОГИРОВАНИЕ ===
@@ -242,6 +249,9 @@ const wrappedUpdateUI = function updateUI() {
     const shockmountPrice = document.getElementById('shockmount-price');
     if (shockmountPrice) shockmountPrice.textContent = formatPrice(priceBreakdown.shockmount);
 
+    const pinsPrice = document.getElementById('pins-price');
+    if (pinsPrice) pinsPrice.textContent = formatPrice(priceBreakdown.shockmountPins);
+
     // Update price rows в блоке общей цены конфигурации
     const spheresPriceRow = document.getElementById('spheres-price-row');
     if (spheresPriceRow) spheresPriceRow.textContent = formatPrice(priceBreakdown.spheres);
@@ -251,7 +261,6 @@ const wrappedUpdateUI = function updateUI() {
 
     const logoPriceRow = document.getElementById('logo-price-row');
     if (logoPriceRow) {
-        // Combined price for Logo + LogoBg in the total breakdown row
         logoPriceRow.textContent = formatPrice(priceBreakdown.logo + priceBreakdown.logoBg);
     }
 
@@ -260,6 +269,9 @@ const wrappedUpdateUI = function updateUI() {
 
     const shockmountPriceRow = document.getElementById('shockmount-price-row');
     if (shockmountPriceRow) shockmountPriceRow.textContent = formatPrice(priceBreakdown.shockmount);
+
+    const pinsPriceRow = document.getElementById('shockmount-pins-price-row');
+    if (pinsPriceRow) pinsPriceRow.textContent = formatPrice(priceBreakdown.shockmountPins);
 
     const total = calculateTotal(currentState);
     const totalPriceElement = document.getElementById('total-price');
@@ -602,7 +614,6 @@ export function handleShockmountColorSelection(color, ralName) {
     setState('shockmount.variant', 'custom');
     setState('shockmount.color', `RAL ${ralName}`);
     setState('shockmount.colorValue', color);
-    setState('prices.shockmount', CONFIG.optionPrice);
 
     updateUI();
     updateShockmountPreview();
@@ -622,16 +633,9 @@ export function handleShockmountPinSelection(variant, color = null, ralName = nu
     }
 
     if (variant === 'custom') {
-        // Check if this is a free RAL color
-        const freePinsRals = ['9003', '1013', '9005'];
-        const isFree = freePinsRals.includes(ralName);
-
         setState('shockmountPins', { variant: 'custom', material: 'custom', colorValue: color, colorName: `RAL ${ralName}` });
         const targetSwatch = document.getElementById('pal-pins')?.querySelector(`[data-ral="${ralName}"]`);
         if(targetSwatch) targetSwatch.classList.add('selected');
-
-        // Set price - free for standard RAL colors, paid for others
-        setState('prices.shockmount', isFree ? 0 : CONFIG.optionPrice);
 
     } else if (variant === 'brass') {
         setState('shockmountPins', { variant: 'brass', material: 'brass', colorValue: null, colorName: 'Polished Brass' });
@@ -641,9 +645,6 @@ export function handleShockmountPinSelection(variant, color = null, ralName = nu
             target = section.querySelector(`[data-variant="${variant}"]`);
         }
         if (target) target.classList.add('selected');
-
-        // Brass is free
-        setState('prices.shockmount', 0);
 
     } else {
         // Standard color variants (RAL9003, RAL1013, RAL9005)
@@ -662,9 +663,6 @@ export function handleShockmountPinSelection(variant, color = null, ralName = nu
             targetPins = section.querySelector(`[data-variant="${variant}"]`);
         }
         if (targetPins) targetPins.classList.add('selected');
-
-        // Standard colors are free
-        setState('prices.shockmount', 0);
     }
 
     updateShockmountPinsPreview();
