@@ -27,13 +27,6 @@ export const VARIANT_KEYS = {
     CUSTOM: 'custom'
 };
 
-export const VARIANT_PRICES = {
-    '023-the-bomblet': 129990,
-    '023-malfa': 149990,
-    '023-deluxe': 159990,
-    '017-fet': 229990,
-    '017-tube': 419990
-};
 
 export const MALFA_SILVER_RAL = '9006'; // White Aluminium
 export const MALFA_GOLD_RAL = '1036'; // Pearl Gold

@@ -25,7 +25,7 @@
                         <p class="item-subtitle" id="spheres-subtitle">Сатинированная сталь</p>
                     </div>
                     <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-                    <div class="option-price" id="spheres-price">+0₽</div>
+                    <div class="option-price" id="spheres-price">+0 ₽</div>
                 </div>
                 <div class="submenu" id="submenu-spheres">
                     <div class="submenu-header">
@@ -59,7 +59,7 @@
                         <p class="item-subtitle" id="body-subtitle">Сатинированная сталь</p>
                     </div>
                     <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-                    <div class="option-price" id="body-price">+0₽</div>
+                    <div class="option-price" id="body-price">+0 ₽</div>
                 </div>
                 <div class="submenu" id="submenu-body">
                     <div class="submenu-header">
@@ -107,7 +107,7 @@
                         <p class="item-subtitle" id="logo-subtitle">Холодный хром</p>
                     </div>
                     <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-                    <div class="option-price" id="logo-price">+0₽</div>
+                    <div class="option-price" id="logo-price">+0 ₽</div>
                 </div>
                 <div class="submenu" id="submenu-logo">
                     <div class="submenu-header">
@@ -121,19 +121,19 @@
                             <div class="variants">
                                 <div class="variant-item" data-variant="standard-gold" tabindex="0">
                                     <div class="variant-info"><div class="variant-icon" style="background-color: #D4AF37;"></div><span class="variant-label">Классическая латунь</span></div>
-                                    <span class="variant-price">+0₽</span>
+                                    <span class="variant-price">+0 ₽</span>
                                 </div>
                                 <div class="variant-item selected" data-variant="standard-silver" tabindex="0">
                                     <div class="variant-info"><div class="variant-icon" style="background-color: #A1A1A0;"></div><span class="variant-label">Холодный хром</span></div>
-                                    <span class="variant-price">+0₽</span>
+                                    <span class="variant-price">+0 ₽</span>
                                 </div>
                                 <div class="variant-item malfa-logo" data-variant="malfasilver" tabindex="0" style="display: none;">
                                     <div class="variant-info"><div class="variant-icon" style="background-color: #9A9D9D;"></div><span class="variant-label">MALFA (Серебро)</span></div>
-                                    <span class="variant-price">+0₽</span>
+                                    <span class="variant-price">+0 ₽</span>
                                 </div>
                                 <div class="variant-item malfa-logo" data-variant="malfagold" tabindex="0" style="display: none;">
                                     <div class="variant-info"><div class="variant-icon" style="background-color: #746341;"></div><span class="variant-label">MALFA (Золото)</span></div>
-                                    <span class="variant-price">+0₽</span>
+                                    <span class="variant-price">+0 ₽</span>
                                 </div>
                             </div>
                         </div>
@@ -148,7 +148,7 @@
                         <p class="item-subtitle" id="logo-bg-subtitle">RAL 3001 Сигнальный красный</p>
                     </div>
                     <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-                    <div class="option-price" id="logobg-price">+0₽</div>
+                    <div class="option-price" id="logobg-price">+0 ₽</div>
                 </div>
                 <div class="submenu" id="submenu-logobg">
                     <div class="submenu-header">
@@ -174,7 +174,7 @@
                         <p class="item-subtitle" id="case-subtitle">Классический футляр СОЮЗ.</p>
                     </div>
                     <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-                    <div class="option-price" id="case-price">+0₽</div>
+                    <div class="option-price" id="case-price">+0 ₽</div>
                 </div>
                 <div class="submenu" id="submenu-case">
                     <div class="submenu-header">
@@ -238,7 +238,7 @@
                         <p class="item-subtitle" id="shockmount-subtitle">RAL 9010 Чистый белый</p>
                     </div>
                     <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-                    <div class="option-price" id="shockmount-price">+0₽</div>
+                    <div class="option-price" id="shockmount-price">+0 ₽</div>
                 </div>
                 <div class="submenu" id="submenu-shockmount">
                     <div class="submenu-header">
@@ -263,7 +263,7 @@
                         <p class="item-subtitle" id="shockmount-pins-subtitle">Полированная латунь</p>
                     </div>
                     <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-                    <div class="option-price" id="pins-price">+0₽</div>
+                    <div class="option-price" id="pins-price">+0 ₽</div>
                 </div>
                 <div class="submenu" id="submenu-pins">
                     <div class="submenu-header">
