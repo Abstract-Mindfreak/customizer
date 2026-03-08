@@ -2,7 +2,6 @@
 
 import { stateManager } from '../core/state.js';
 import { eventRegistry } from '../core/events.js';
-import { DEFAULT_MIC_CONFIGS } from '../config.js';
 import { updateMALFAVisibility, updateLogoSVG } from '../modules/logo.js';
 import { updateShockmountVisibility, updateShockmountLayers } from '../modules/shockmount-new.js';
 import * as cameraEffect from '../modules/camera-effect.js';
@@ -33,7 +32,7 @@ function saveCurrentState(variantId) {
  */
 function loadPreset(variantId) {
     const savedConfigs = stateManager.get('savedMicConfigs');
-    const configToApply = savedConfigs[variantId] || DEFAULT_MIC_CONFIGS[variantId];
+    const configToApply = savedConfigs?.[variantId];
     
     if (configToApply) {
         // Start batch operation to prevent multiple renders

@@ -22,13 +22,13 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
      data-ajax-path="<?= $componentPath ?>/ajax.php"
      data-sessid="<?= bitrix_sessid() ?>">
 
-    <div id="start-screen" style="display:none;">
+    <div id="start-screen" class="hidden">
         <?$APPLICATION->IncludeComponent("bitrix:main.include", "", array("AREA_FILE_SHOW" => "file", "PATH" => $templateFolder."/start-screen.php"), false);?>
     </div>
 
 
     
-        <div class="toggle-color">
+        <div class="toggle-color" style="position: fixed; top: 20px; left: 20px; z-index: 1001; display: flex; gap: 10px;">
             <button id="fullscreen-toggle" class="fullscreen-toggle" aria-label="Переключить полноэкранный режим">
                 <svg class="fullscreen-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3m-18 0v3a2 2 0 0 0 2 2h3"></path>
@@ -444,14 +444,10 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
 </div>
 
 <script>
-    // Устанавливаем пути для JS
     window.CUSTOMIZER_SVG_PATH = '<?= $templateFolder ?>/assets/mic-017.svg';
     window.CUSTOMIZER_ASSETS_PATH = '<?= $templateFolder ?>/assets';
+    window.BX_USER_DATA = <?= json_encode($arResult["USER_DATA"] ?? ["AUTHORIZED" => false]) ?>;
     
-    // Передаем данные пользователя в JS
-    window.BX_USER_DATA = <?= json_encode($arResult["USER_DATA"]) ?>;
-    
-    // Передаем данные из HL-блоков в JS через CUtil::PhpToJSObject
     window.CUSTOMIZER_DATA = <?= CUtil::PhpToJSObject([
         'ralColors' => $arResult['RAL_COLORS'] ?? [],
         'models' => $arResult['MODELS'] ?? [],

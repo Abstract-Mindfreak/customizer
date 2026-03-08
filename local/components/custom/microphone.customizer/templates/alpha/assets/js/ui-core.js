@@ -1,7 +1,6 @@
 import { stateManager } from './core/state.js';
 import { eventRegistry } from './core/events.js';
-import { variantNames, CONFIG, FREE_LOGO_RALS, MALFA_SILVER_RAL, MALFA_GOLD_RAL, DEFAULT_MIC_CONFIGS } from './config.js';
-import { PRICE_CONFIG } from './modules/price-calculator.js';
+import { variantNames, CONFIG, FREE_LOGO_RALS, MALFA_SILVER_RAL, MALFA_GOLD_RAL } from './config.js';
 import { switchPreview } from './modules/accessories.js';
 import { updateShockmountVisibility, updateShockmountLayers } from './modules/shockmount-new.js';
 import { togglePalette, handleStyleSelection, hexToRgbValues } from './modules/appearance-new.js';
@@ -16,7 +15,7 @@ const micStates = {};
 // Helper function to set state using stateManager
 function setState(path, value) {
     stateManager.set(path, value);
-    
+
     // Save current variant state to micStates for persistence
     const currentVariant = stateManager.get('variant');
     if (currentVariant && !micStates[currentVariant]) {
@@ -28,12 +27,29 @@ function setState(path, value) {
     }
 }
 
+import { initHLDataManager } from './modules/hl-data-manager.js';
+
 // Helper function to restore microphone state
 function restoreMicState(variant) {
     const savedState = micStates[variant];
+
+    // Update global HL data for the new model
+    const data = window.CUSTOMIZER_DATA;
+    if (data && data.modelsByCode && data.modelsByCode[variant]) {
+        data.currentModelCode = variant;
+        data.currentModelId = data.modelsByCode[variant].ID;
+        data.currentModelOptions = data.options[data.currentModelId] || data.options[0] || {};
+    }
+
+    // Re-initialize HL data manager with new model context (sets defaults from HL blocks)
+    initHLDataManager();
+
     if (savedState) {
-        // Restore saved state
+        // Restore saved state (overrides defaults)
         Object.keys(savedState).forEach(key => {
+            // Skip managed keys that are re-initialized by HL Data Manager
+            if (['hlData', 'currentModel', 'basePrice', 'prices'].includes(key)) return;
+
             if (typeof savedState[key] === 'object' && savedState[key] !== null) {
                 Object.keys(savedState[key]).forEach(subKey => {
                     setState(`${key}.${subKey}`, savedState[key][subKey]);
@@ -42,24 +58,13 @@ function restoreMicState(variant) {
                 setState(key, savedState[key]);
             }
         });
-    } else if (DEFAULT_MIC_CONFIGS[variant]) {
-        // Apply default configuration
-        const defaultConfig = DEFAULT_MIC_CONFIGS[variant];
-        Object.keys(defaultConfig).forEach(key => {
-            if (typeof defaultConfig[key] === 'object' && defaultConfig[key] !== null) {
-                Object.keys(defaultConfig[key]).forEach(subKey => {
-                    setState(`${key}.${subKey}`, defaultConfig[key][subKey]);
-                });
-            } else {
-                setState(key, defaultConfig[key]);
-            }
-        });
     }
+
     setState('variant', variant);
-    
+
     // Reset prices to ensure clean calculation
     setState('prices', {});
-    
+
     // Recalculate prices after state change
     const currentState = stateManager.get();
     const priceBreakdown = getBreakdown(currentState);
@@ -87,14 +92,14 @@ const wrappedUpdateUI = function updateUI() {
     updateMalfaLogoOptionsVisibility(); // Call the new function here
 
     const currentState = stateManager.get();
-    
+
     // Calculate prices using price calculator
     const priceBreakdown = getBreakdown(currentState);
     const totalPrice = calculateTotal(currentState);
-    
+
     // Don't update prices in state during render cycle to avoid recursive updates
     // Prices should be updated by individual action handlers, not during render
-    
+
     const spheresColor = currentState.spheres.color ? currentState.spheres.colorValue : null;
     const bodyColor = currentState.body.color ? currentState.body.colorValue : null;
     const logoColor = currentState.logo.customLogo ? null : (currentState.logobg.color === 'black' ? '#000000' : currentState.logobg.colorValue);
@@ -130,12 +135,12 @@ const wrappedUpdateUI = function updateUI() {
     if (caseDisplay) {
         caseDisplay.style.backgroundColor = '#8B4513';
     }
-    
+
     const shockmountDisplay = document.getElementById('shockmount-color-display');
     if (shockmountDisplay) {
         shockmountDisplay.style.backgroundColor = currentState.shockmount.colorValue;
     }
-    
+
     const pinsDisplay = document.getElementById('shockmount-pins-color-display');
     if (pinsDisplay) {
         pinsDisplay.style.backgroundColor = currentState.shockmountPins?.colorValue || '#D4AF37';
@@ -156,7 +161,7 @@ const wrappedUpdateUI = function updateUI() {
             spheresSubtitle.textContent = variantNames[currentState.spheres.variant] || 'Стандартный';
         }
     }
-    
+
     const bodySubtitle = document.getElementById('body-subtitle');
     if (bodySubtitle) {
         //Показывает выбранный цвет или название варианта для раздела "Цвет корпуса" (body)
@@ -166,7 +171,7 @@ const wrappedUpdateUI = function updateUI() {
             bodySubtitle.textContent = variantNames[currentState.body.variant] || 'Стандартный';
         }
     }
-    
+
     const logoSubtitle = document.getElementById('logo-subtitle');
     if (logoSubtitle) {
         //Показывает выбранный цвет или название варианта для раздела "Цвет логотипа" (logo)
@@ -176,11 +181,11 @@ const wrappedUpdateUI = function updateUI() {
                 ? (currentState.logobg.color === MALFA_SILVER_RAL ? 'MALFA Edition (Серебро)'
                     : (currentState.logobg.color === MALFA_GOLD_RAL ? 'MALFA Edition (Золото)'
                         : 'MALFA Edition'))
-                : (currentState.logo.variant === 'standard-silver' ? 'Холодный хром' 
+                : (currentState.logo.variant === 'standard-silver' ? 'Холодный хром'
                     : (currentState.logo.variant === 'standard-gold' ? 'Классическая латунь'
                         : 'Классическая латунь')));
     }
-    
+
     // Update logo-bg subtitle
     const logoBgSubtitle = document.getElementById('logo-bg-subtitle');
     if (logoBgSubtitle) {
@@ -200,7 +205,7 @@ const wrappedUpdateUI = function updateUI() {
         'black': 'Матовый черный'
     };
     let shockmountText = shockmountColorNames[currentState.shockmount.variant] || 'Белый';
-    
+
     if (currentState.shockmount.variant === 'custom' && currentState.shockmount.color) {
         const ralMatch = currentState.shockmount.color.match(/RAL\s*(\d+)/);
         shockmountText = ralMatch ? ralMatch[1] : currentState.shockmount.color;
@@ -218,14 +223,13 @@ const wrappedUpdateUI = function updateUI() {
     // Обновляем базовую цену в пунктах меню в сайдбаре
     const basePrice = document.getElementById('base-price');
     if (basePrice) {
-        const currentVariant = currentState.variant || '023-the-bomblet';
-        const basePriceValue = PRICE_CONFIG.base[currentVariant] || CONFIG.basePrice;
-        basePrice.textContent = `${basePriceValue}₽`;
+        const basePriceValue = currentState.basePrice || 0;
+        basePrice.textContent = `${basePriceValue.toLocaleString('ru-RU')}₽`;
     }
-    
+
     const spheresPrice = document.getElementById('spheres-price');
     if (spheresPrice) spheresPrice.textContent = formatPrice(priceBreakdown.spheres);
-    
+
     const bodyPrice = document.getElementById('body-price');
     //показывает +1500р в элементе #body-price (текущая цена выбора для body) в пункте меню
     if (bodyPrice) bodyPrice.textContent = formatPrice(priceBreakdown.body);
@@ -238,32 +242,32 @@ const wrappedUpdateUI = function updateUI() {
 
     const casePrice = document.getElementById('case-price');
     if (casePrice) casePrice.textContent = formatPrice(priceBreakdown.case);
-    
+
     const shockmountPrice = document.getElementById('shockmount-price');
     if (shockmountPrice) shockmountPrice.textContent = formatPrice(priceBreakdown.shockmount);
 
     // Update price rows в блоке общей цены конфигурации
     const spheresPriceRow = document.getElementById('spheres-price-row');
     if (spheresPriceRow) spheresPriceRow.textContent = formatPrice(priceBreakdown.spheres);
-    
+
     const bodyPriceRow = document.getElementById('body-price-row');
     if (bodyPriceRow) bodyPriceRow.textContent = formatPrice(priceBreakdown.body);
-    
+
     const logoPriceRow = document.getElementById('logo-price-row');
     if (logoPriceRow) logoPriceRow.textContent = formatPrice(priceBreakdown.logobg);
-    
+
     // const logobgPriceRow = document.getElementById('logobg-price-row');
     // if (logobgPriceRow) logobgPriceRow.textContent = formatPrice(priceBreakdown.logobg);
-    
+
     const casePriceRow = document.getElementById('case-price-row');
     if (casePriceRow) casePriceRow.textContent = formatPrice(priceBreakdown.case);
-    
+
     const shockmountPriceRow = document.getElementById('shockmount-price-row');
     if (shockmountPriceRow) shockmountPriceRow.textContent = formatPrice(priceBreakdown.shockmount);
 
     const total = calculateTotal(currentState);
     const totalPriceElement = document.getElementById('total-price');
-    if (totalPriceElement) totalPriceElement.textContent = `${total}₽`;
+    if (totalPriceElement) totalPriceElement.textContent = `${total.toLocaleString('ru-RU')}₽`;
 }
 
 // Оригинальная функция updateUI для экспорта
@@ -276,12 +280,12 @@ export function updateUI() {
 function updateMALFAVisibility() {
     const currentVariant = stateManager.get('variant');
     const isMALFA = currentVariant === '023-malfa';
-    
+
     // Show/hide MALFA logo variants
     document.querySelectorAll('.malfa-logo').forEach(item => {
         item.style.display = isMALFA ? 'flex' : 'none';
-     
-        
+
+
     });
        // turn on #malfa-logo in svg#svg8
        document.getElementById('malfa-logo').style.display = isMALFA ? 'inline' : 'none';
@@ -313,7 +317,7 @@ export function initEventListeners() {
 
     // Update UI based on current variant
     updateMALFAVisibility();
-    
+
 
     // Variant button handlers
     document.querySelectorAll('.variant-button').forEach(btn => {
@@ -350,7 +354,7 @@ export function initEventListeners() {
     document.querySelectorAll('.palette-toggle-btn').forEach(item => {
         item.addEventListener('click', function() {
             const wrapper = this.nextElementSibling;
-            
+
             if (wrapper && wrapper.classList.contains('palette-wrapper')) {
                 const section = wrapper.id.replace('palette-wrapper-', '');
                 togglePalette(section);
@@ -389,19 +393,16 @@ export function initEventListeners() {
 
             if (confirmReset) {
                 const currentVariant = currentState.variant;
-                if (DEFAULT_MIC_CONFIGS[currentVariant]) {
-                    // Clear saved state for this variant
-                    delete micStates[currentVariant];
 
-                    // Re-restore from defaults
-                    restoreMicState(currentVariant);
+                // Clear saved state for this variant
+                delete micStates[currentVariant];
 
-                    updateSVG();
-                    updateUI();
-                    showNotification('Настройки успешно сброшены!', 'success');
-                } else {
-                    showNotification('Не удалось найти стандартные настройки для текущего микрофона.', 'error');
-                }
+                // Re-restore from defaults (Highload data)
+                restoreMicState(currentVariant);
+
+                updateSVG();
+                updateUI();
+                showNotification('Настройки успешно сброшены!', 'success');
             }
         });
     }
@@ -413,7 +414,7 @@ export function initEventListeners() {
             setState('prices.logo', 0);
             this.style.display = 'none';
             document.getElementById('logo-overlay')?.classList.remove('active');
-            
+
             // Update logo items lock state
             import('./modules/logo.js').then(m => {
                 m.updateLogoItemsLockState();
@@ -427,17 +428,17 @@ export function initEventListeners() {
         const handler = function() {
             if(this.onclick) return;
             let section = this.closest('.submenu').id.replace('submenu-', '');
-            
+
             // Special handling for logo background section
             if (section === 'logo-bg') {
                 section = 'logobg';
             }
-            
+
             // Special handling for shockmount pins section
             if (section === 'shockmount-pins') {
                 section = 'pins';
             }
-            
+
             // Вызывается при клике на любой бесплатный вариант в submenu-spheres, submenu-body, submenu-logobg, submenu-logo
             handleStyleSelection(section, this.dataset.variant || this.dataset.value);
 
@@ -473,10 +474,10 @@ export function initEventListeners() {
     document.getElementById('order-form').addEventListener('submit', (e) => {
         e.preventDefault();
         console.log('Начинаю валидацию формы');
-        
+
         const inputs = e.target.querySelectorAll('input');
         let isValid = true;
-        
+
         inputs.forEach(input => {
             try {
                 if (!validateField(input)) isValid = false;
@@ -567,7 +568,7 @@ function initDragAndDrop() {
                             setState('prices.logo', CONFIG.optionPrice);
                             document.querySelector('.remove-logo-btn').style.display = 'block';
                             document.getElementById('logo-overlay')?.classList.add('active');
-                            
+
                             m.updateLogoItemsLockState();
                             updateSVG();
                             updateUI();
@@ -608,7 +609,7 @@ export function handleShockmountPinSelection(variant, color = null, ralName = nu
         return;
     }
     section.querySelectorAll('.variant-item').forEach(item => item.classList.remove('selected'));
-    
+
     const pinsPalette = document.getElementById('pal-pins');
     if (pinsPalette) {
         pinsPalette.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
@@ -618,11 +619,11 @@ export function handleShockmountPinSelection(variant, color = null, ralName = nu
         // Check if this is a free RAL color
         const freePinsRals = ['9003', '1013', '9005'];
         const isFree = freePinsRals.includes(ralName);
-        
+
         setState('shockmountPins', { variant: 'custom', material: 'custom', colorValue: color, colorName: `RAL ${ralName}` });
         const targetSwatch = document.getElementById('pal-pins')?.querySelector(`[data-ral="${ralName}"]`);
         if(targetSwatch) targetSwatch.classList.add('selected');
-        
+
         // Set price - free for standard RAL colors, paid for others
         setState('prices.shockmount', isFree ? 0 : CONFIG.optionPrice);
 
@@ -634,19 +635,19 @@ export function handleShockmountPinSelection(variant, color = null, ralName = nu
             target = section.querySelector(`[data-variant="${variant}"]`);
         }
         if (target) target.classList.add('selected');
-        
+
         // Brass is free
         setState('prices.shockmount', 0);
-        
+
     } else {
         // Standard color variants (RAL9003, RAL1013, RAL9005)
         const colors = { 'RAL9003': '#F4F4F4', 'RAL1013': '#EAE0C8', 'RAL9005': '#0E0E10' };
         // Remove prefix if present
         const cleanVariant = variant.replace('pins-', '');
-        setState('shockmountPins', { 
-            variant: variant, 
-            material: null, 
-            colorValue: colors[cleanVariant], 
+        setState('shockmountPins', {
+            variant: variant,
+            material: null,
+            colorValue: colors[cleanVariant],
             colorName: cleanVariant
         });
         // Ищем с префиксом pins-
@@ -655,7 +656,7 @@ export function handleShockmountPinSelection(variant, color = null, ralName = nu
             targetPins = section.querySelector(`[data-variant="${variant}"]`);
         }
         if (targetPins) targetPins.classList.add('selected');
-        
+
         // Standard colors are free
         setState('prices.shockmount', 0);
     }

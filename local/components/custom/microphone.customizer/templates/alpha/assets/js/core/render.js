@@ -12,21 +12,66 @@ import { updateUI } from '../ui-core.js';
  * Main render function for the entire UI.
  * This function should be subscribed to state changes.
  */
+let prevState = null;
+
 // Обновляет весь UI и SVG после изменения состояния (state)
 export function render() {
     const currentState = stateManager.get();
 
-    // Delegate to more specific render functions
-    updateUI(currentState);
-    renderSidebar(currentState);
-    updateSVG(currentState);
+    if (!prevState) {
+        performFullRender(currentState);
+        prevState = JSON.parse(JSON.stringify(currentState));
+        return;
+    }
+
+    const changes = identifyChanges(prevState, currentState);
+    if (changes.length > 0) {
+        performIncrementalRender(currentState, changes);
+    }
+
+    prevState = JSON.parse(JSON.stringify(currentState));
+}
+
+function identifyChanges(prev, curr) {
+    const changes = [];
+    const sections = ['variant', 'model', 'spheres', 'body', 'logo', 'logobg', 'case', 'shockmount', 'shockmountPins'];
+
+    sections.forEach(section => {
+        if (JSON.stringify(prev[section]) !== JSON.stringify(curr[section])) {
+            changes.push(section);
+        }
+    });
+
+    return changes;
+}
+
+function performFullRender(state) {
+    updateUI(state);
+    renderSidebar(state);
+    updateSVG(state);
     updateLogoSVG();
-    
-    // These functions from shockmount.js are also pure render functions
-    updateShockmountVisibility(currentState);
-    updateShockmountLayers(currentState);
-    updateShockmountPreview(currentState);
-    updateShockmountPinsPreview(currentState);
+    updateShockmountVisibility(state);
+    updateShockmountLayers(state);
+    updateShockmountPreview(state);
+    updateShockmountPinsPreview(state);
+}
+
+function performIncrementalRender(state, changes) {
+    // Always update UI and Sidebar as they aggregate data
+    updateUI(state);
+    renderSidebar(state);
+
+    if (changes.some(c => ['variant', 'model', 'spheres', 'body', 'logo', 'logobg'].includes(c))) {
+        updateSVG(state);
+        updateLogoSVG();
+    }
+
+    if (changes.some(c => ['variant', 'shockmount', 'shockmountPins'].includes(c))) {
+        updateShockmountVisibility(state);
+        updateShockmountLayers(state);
+        updateShockmountPreview(state);
+        updateShockmountPinsPreview(state);
+    }
 }
 
 
@@ -43,7 +88,7 @@ function renderSidebar(currentState) {
     document.getElementById('logobg-color-display').style.backgroundColor = currentState.logobg.color === 'black' ? '#000' : currentState.logobg.colorValue;
         document.getElementById('case-color-display').style.backgroundColor = '#8B4513';
         document.getElementById('shockmount-color-display').style.backgroundColor = currentState.shockmount.colorValue;
-        
+
         // Add pins color display if element exists
         const pinsColorDisplay = document.getElementById('pins-color-display');
         if (pinsColorDisplay) {
@@ -52,7 +97,7 @@ function renderSidebar(currentState) {
 
         document.getElementById('spheres-subtitle').textContent = currentState.spheres.color || variantNames[currentState.spheres.variant];
         document.getElementById('body-subtitle').textContent = currentState.body.color || variantNames[currentState.body.variant];
-        
+
         let logoSubtitle = 'Кастомный';
         if (!currentState.logo.customLogo) {
             if (currentState.variant === '023-malfa') {
@@ -74,7 +119,7 @@ function renderSidebar(currentState) {
             shockmountText = ralMatch ? `RAL ${ralMatch[1]}` : currentState.shockmount.color;
         }
         document.getElementById('shockmount-subtitle').textContent = shockmountText;
-        
+
         // Prices
         const priceBreakdown = getBreakdown(currentState);
         renderPrice('spheres', priceBreakdown.spheres);
@@ -82,11 +127,11 @@ function renderSidebar(currentState) {
         renderPrice('logo', priceBreakdown.logo);
         renderPrice('case', priceBreakdown.case);
         renderPrice('shockmount', priceBreakdown.shockmount);
-        
+
         // Total Price
         const total = calculateTotal(currentState);
-        document.getElementById('total-price').textContent = `${total}₽`;
-        document.getElementById('base-price').textContent = `${CONFIG.basePrice}₽`;
+        document.getElementById('total-price').textContent = `${total.toLocaleString('ru-RU')}₽`;
+        document.getElementById('base-price').textContent = `${(currentState.basePrice || 0).toLocaleString('ru-RU')}₽`;
 
     } catch (e) {
         console.error("Error during sidebar render:", e);

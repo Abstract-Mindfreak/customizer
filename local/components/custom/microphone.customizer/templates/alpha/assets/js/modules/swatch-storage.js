@@ -3,7 +3,7 @@
 // ============================================
 
 import { stateManager } from '../core/state.js';
-import { RAL_PALETTE, CONFIG } from '../config.js';
+import { CONFIG } from '../config.js';
 import { FREE_VARIANTS } from '../config/free-variants.config.js';
 
 /**
@@ -119,11 +119,13 @@ class SwatchStorageManager {
      */
     // Создаем все swatch для RAL один раз
     createAllRalSwatches() {
-        // TODO: добавить проверку на существование swatch
-        for (let [code, hex] of Object.entries(RAL_PALETTE)) {
-            this.createRalSwatch(code, hex);
+        const hlData = stateManager.get('hlData');
+        const ralPalette = hlData?.ralColors || {};
+
+        for (let [id, colorData] of Object.entries(ralPalette)) {
+            this.createRalSwatch(colorData.UF_CODE, colorData.UF_HEX);
         }
-        console.log(`[SwatchStorage] Created ${this.ralSwatches.size} RAL swatches`);
+        console.log(`[SwatchStorage] Created ${this.ralSwatches.size} RAL swatches from HL data`);
     }
     
     /**
