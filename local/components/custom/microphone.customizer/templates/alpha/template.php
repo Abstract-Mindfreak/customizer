@@ -200,7 +200,7 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
                 </div>
 
                 <!-- Case Preview Container -->
-                <div class="case-preview-container" id="case-preview-container">
+                <div class="case-preview-container" id="case-preview-container" style=" width:100%; height:100%;">
                      
                 <div id="wood-case-workspace">
                         <div class="loader" id="wood-case-loader">Загрузка...</div>
@@ -470,11 +470,6 @@ Asset::getInstance()->addJs("https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anim
             6 => 'shockmount',
             7 => 'shockmountPins',
         ],
-        'svgPaths' => [
-            'microphone' => $templateFolder . '/svg-microphone.svg.php',
-            'shockmount' => $templateFolder . '/svg-shockmount.svg.php',
-            'case' => $templateFolder . '/svg-woodcase.svg.php',
-        ]
     ]) ?>;
 </script>
 
