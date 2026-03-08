@@ -85,8 +85,12 @@ function renderSidebar(currentState) {
         
         // Total Price
         const total = calculateTotal(currentState);
-        document.getElementById('total-price').textContent = `${total}₽`;
-        document.getElementById('base-price').textContent = `${CONFIG.basePrice}₽`;
+        document.getElementById('total-price').textContent = `${total.toLocaleString('ru-RU')} ₽`;
+
+        const basePriceEl = document.getElementById('base-price');
+        if (basePriceEl) {
+            basePriceEl.textContent = `${(currentState.prices?.base || 0).toLocaleString('ru-RU')} ₽`;
+        }
 
     } catch (e) {
         console.error("Error during sidebar render:", e);
@@ -101,7 +105,7 @@ function renderSidebar(currentState) {
 function renderPrice(section, price) {
     const priceEl = document.getElementById(`${section}-price`);
     const priceRowEl = document.getElementById(`${section}-price-row`);
-    const formattedPrice = `+${price || 0}₽`;
+    const formattedPrice = `+ ${(price || 0).toLocaleString('ru-RU')} ₽`;
     if (priceEl) priceEl.textContent = formattedPrice;
     if (priceRowEl) priceRowEl.textContent = formattedPrice;
 }

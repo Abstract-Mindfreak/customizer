@@ -64,13 +64,13 @@ export function updateSVG() {
 
 export function initSVGVisibility(svg, initialState) {
     if (!svg || !initialState) return;
-    
+
     console.log('[SVG] Initializing visibility for initial state:', initialState);
-    
+
     // Показать правильные "original" слои для начального состояния
     const spheresVariant = initialState.spheres?.variant;
     const bodyVariant = initialState.body?.variant;
-    
+
     // Для spheres: если variant 'satinsteel' или '3', показать spheres-original-3
     if (spheresVariant === 'satinsteel' || spheresVariant === '3') {
         const spheresOriginal3 = svg.querySelector('#spheres-original-3');
@@ -79,8 +79,8 @@ export function initSVGVisibility(svg, initialState) {
             console.log('[SVG] Set spheres-original-3 to visible');
         }
     }
-    
-    // Для body: если variant 'satinsteel' или '3', показать body-original-3  
+
+    // Для body: если variant 'satinsteel' || '3', показать body-original-3
     if (bodyVariant === 'satinsteel' || bodyVariant === '3') {
         const bodyOriginal3 = svg.querySelector('#body-original-3');
         if (bodyOriginal3) {
@@ -88,20 +88,20 @@ export function initSVGVisibility(svg, initialState) {
             console.log('[SVG] Set body-original-3 to visible');
         }
     }
-    
+
     // Скрыть все остальные *-original-* слои, которые не должны быть видны
     const allOriginalLayers = svg.querySelectorAll('[id*="-original-"]');
     allOriginalLayers.forEach(layer => {
         const layerId = layer.id;
-        const shouldHide = 
+        const shouldHide =
             (layerId.startsWith('spheres-original-') && layerId !== 'spheres-original-3') ||
             (layerId.startsWith('body-original-') && layerId !== 'body-original-3');
-            
+
         if (shouldHide) {
             layer.style.setProperty('display', 'none', 'important');
         }
     });
-    
+
     console.log('[SVG] Visibility initialization completed');
 }
 
@@ -114,24 +114,24 @@ export async function loadSVG(svgPath = null) {
             // Fallback для автономной работы
             svgPath = 'assets/mic-017.svg';
         }
-        
+
         console.log('Loading SVG from path:', svgPath);
-        
+
         const response = await fetch(svgPath);
         if (!response.ok) {
             throw new Error(`Failed to load SVG: ${response.status}`);
         }
         const svgText = await response.text();
-        
+
         const container = document.getElementById('microphone-svg-container');
         if (!container) {
             console.error('SVG container not found: #microphone-svg-container');
             return;
         }
-        
+
         container.innerHTML = svgText;
         console.log('SVG loaded successfully');
-        
+
         // Инициализация видимости слоев после загрузки SVG
         const svg = container.querySelector('svg');
         if (svg) {

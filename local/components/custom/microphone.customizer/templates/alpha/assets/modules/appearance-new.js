@@ -23,13 +23,19 @@ function updateLogoSVG(variant) {
 }
 
 export function initPalettes() {
+    const hlData = stateManager.get('hlData');
+    const ralPalette = hlData?.ralColors || {};
+
     const sections = ['spheres', 'body', 'shockmount', 'pins', 'logobg'];
     sections.forEach(section => {
         const container = document.getElementById('pal-' + section);
         if (!container) return; // Skip if container doesn't exist
         container.innerHTML = '';
 
-        for (let [name, color] of Object.entries(RAL_PALETTE)) {
+        for (let [id, colorData] of Object.entries(ralPalette)) {
+            const name = colorData.UF_CODE;
+            const color = colorData.UF_HEX;
+
             // Task 3: Exclude RAL 1013 from body palette
             if (section === 'body' && name === '1013') continue;
 
@@ -62,7 +68,10 @@ export function initPalettes() {
     const logoBgContainer = document.getElementById('pal-logo');
     if (logoBgContainer) {
         logoBgContainer.innerHTML = '';
-        for (let [name, color] of Object.entries(RAL_PALETTE)) {
+        for (let [id, colorData] of Object.entries(ralPalette)) {
+            const name = colorData.UF_CODE;
+            const color = colorData.UF_HEX;
+
             let div = document.createElement('div');
             div.className = 'swatch';
             div.style.backgroundColor = color;
@@ -338,21 +347,23 @@ export function handleStyleSelection(section, variant) {
     const submenu = document.getElementById('submenu-' + section);
     
     // Clear all variant selections in this section
-    submenu.querySelectorAll('.variant-item').forEach(i => {
-        i.classList.remove('selected');
-        i.setAttribute('aria-selected', 'false');
-    });
+    if (submenu) {
+        submenu.querySelectorAll('.variant-item').forEach(i => {
+            i.classList.remove('selected');
+            i.setAttribute('aria-selected', 'false');
+        });
 
-    // Clear palette selections when variant is selected
-    submenu.querySelectorAll('.swatch').forEach(s => {
-        s.classList.remove('selected');
-        s.setAttribute('aria-pressed', 'false');
-    });
+        // Clear palette selections when variant is selected
+        submenu.querySelectorAll('.swatch').forEach(s => {
+            s.classList.remove('selected');
+            s.setAttribute('aria-pressed', 'false');
+        });
 
-    const selected = submenu.querySelector(`[data-variant="${variant}"]`);
-    if (selected) {
-        selected.classList.add('selected');
-        selected.setAttribute('aria-selected', 'true');
+        const selected = submenu.querySelector(`[data-variant="${variant}"]`);
+        if (selected) {
+            selected.classList.add('selected');
+            selected.setAttribute('aria-selected', 'true');
+        }
     }
 
     // Start batch operation to prevent multiple renders
@@ -367,9 +378,19 @@ export function handleStyleSelection(section, variant) {
 
     } else if (section === 'logobg') {
         // Handle logo background color selection
-        const isFree = FREE_LOGO_RALS.includes(variant);
-        const color = variant === 'black' ? '#000000' : RAL_PALETTE[variant];
+        const hlData = stateManager.get('hlData');
+        const ralPalette = hlData?.ralColors || {};
         
+        // Find RAL color in palette
+        let color = '#000000';
+        if (variant === 'black') {
+            color = '#000000';
+        } else {
+            const foundColor = Object.values(ralPalette).find(c => c.UF_CODE === variant);
+            if (foundColor) color = foundColor.UF_HEX;
+        }
+
+        const isFree = FREE_LOGO_RALS.includes(variant);
         batchSet('logobg.color', variant);
         batchSet('logobg.colorValue', color);
         batchSet('prices.logobg', isFree ? 0 : CONFIG.optionPrice);

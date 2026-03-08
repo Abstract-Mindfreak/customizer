@@ -82,123 +82,71 @@ export function getSurcharge(sectionCode, variantCode = '', modelCode = '', isRa
 }
 
 /**
- * Единое хранилище цен
- */
-export const PRICE_CONFIG = {
-    base: {
-        '023-the-bomblet': 129990,
-        '023-malfa': 149990,
-        '023-deluxe': 159990,
-        '017-fet': 229990,
-        '017-tube': 419990
-    },
-    options: {
-        spheresRal: 3000,      // платный RAL для силуэта
-        bodyRal: 3000,         // платный RAL для корпуса
-        logoBackgroundRal: 2000,   // платный RAL фона логотипа
-        customLogo: 3000,          // собственная эмблема (logo-mode-toggle)
-        caseEngraving: 3000,       // собственная гравировка футляра
-        shockmountBase: 10000,     // базовая цена подвеса для 023-the-bomblet
-        shockmountFrameRal: 3000,  // платный цвет каркаса подвеса
-        shockmountPinsRal: 2000    // платный цвет пинов подвеса
-    }
-};
-
-/**
- * Price calculation rules for different sections
- */
-const PRICE_RULES = {
-    base: (state) => {
-        const currentVariant = state.currentVariant || '023-the-bomblet';
-        return PRICE_CONFIG.base[currentVariant] || 0;
-    },
-    
-    spheres: (state) => {
-        if (!state.spheres?.color) return 0;
-        return isFreeVariant('spheres', state.spheres.color) ? 0 : PRICE_CONFIG.options.spheresRal;
-    },
-    
-    body: (state) => {
-        if (!state.body?.color) return 0;
-        return isFreeVariant('body', state.body.color) ? 0 : PRICE_CONFIG.options.bodyRal;
-    },
-    
-    logo: (state) => {
-        // Приоритет: custom logo > RAL фон
-        if (state.logo?.useCustom) {
-            return PRICE_CONFIG.options.customLogo;
-        }
-        if (state.logobg?.color && !isFreeVariant('logobg', state.logobg.color)) {
-            return PRICE_CONFIG.options.logoBackgroundRal;
-        }
-        return 0;
-    },
-    
-    logobg: (state) => {
-        // logobg не учитывается в цене, т.к. учитывается в правиле logo
-        return 0;
-    },
-    
-    shockmount: (state) => {
-        const currentVariant = state.currentVariant || state.variant || '023-the-bomblet';
-        
-        // Для 023-the-bomblet подвес платный только если включен toggle
-        if (currentVariant === '023-the-bomblet') {
-            if (!state.shockmount?.enabled) return 0;
-            let price = PRICE_CONFIG.options.shockmountBase;
-            
-            // Добавляем цену за платный цвет каркаса
-            if (state.shockmount?.color && !isFreeVariant('shockmount', state.shockmount.color)) {
-                price += PRICE_CONFIG.options.shockmountFrameRal;
-            }
-            
-            // Добавляем цену за платный цвет пинов
-            if (state.shockmountPins?.color && !isFreeVariant('pins', state.shockmountPins.color)) {
-                price += PRICE_CONFIG.options.shockmountPinsRal;
-            }
-            
-            return price;
-        }
-        
-        // Для остальных вариантов подвес включен в базовую цену, но платные цвета добавляются
-        let price = 0;
-        if (state.shockmount?.color && !isFreeVariant('shockmount', state.shockmount.color)) {
-            price += PRICE_CONFIG.options.shockmountFrameRal;
-        }
-        if (state.shockmountPins?.color && !isFreeVariant('pins', state.shockmountPins.color)) {
-            price += PRICE_CONFIG.options.shockmountPinsRal;
-        }
-        
-        return price;
-    },
-    
-    shockmountPins: (state) => {
-        // Эта функция больше не нужна, т.к. цена пинов включена в shockmount
-        return 0;
-    },
-    
-    case: (state) => {
-        return state.case?.laserEngravingEnabled ? PRICE_CONFIG.options.caseEngraving : 0;
-    }
-};
-
-/**
- * Calculates price breakdown for all sections
+ * Calculates price breakdown for all sections using exclusively HL-data
  * @param {Object} state - Current application state
  * @returns {Object} Price breakdown by section
  */
 export function getBreakdown(state) {
-    const breakdown = {};
-    
-    Object.entries(PRICE_RULES).forEach(([section, calculator]) => {
-        try {
-            breakdown[section] = calculator(state);
-        } catch (error) {
-            console.error(`[Price Calculator] Error calculating price for ${section}:`, error);
-            breakdown[section] = 0;
+    const breakdown = {
+        base: state.prices?.base || 0,
+        spheres: 0,
+        body: 0,
+        logo: 0,
+        logoBg: 0,
+        case: 0,
+        shockmount: 0,
+        shockmountPins: 0
+    };
+
+    const currentModelCode = state.currentModel?.code || '023-the-bomblet';
+    const modelCode = currentModelCode.replace('023-', '').replace('017-', '');
+
+    // 1. Spheres
+    if (state.spheres?.color) {
+        const isRal = state.spheres.variant === 'ral';
+        breakdown.spheres = getSurcharge('spheres', state.spheres.color, modelCode, isRal);
+    }
+
+    // 2. Body
+    if (state.body?.color) {
+        const isRal = state.body.variant === 'ral';
+        breakdown.body = getSurcharge('body', state.body.color, modelCode, isRal);
+    }
+
+    // 3. Logo (Custom logo)
+    if (state.logo?.customLogo) {
+        breakdown.logo = getSurcharge('logo', 'custom', modelCode, false);
+    }
+
+    // 4. LogoBg (RAL background)
+    if (state.logobg?.color && !state.logo?.customLogo) {
+        const isRal = true; // logobg is always RAL in current logic
+        breakdown.logoBg = getSurcharge('logoBg', state.logobg.color, modelCode, isRal);
+    }
+
+    // 5. Case (Engraving)
+    if (state.case?.laserEngravingEnabled) {
+        breakdown.case = getSurcharge('case', 'engraving', modelCode, false);
+    }
+
+    // 6. Shockmount
+    if (state.shockmount?.enabled) {
+        // Base shockmount price for model
+        const baseShockmountPrice = state.currentModel?.shockmountPrice || 0;
+        
+        // Surcharge for color
+        const isRal = state.shockmount.variant === 'custom';
+        const colorSurcharge = getSurcharge('shockmount', state.shockmount.color || '', modelCode, isRal);
+        
+        breakdown.shockmount = baseShockmountPrice + colorSurcharge;
+        
+        // 7. Shockmount Pins
+        if (state.shockmountPins?.variant) {
+            const isRal = state.shockmountPins.variant.includes('ral') || state.shockmountPins.variant.includes('RAL');
+            breakdown.shockmountPins = getSurcharge('shockmountPins', state.shockmountPins.variant, modelCode, isRal);
         }
-    });
-    
+    }
+
     return breakdown;
 }
 
@@ -209,53 +157,7 @@ export function getBreakdown(state) {
  */
 export function calculateTotal(state) {
     const breakdown = getBreakdown(state);
-    
-    // Добавляем наценки из CustomizerPrices HL-блока
-    const currentModel = state.variant || '023-the-bomblet';
-    const modelCode = currentModel.replace('023-', '').replace('017-', '');
-    
-    // spheres
-    if (state.spheres?.color) {
-        const isRal = state.spheres.color.includes('RAL');
-        const spheresSurcharge = getSurcharge('spheres', state.spheres.color, modelCode, isRal);
-        breakdown.spheres = spheresSurcharge;
-    }
-    
-    // body
-    if (state.body?.color) {
-        const isRal = state.body.color.includes('RAL');
-        const bodySurcharge = getSurcharge('body', state.body.color, modelCode, isRal);
-        breakdown.body = bodySurcharge;
-    }
-    
-    // logo
-    if (state.logo?.customLogo) {
-        const logoSurcharge = getSurcharge('logo', 'custom', modelCode, false);
-        breakdown.logo = logoSurcharge;
-    }
-    
-    // case
-    if (state.case?.laserEngravingEnabled) {
-        const caseSurcharge = getSurcharge('case', 'engraving', modelCode, false);
-        breakdown.case = caseSurcharge;
-    }
-    
-    // shockmount
-    if (state.shockmount?.enabled) {
-        const shockmountSurcharge = getSurcharge('shockmount', '', modelCode, false);
-        breakdown.shockmount = shockmountSurcharge;
-    }
-    
-    // shockmountPins
-    if (state.shockmountPins?.variant) {
-        const isRal = state.shockmountPins.variant.includes('RAL');
-        const pinsSurcharge = getSurcharge('shockmountPins', state.shockmountPins.variant, modelCode, isRal);
-        breakdown.shockmountPins = pinsSurcharge;
-    }
-    
-    const total = Object.values(breakdown).reduce((sum, price) => sum + price, 0);
-    
-    return total;
+    return Object.values(breakdown).reduce((sum, price) => sum + price, 0);
 }
 
 /**

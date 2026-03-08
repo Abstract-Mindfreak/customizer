@@ -24,7 +24,7 @@ const microphoneAnimations = {
             case: { transform: 'translateX(10%) translateY(-5%) scale(1.15)', opacity: 1, duration: 1000, easing: 'easeOutQuad', pointerEvents: 'auto' }
         }
     },
-    
+
     '017-FET': {
         'global-view': {
             microphone: { transform: 'translateX(116%) translateY(12%) scale(0.7)', opacity: 1, duration: 1000, easing: 'easeInOutQuad' },
@@ -47,7 +47,7 @@ const microphoneAnimations = {
             case: { transform: 'translateX(10%) translateY(-5%) scale(1.15)', opacity: 1, duration: 1000, easing: 'easeOutQuad', pointerEvents: 'auto' }
         }
     },
-    
+
     '023-BOMBLET': {
         'global-view': {
             microphone: { transform: 'translateX(310%) translateY(-1%) scale(0.9)', opacity: 1, duration: 1000, easing: 'easeInOutQuad' },
@@ -70,7 +70,7 @@ const microphoneAnimations = {
             case: { transform: 'translateX(10%) translateY(-5%) scale(1.15)', opacity: 1, duration: 1000, easing: 'easeOutQuad', pointerEvents: 'auto' }
         }
     },
-    
+
     '023-MALFA': {
         'global-view': {
             microphone: { transform: 'translateX(116%) translateY(12%) scale(0.7)', opacity: 1, duration: 1000, easing: 'easeInOutQuad' },
@@ -93,7 +93,7 @@ const microphoneAnimations = {
             case: { transform: 'translateX(10%) translateY(-5%) scale(1.15)', opacity: 1, duration: 1000, easing: 'easeOutQuad', pointerEvents: 'auto' }
         }
     },
-    
+
     '023-DELUXE': {
         'global-view': {
             microphone: { transform: 'translateX(116%) translateY(12%) scale(0.7)', opacity: 1, duration: 1000, easing: 'easeInOutQuad' },
@@ -129,6 +129,39 @@ let currentTimeline = null;
 
 // --- Private Functions ---
 
+function getBreakpoints() {
+    return {
+        mobile: 767,
+        tablet: 1024,
+        hd: 2560
+    };
+}
+
+function getViewportBucket() {
+    const w = window.innerWidth;
+    const bp = getBreakpoints();
+    if (w <= bp.mobile) return 'mobile';
+    if (w <= bp.tablet) return 'tablet';
+    if (w <= bp.hd) return 'hd';
+    return '4k';
+}
+
+function getResponsiveAnimationConfig(micModel, stateName) {
+    const modelConfig = microphoneAnimations[micModel];
+    if (!modelConfig) return null;
+
+    const stateConfig = modelConfig[stateName];
+    if (!stateConfig) return null;
+
+    const bucket = getViewportBucket();
+    if (stateConfig[bucket]) {
+        return stateConfig[bucket];
+    }
+
+    // Fallback to base stateConfig if bucket-specific config not found
+    return stateConfig;
+}
+
 function normalizeMicModel(variant) {
     if (!variant) return '017-TUBE';
     switch (variant) {
@@ -154,7 +187,7 @@ function parseTransform(transformStr) {
 }
 
 function animateMicrophoneState(micModel, stateName, newActiveLayerId) {
-    const animationConfig = microphoneAnimations[micModel]?.[stateName];
+    const animationConfig = getResponsiveAnimationConfig(micModel, stateName);
     if (!animationConfig) {
         console.warn(`Animation state '${stateName}' for model '${micModel}' not found.`);
         return;
@@ -167,7 +200,7 @@ function animateMicrophoneState(micModel, stateName, newActiveLayerId) {
     const timeline = window.anime.timeline({
         complete: () => {
             Object.values(layers).forEach(el => el?.classList.remove('active'));
-            if (layers[newActiveLayerId]) {
+            if (layers[newActiveLayerId] && newActiveLayerId !== 'global-view') {
                 layers[newActiveLayerId].classList.add('active');
             }
             if (stateName === 'case-active' && layers.case) {
@@ -180,7 +213,7 @@ function animateMicrophoneState(micModel, stateName, newActiveLayerId) {
     Object.values(layers).forEach(el => {
         if (el) el.style.pointerEvents = 'none';
     });
-    
+
     for (const layerId of Object.keys(layers)) {
         const layerElement = layers[layerId];
         const state = animationConfig[layerId];
@@ -220,11 +253,11 @@ export function initCameraEffect(initialVariant, initialState = 'global-view') {
             console.warn(`Camera effect layer element with ID for '${id}' not found.`);
         }
     }
-    
+
     const initialMicModel = normalizeMicModel(initialVariant);
-    
+
     // Set initial state without animation for instant load
-    const initialConfig = microphoneAnimations[initialMicModel]?.[initialState];
+    const initialConfig = getResponsiveAnimationConfig(initialMicModel, initialState);
     if (initialConfig) {
         for (const layerId of Object.keys(layers)) {
             const layerElement = layers[layerId];
@@ -242,8 +275,8 @@ export function initCameraEffect(initialVariant, initialState = 'global-view') {
             layers.case.classList.add('active');
         }
     }
-    
-    activeLayerId = initialState === 'global-view' ? null : 
+
+    activeLayerId = initialState === 'global-view' ? null :
                    initialState === 'mic-active' ? 'microphone' :
                    initialState === 'shockmount-active' ? 'shockmount' : 'case';
 }
@@ -254,30 +287,31 @@ export function switchLayer(newActiveLayerId) {
         return;
     }
 
-    if (!layers[newActiveLayerId]) {
-        console.warn(`Cannot switch to layer '${newActiveLayerId}': element not found.`);
-        return;
-    }
-    
-    if (newActiveLayerId === activeLayerId && newActiveLayerId !== null) return;
-
     const stateMap = {
         'microphone': 'mic-active',
         'shockmount': 'shockmount-active',
-        'case': 'case-active'
+        'case': 'case-active',
+        'global-view': 'global-view'
     };
     const stateName = stateMap[newActiveLayerId];
-    
+
     if (!stateName) {
         console.warn(`No active state mapping for layer ID: ${newActiveLayerId}`);
         return;
     }
 
+    if (newActiveLayerId !== 'global-view' && !layers[newActiveLayerId]) {
+        console.warn(`Cannot switch to layer '${newActiveLayerId}': element not found.`);
+        return;
+    }
+
+    if (newActiveLayerId === activeLayerId && newActiveLayerId !== null && newActiveLayerId !== 'global-view') return;
+
     // For shockmount-active mode, ensure we use the correct layer based on current variant
     if (newActiveLayerId === 'shockmount') {
         const currentState = stateManager.get();
         const micModel = normalizeMicModel(currentState.variant);
-        
+
         // Only show shockmount if it's enabled
         if (currentState.shockmount && currentState.shockmount.enabled === true) {
             animateMicrophoneState(micModel, stateName, newActiveLayerId);
@@ -289,8 +323,8 @@ export function switchLayer(newActiveLayerId) {
         const micModel = normalizeMicModel(stateManager.get('variant'));
         animateMicrophoneState(micModel, stateName, newActiveLayerId);
     }
-    
-    activeLayerId = newActiveLayerId;
+
+    activeLayerId = newActiveLayerId === 'global-view' ? null : newActiveLayerId;
 }
 
 // Helper: Get current active layer

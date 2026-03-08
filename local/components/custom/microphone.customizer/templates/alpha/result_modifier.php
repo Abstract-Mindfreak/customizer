@@ -124,7 +124,7 @@ if ($cache->initCache($cacheTime, $cacheId, $cacheDir)) {
     }
 
     // 5. Определение текущей модели
-    $currentModelCode = $arParams['MODEL_CODE'] ?? 'bomblet';
+    $currentModelCode = $arParams['MODEL_CODE'] ?? '023-the-bomblet';
     $currentModel = $arResult['MODELS_BY_CODE'][$currentModelCode] ?? null;
     $arResult['CURRENT_MODEL_ID'] = $currentModel['ID'] ?? null;
     $arResult['CURRENT_MODEL_CODE'] = $currentModelCode;
