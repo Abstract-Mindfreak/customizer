@@ -1,6 +1,15 @@
-   <? if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die(); 
+   <? if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
   ?>
  <div class="sidebar" id="sidebar">
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                    <button id="help-btn" class="service-reset" title="Показать справку">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </button>
+                </div>
                 <!-- VARIANT SWITCH -->
                 <div class="variant-switch" id="variant-switch">
                     <button class="variant-button active" data-series="023" data-variant="023-the-bomblet">023 the BOMBLET</button>
@@ -16,7 +25,7 @@
                         <p class="item-subtitle" id="spheres-subtitle">Сатинированная сталь</p>
                     </div>
                     <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-                    <div class="option-price" id="spheres-price">+0₽</div>
+                    <div class="option-price" id="spheres-price">+0 ₽</div>
                 </div>
                 <div class="submenu" id="submenu-spheres">
                     <div class="submenu-header">
@@ -50,7 +59,7 @@
                         <p class="item-subtitle" id="body-subtitle">Сатинированная сталь</p>
                     </div>
                     <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-                    <div class="option-price" id="body-price">+0₽</div>
+                    <div class="option-price" id="body-price">+0 ₽</div>
                 </div>
                 <div class="submenu" id="submenu-body">
                     <div class="submenu-header">
@@ -98,7 +107,7 @@
                         <p class="item-subtitle" id="logo-subtitle">Холодный хром</p>
                     </div>
                     <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-                    <div class="option-price" id="logo-price">+0₽</div>
+                    <div class="option-price" id="logo-price">+0 ₽</div>
                 </div>
                 <div class="submenu" id="submenu-logo">
                     <div class="submenu-header">
@@ -110,21 +119,21 @@
                         <div class="submenu-section">
                             <h4 class="section-title">Исполнение эмблемы</h4>
                             <div class="variants">
-                                <div class="variant-item" data-variant="gold" tabindex="0">
+                                <div class="variant-item" data-variant="standard-gold" tabindex="0">
                                     <div class="variant-info"><div class="variant-icon" style="background-color: #D4AF37;"></div><span class="variant-label">Классическая латунь</span></div>
-                                    <span class="variant-price">+0₽</span>
+                                    <span class="variant-price">+0 ₽</span>
                                 </div>
-                                <div class="variant-item selected" data-variant="silver" tabindex="0">
+                                <div class="variant-item selected" data-variant="standard-silver" tabindex="0">
                                     <div class="variant-info"><div class="variant-icon" style="background-color: #A1A1A0;"></div><span class="variant-label">Холодный хром</span></div>
-                                    <span class="variant-price">+0₽</span>
+                                    <span class="variant-price">+0 ₽</span>
                                 </div>
                                 <div class="variant-item malfa-logo" data-variant="malfasilver" tabindex="0" style="display: none;">
                                     <div class="variant-info"><div class="variant-icon" style="background-color: #9A9D9D;"></div><span class="variant-label">MALFA (Серебро)</span></div>
-                                    <span class="variant-price">+0₽</span>
+                                    <span class="variant-price">+0 ₽</span>
                                 </div>
                                 <div class="variant-item malfa-logo" data-variant="malfagold" tabindex="0" style="display: none;">
                                     <div class="variant-info"><div class="variant-icon" style="background-color: #746341;"></div><span class="variant-label">MALFA (Золото)</span></div>
-                                    <span class="variant-price">+0₽</span>
+                                    <span class="variant-price">+0 ₽</span>
                                 </div>
                             </div>
                         </div>
@@ -136,10 +145,10 @@
                     <div class="item-icon"><div class="color-circle" id="logobg-color-display" style="background-color: rgb(143, 30, 36);"></div></div>
                     <div class="item-content">
                         <p class="item-label">Цвет эмали логотипа</p>
-                        <p class="item-subtitle" id="logobg-subtitle">RAL 3001 Сигнальный красный</p>
+                        <p class="item-subtitle" id="logo-bg-subtitle">RAL 3001 Сигнальный красный</p>
                     </div>
                     <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-                    <div class="option-price" id="logobg-price">+0₽</div>
+                    <div class="option-price" id="logobg-price">+0 ₽</div>
                 </div>
                 <div class="submenu" id="submenu-logobg">
                     <div class="submenu-header">
@@ -165,7 +174,7 @@
                         <p class="item-subtitle" id="case-subtitle">Классический футляр СОЮЗ.</p>
                     </div>
                     <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-                    <div class="option-price" id="case-price">+0₽</div>
+                    <div class="option-price" id="case-price">+0 ₽</div>
                 </div>
                 <div class="submenu" id="submenu-case">
                     <div class="submenu-header">
@@ -210,10 +219,12 @@
 
                 <!-- SHOCKMOUNT TOGGLE -->
                 <div class="menu-item" id="shockmount-toggle">
-                    <h4 class="section-title">Добавить подвес</h4>
-                    <div class="switch-container" id="shockmount-switch-container">
-                        <label class="switch"><span class="switch-label option-price">+10 000₽</span></label>
-                        <input type="checkbox" class="liquid-toggle" id="shockmount-switch">
+                    <div class="toggle-flexbox-option-text" style="width: 100%;">
+                        <h4 class="section-title" style="margin:0;">Добавить подвес</h4>
+                        <div class="switch-container" id="shockmount-switch-container" style="width: auto;">
+                            <span class="toggle-price-hint" id="shockmount-toggle-price">+10 000 ₽</span>
+                            <input type="checkbox" class="liquid-toggle" id="shockmount-switch">
+                        </div>
                     </div>
                     <div id="shockmount-included-text" style="display: none;"><span style="color: #2c5282; font-size: 14px;">Подвес включен в комплект</span></div>
                 </div>
@@ -227,7 +238,7 @@
                         <p class="item-subtitle" id="shockmount-subtitle">RAL 9010 Чистый белый</p>
                     </div>
                     <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-                    <div class="option-price" id="shockmount-price">+0₽</div>
+                    <div class="option-price" id="shockmount-price">+0 ₽</div>
                 </div>
                 <div class="submenu" id="submenu-shockmount">
                     <div class="submenu-header">
@@ -246,13 +257,13 @@
 
                 <!-- SHOCKMOUNT PINS SECTION -->
                 <div class="menu-item" data-section="pins" tabindex="0" id="pins-menu-item" style="display: none;">
-                    <div class="item-icon"><div class="color-circle" id="pins-color-display" style="background-color: #f5f5f5;"></div></div>
+                    <div class="item-icon"><div class="color-circle" id="shockmount-pins-color-display" style="background-color: #f5f5f5;"></div></div>
                     <div class="item-content">
                         <p class="item-label">Цвет пинов антивибрационного подвеса</p>
-                        <p class="item-subtitle" id="pins-subtitle">Полированная латунь</p>
+                        <p class="item-subtitle" id="shockmount-pins-subtitle">Полированная латунь</p>
                     </div>
                     <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-                    <div class="option-price" id="pins-price">+0₽</div>
+                    <div class="option-price" id="pins-price">+0 ₽</div>
                 </div>
                 <div class="submenu" id="submenu-pins">
                     <div class="submenu-header">
@@ -270,27 +281,25 @@
                 </div>
 
                 <!-- сброс настроек -->
-                <div class="menu-item" data-section="reset-settings" tabindex="0">
-                    <div class="item-icon">⚙
-                        <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M6 9l6 6 6-6"></path>
-                        </svg>
-                    </div>
+                <div class="menu-item" data-section="reset-settings" tabindex="0" id="reset-settings-btn">
+                    <div class="item-icon" style="display:flex; align-items:center; justify-content:center; font-size:20px;">⚙</div>
                     <div class="item-content">
                         <p class="item-label">Сброс настроек</p>
                         <p class="item-subtitle">Вернуть к стандартным</p>
                     </div>
-                        
+                    <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9l6 6 6-6"></path>
+                    </svg>
                 </div>
 
                 <div class="total-price">
-                    <div class="price-row"><span>Базовая цена:</span><span id="base-price">150 000₽</span></div>
-                    <div class="price-row"><span>Силуэт:</span><span id="spheres-price-row">+0₽</span></div>
-                    <div class="price-row"><span>Корпус:</span><span id="body-price-row">+0₽</span></div>
-                    <div class="price-row"><span>Эмблема:</span><span id="logo-price-row">+0₽</span></div>
-                    <div class="price-row"><span>Футляр:</span><span id="case-price-row">+0₽</span></div>
-                    <div class="price-row" id="shockmount-price-row-container" style="display: none;"><span>Подвес:</span><span id="shockmount-price-row">+0₽</span></div>
-                    <div class="price-row price-total"><span>Итого:</span><span id="total-price">150 000₽</span></div>
+                    <div class="price-row"><span>Базовая цена:</span><span id="base-price">150 000 ₽</span></div>
+                    <div class="price-row"><span>Силуэт:</span><span id="spheres-price-row">0 ₽</span></div>
+                    <div class="price-row"><span>Корпус:</span><span id="body-price-row">0 ₽</span></div>
+                    <div class="price-row"><span>Эмблема:</span><span id="logo-price-row">0 ₽</span></div>
+                    <div class="price-row"><span>Футляр:</span><span id="case-price-row">0 ₽</span></div>
+                    <div class="price-row" id="shockmount-price-row-container" style="display: none;"><span>Подвес:</span><span id="shockmount-price-row">0 ₽</span></div>
+                    <div class="price-row price-total"><span>Итого:</span><span id="total-price">150 000 ₽</span></div>
                     <button class="order-button">Отправить конфигурацию</button>
                 </div>
             </div>

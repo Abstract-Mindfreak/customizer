@@ -3,7 +3,8 @@
 // ============================================
 
 import { stateManager } from '../core/state.js';
-import { CONFIG, FREE_LOGO_RALS, RAL_PALETTE } from '../config.js';
+import { CONFIG, FREE_LOGO_RALS } from '../config.js';
+import { SECTION_LAYER_MAP } from '../config/layer-mapping.config.js';
 import { handleShockmountColorSelection, handleShockmountPinSelection } from './shockmount-new.js';
 import { updateSVG } from '../engine.js';
 import { updateUI } from '../ui-core.js';
@@ -23,13 +24,19 @@ function updateLogoSVG(variant) {
 }
 
 export function initPalettes() {
+    const hlData = stateManager.get('hlData');
+    const ralPalette = hlData?.ralColors || {};
+
     const sections = ['spheres', 'body', 'shockmount', 'pins', 'logobg'];
     sections.forEach(section => {
         const container = document.getElementById('pal-' + section);
         if (!container) return; // Skip if container doesn't exist
         container.innerHTML = '';
 
-        for (let [name, color] of Object.entries(RAL_PALETTE)) {
+        for (let [id, colorData] of Object.entries(ralPalette)) {
+            const name = colorData.UF_CODE;
+            const color = colorData.UF_HEX;
+
             // Task 3: Exclude RAL 1013 from body palette
             if (section === 'body' && name === '1013') continue;
 
@@ -62,7 +69,9 @@ export function initPalettes() {
     const logoBgContainer = document.getElementById('pal-logo');
     if (logoBgContainer) {
         logoBgContainer.innerHTML = '';
-        for (let [name, color] of Object.entries(RAL_PALETTE)) {
+        for (let [id, colorData] of Object.entries(ralPalette)) {
+            const name = colorData.UF_CODE;
+            const color = colorData.UF_HEX;
             let div = document.createElement('div');
             div.className = 'swatch';
             div.style.backgroundColor = color;
@@ -238,44 +247,55 @@ export function handleColorSelection(section, color, ralName) {
 
 export function updateSectionLayers(section, state) {
     const svg = document.querySelector('#microphone-svg-container svg');
+    if (!svg || section === 'logobg') return;
     
-    // Skip logobg - it's handled by color-utils
-    if (section === 'logobg') {
+    const mapping = SECTION_LAYER_MAP[section]?.[state.variant];
+    if (!mapping) {
+        console.warn(`[Appearance] No mapping found for ${section} variant: ${state.variant}`);
         return;
     }
-    
-    const originalLayer = svg.querySelector(`#${section}-original`);
-    const colorLayer = svg.querySelector(`#${section}-colorized`);
-    const monoLayer = svg.querySelector(`#${section}-monochrome`);
 
-    for (let i = 1; i <= 3; i++) {
-        const display = (state.variant === String(i)) ? 'inline' : 'none';
+    const originalGroup = svg.querySelector(`#${section}-original`);
+    const colorGroup = svg.querySelector(`#${section}-colorized`);
+    const monoGroup = svg.querySelector(`#${section}-monochrome`);
+
+    // Handle standard layers (1, 2, 3)
+    const isCustomRal = state.variant.includes('ral-custom');
+
+    // Hide all first
+    for (let i = 1; i <= 4; i++) {
         const origImg = svg.querySelector(`#${section}-original-${i}`);
         const colorImg = svg.querySelector(`#${section}-color-${i}`);
         const monoImg = svg.querySelector(`#${section}-mono-${i}`);
-
-        if (origImg) origImg.style.display = display;
-        if (colorImg) colorImg.style.display = display;
-        if (monoImg) monoImg.style.display = display;
+        if (origImg) origImg.style.display = 'none';
+        if (colorImg) colorImg.style.display = 'none';
+        if (monoImg) monoImg.style.display = 'none';
     }
 
-    
-    if (state.color && state.variant === '3') {
-        //Прячет spheres-original, показывает colorized слой
-        if (originalLayer) originalLayer.style.display = 'none';
-        if (colorLayer) colorLayer.style.display = 'inline';
-        if (monoLayer) monoLayer.style.display = 'inline';
+    if (isCustomRal) {
+        if (originalGroup) originalGroup.style.display = 'none';
+        if (colorGroup) colorGroup.style.display = 'inline';
+        if (monoGroup) monoGroup.style.display = 'inline';
 
-        const filters = getCorrectiveFilters(state.colorValue);
-        //Применяет SVG фильтр для окрашивания в выбранный RAL цвет
-        if (colorLayer) colorLayer.style.filter = `url(#filter-${section}-colorize)`;
-        //устанавливает RGB значение в feFlood-spheres-color
+        // Show correct color/mono images for the base variant we're colorizing
+        // Usually we colorize based on some default, let's say '1'
+        const baseIndex = 1;
+        const colorImg = svg.querySelector(`#${section}-color-${baseIndex}`);
+        const monoImg = svg.querySelector(`#${section}-mono-${baseIndex}`);
+        if (colorImg) colorImg.style.display = 'inline';
+        if (monoImg) monoImg.style.display = 'inline';
+
         updateFilter(section, state.colorValue);
     } else {
-        if (originalLayer) originalLayer.style.display = 'inline';
-        if (colorLayer) colorLayer.style.display = 'none';
-        if (monoLayer) monoLayer.style.display = 'none';
-        if (colorLayer) colorLayer.style.filter = `url(#filter-${section}-colorize)`;
+        if (originalGroup) originalGroup.style.display = 'inline';
+        if (colorGroup) colorGroup.style.display = 'none';
+        if (monoGroup) monoGroup.style.display = 'none';
+
+        // Show specified original layers
+        mapping.originals.forEach(id => {
+            const el = svg.querySelector(`#${id}`);
+            if (el) el.style.display = 'inline';
+        });
     }
 }
 
@@ -368,7 +388,9 @@ export function handleStyleSelection(section, variant) {
     } else if (section === 'logobg') {
         // Handle logo background color selection
         const isFree = FREE_LOGO_RALS.includes(variant);
-        const color = variant === 'black' ? '#000000' : RAL_PALETTE[variant];
+        const hlData = stateManager.get('hlData');
+        const ralData = Object.values(hlData?.ralColors || {}).find(c => c.UF_CODE === variant);
+        const color = variant === 'black' ? '#000000' : (ralData?.UF_HEX || '#000000');
         
         batchSet('logobg.color', variant);
         batchSet('logobg.colorValue', color);

@@ -65,8 +65,8 @@ export function updateShockmountVisibility() {
     
     if (isBomblet) {
         // Для 023-the-bomblet показываем toggle для подвеса
-        if (shockmountToggle) shockmountToggle.style.display = 'block';
-        if (switchContainer) switchContainer.style.display = 'block';
+        if (shockmountToggle) shockmountToggle.style.display = 'flex';
+        if (switchContainer) switchContainer.style.display = 'flex';
         if (includedText) includedText.style.display = 'none';
         
         // Показываем секции только если включен toggle
